@@ -4,14 +4,6 @@
     <head>
         <link rel="stylesheet" href="{$baseurl}/{$css}" type="text/css" />
         <link rel="shortcut icon" href="images/mni_icon.ico" type="image/ico" />
-
-        {section name=jsfile loop=$jsfiles}
-            <script src="{$jsfiles[jsfile]}" type="text/javascript"></script>
-        {/section}
-        <script>
-            $.webshims.polyfill();
-        </script>
-
         <!-- Custom JavaScript for the Menu Toggle -->
    
         <link type="text/css" href="{$baseurl}/css/loris-jquery/jquery-ui-1.10.4.custom.min.css" rel="Stylesheet" />
@@ -596,5 +588,13 @@
                 </div>
             </div>
         {/if}
+
+        {section name=jsfile loop=$jsfiles}
+            <script src="{$jsfiles[jsfile]}" type="text/javascript"></script>
+        {/section}
+        <script>
+            $.webshims.polyfill();
+        </script>
+
     </body>
 </html>

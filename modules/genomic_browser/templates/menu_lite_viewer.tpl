@@ -71,7 +71,7 @@
         </div>
         <div class="col-sm-12">
           <div class="row">
-            <div id="chart-div">
+            <div id="chart-div-1">
               <div class="panel panel-primary">
                 <div class="panel-heading" onclick="hideFilterCoord();">
                   Chart
@@ -79,7 +79,23 @@
                   <span class="glyphicon glyphicon-chevron-up pull-right" id="up-coord"></span>
                 </div>
                 <div class="panel-body" id="panel-body-coord">
-                  <div id="chart-placeholder"></div>
+                  <div id="chart-placeholder-1"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-12">
+          <div class="row">
+            <div id="chart-div-2">
+              <div class="panel panel-primary">
+                <div class="panel-heading" onclick="hideFilterCoord();">
+                  Chart
+                  <span class="glyphicon glyphicon-chevron-down pull-right" style="display:none" id="down-coord"></span>
+                  <span class="glyphicon glyphicon-chevron-up pull-right" id="up-coord"></span>
+                </div>
+                <div class="panel-body" id="panel-body-coord">
+                  <div id="chart-placeholder-2"></div>
                 </div>
               </div>
             </div>
@@ -89,8 +105,6 @@
     </div>
   </div> <!-- end row containing all filters-->
 </div>
-<script src="js/d3.min.js" charset="utf-8"></script>
-<script src="js/c3.min.js"></script>
-<script src="GetJS.php?Module=genomic_browser&file=visual_explorer_2.js" charset="utf-8"></script>
 <link rel="stylesheet" href="css/c3.css">
 <link rel="stylesheet" href="GetCSS.php?Module=genomic_browser&file=visual_explorer.css">
+<link rel="stylesheet" href="GetCSS.php?Module=genomic_browser&file=lite_viewer.css">

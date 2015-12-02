@@ -1,71 +1,70 @@
 <?php
 /**
- * This file is used by the Dashboard to get the data for
- * the recruitment bar chart via AJAX
+ * This file is used by the Genomic module to get a all beta value
+ * from the genomic_cpg table via AJAX
  *
  * PHP version 5
  *
  * @category Epigenomics
  * @package  Loris
- * @author   Loris Team <loris-dev@bic.mni.mcgill.ca>
+ * @author   Xavier Lecours Boucher <loris-dev@bic.mni.mcgill.ca>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris
  */
 
-header("content-type:application/json");
-ini_set('default_charset', 'utf-8');
 
-$DB            = Database::singleton();
-$beta_values   = array();
-$query         = "";
-$groups        = explode(' ',$_REQUEST['groups']);
-$select = "SELECT '17' as chromosome,
-               t.position as position,
-               t.cpg as cpg,
-               MIN(t.Beta_value) as min,
-               AVG(t.Beta_value) as mean,
-               MAX(t.Beta_value) as max,
-               COUNT(t.Beta_value) as count";
-$from = " FROM
-               (
-               SELECT
-                   candidate.PSCID as candidate,
-                   candidate.gender as gender,
-                   cohort.SubprojectID as subproject,
-                   genomic_cpg.CpG as cpg,
-                   genomic_cpg.Beta_value as beta_value,
-                   genome_loc.StartLoc as position
-               FROM candidate
-               LEFT JOIN (select s.CandID, min(s.subprojectID) as SubprojectID
-                          from session s GROUP BY s.CandID) AS cohort
-                   ON (cohort.CandID = candidate.CandID)
-                   JOIN genomic_cpg 
-                   ON (candidate.CandID = genomic_cpg.CandID)
-                   LEFT JOIN genome_loc 
-                   ON (genome_loc.GenomeLocID = genomic_cpg.GenomeLocID)
-                   LEFT JOIN genotyping_platform 
-                   ON (genomic_cpg.PlatformID = genotyping_platform.PlatformID)
-               WHERE
-                   candidate.Entity_type = 'Human' AND 
-                   candidate.Active = 'Y'
-               ) as t ";
-
-$group_by = "GROUP BY chromosome, cpg";
-
-if ( !empty($groups) ) {
-
-    $select .= ", " . implode(", ", $groups);
-    $group_by .= ", " . implode(", ", $groups);
-    $query = $select . $from . $group_by;
-
+// Check that the user has genomic_browser_view permission
+$user = User::singleton();
+if (!$user->hasPermission('genomic_browser_view_site') &&
+    !$user->hasPermission('genomic_browser_view_allsites') ) {
+    error_log("ERROR: Permission denied");
+    header('HTTP/1.1 403 Forbidden');
+    exit(2);
 }
 
+// TODO :: Add some validation about the $_REQUEST
+if (false) {
+    error_log("ERROR: Invalid filename");
+    header("HTTP/1.1 400 Bad Request");
+    exit(3);
+}
+
+$DB          = Database::singleton();
+$query       = "
+SELECT genomic_cpg.cpg,
+       genomic_cpg.beta_value,
+       genomic_cpg.cpg_loc,
+       candidate.pscid,
+       candidate.gender
+FROM   candidate
+       JOIN session session
+         ON ( candidate.candid = session.candid )
+       LEFT JOIN psc
+              ON ( psc.centerid = session.centerid )
+       JOIN genomic_cpg
+         ON ( genomic_cpg.candid = candidate.candid
+              AND genomic_cpg.visit_id = session.id )
+WHERE  candidate.entity_type = 'Human'
+       AND candidate.active = 'Y'
+       AND genomic_cpg.chromosome = '1'
+       AND genomic_cpg.cpg_loc BETWEEN 1 AND 100000000
+ORDER  BY cpg,
+          gender,
+          pscid
+";
+
+// TODO :: Add tr...catch for the Database exception
 $results = $DB->pselect($query, array() );
 
-// Arrange the results by regrouping grouped values on the same row.
+// Arrange the results by calculation statics.
+$json = array();
 
-//print json_encode($beta_values);
-print(json_encode($results));
+// return the results in JSON format
+header("content-type:application/json");
+ini_set('default_charset', 'utf-8');
+print(json_encode($json));
 exit();
+
+
 
 ?>

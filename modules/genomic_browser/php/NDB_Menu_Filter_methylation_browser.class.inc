@@ -1,14 +1,14 @@
 <?php
 /**
- * For snp_browser class file
- * Displays SNP genomic variant data.
+ * For cpg_browser class file
+ * Displays targeted CpG islands data.
  * Filterable by candidate, gene or variant fields.
  *
  * PHP version 5
  *
  *  @category Genomic
  *  @package  Main
- *  @author   Christine Rogers <christine.rogers@mcgill.ca>
+ *  @author   Xavier <xavierlb.mavan@gmail.com>
  *  @license  http://www.gnu.org/licenses/gpl-3.0.txt @GPLv3
  *  @link     https://www.github.com/aces/Loris/
  *  Main page: CNV. Submenu: SNP
@@ -18,8 +18,8 @@ require_once 'NDB_Menu_Filter.class.inc';
 /**
  * NDB_Menu_Filter_SNP_Browser Class
  *
- * This class is snp_browser Form
- * SNP submenu tab for Genomic Browser
+ * This class is cpg_browser Form
+ * CpG submenu tab for Genomic Browser
  *
  * @category Genomic
  * @package  Main
@@ -27,7 +27,7 @@ require_once 'NDB_Menu_Filter.class.inc';
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt @GPLv3
  * @link     https://github.com/aces/Loris
 */
-class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
+class NDB_Menu_Filter_Methylation_Browser extends NDB_Menu_Filter
 {
     /**
  * Variables to enable special filter behaviour -
@@ -64,47 +64,35 @@ class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
         // set the class variables
         $this->_displayBrief = !(isset($_REQUEST['format']));
         $this->columns = array(
-                          'psc.Name AS PSC',
-                          'candidate.CandID AS DCCID',
-                          'candidate.PSCID',
-                          'candidate.Gender',
+                          'psc.Name AS PSC',                         
                           'cohort.SubprojectID as Subproject',
-                          'DATE_FORMAT(candidate.DoB,\'%Y-%m-%d\') AS DoB',
-                          'candidate.ExternalID as externalID',
-                          'genome_loc.Chromosome as Chromosome',
-                          'genome_loc.Strand as Strand',
-                          'genome_loc.StartLoc as StartLoc',
-                          'genome_loc.EndLoc as EndLoc',
-                          'genome_loc.Size as Size',
-                          'gene.OfficialSymbol as Gene_Symbol',
-                          'gene.OfficialName as Gene_Name',
-                          'genotyping_platform.Name as Platform',
-                          'SNP.rsID as rsID',
-                          'SNP.SNPExternalName as SNP_Name',
-                          'SNP.Description as SNP_Description',
-                          'SNP.SNPExternalSource as External_Source',
-                          'SNP.ObservedBase as Observed_Base',
-                          'SNP.ReferenceBase as Reference_Base',
-                          'SNP.ArrayReport as Array_Report',
-                          'SNP.Markers as Markers',
-                          'SNP.ValidationMethod as Validation_Method',
-                          'SNP.Validated as Validated',
-                          'SNP.FunctionPrediction as Function_Prediction',
-                          'SNP.Damaging as Damaging',
-                          'SNP.GenotypeQuality as Genotype_Quality',
-                          'SNP.ExonicFunction as Exonic_Function',
+                          'genomic_cpg.tissue as Tissue',
+                          'genomic_cpg.date_collected as DATE_Collected',
+                          'genomic_cpg.CpG as CpG',
+                          'candidate.Gender',
+                          'COUNT(candidate.CandID) AS Candidates',
+                          'genomic_cpg.cpg_context as Context',
+                          'genomic_cpg.beta_value as Beta_value',
+                          'ROUND(AVG(genomic_cpg.beta_value),3) as Mean',
+                          'ROUND(VARIANCE(genomic_cpg.beta_value),3) as Variance',
+                          'genomic_cpg.methylation as Methylation',
+                          'genomic_cpg.gene as Gene',
+                          'genomic_cpg.genes_accession_number as Accession_number',
+                          'genomic_cpg.assembly as Assembly',
+                          'genomic_cpg.chromosome as Chromosome',
+                          'genomic_cpg.strand as Strand',
+                          'genomic_cpg.cpg_loc as StartLoc',
+                          'genomic_cpg.platform as Platform',
+                          'genomic_cpg.chip_id as Chip',
+                          'genomic_cpg.chip_position as Position',
                          );
 
         $this->_briefFields = array(
-                               'DCCID',
-                               'PSCID',
-                               'Subproject',
-                               'Chromosome',
-                               'StartLoc',
-                               'rsID',
-                               'SNP_Name',
-                               'Observed_Base',
-                               'Reference_Base',
+                               'CpG',
+                               'Gender',
+                               'Candidates',
+                               'Mean',
+                               'Variance',
                               );
 
         // Chromosome from genome_loc table
@@ -115,11 +103,7 @@ class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
                     from session s GROUP BY s.CandID) AS cohort
             ON (cohort.CandID = candidate.CandID) 
             LEFT JOIN psc ON (psc.CenterID = candidate.CenterID)
-            JOIN SNP ON (candidate.CandID = SNP.CandID)
-            LEFT JOIN genome_loc ON (genome_loc.GenomeLocID = SNP.GenomeLocID)  
-            LEFT JOIN gene ON (gene.GenomeLocID = SNP.GenomeLocID)
-            LEFT JOIN genotyping_platform ON 
-              (SNP.PlatformID = genotyping_platform.PlatformID)
+            JOIN genomic_cpg ON (candidate.CandID = genomic_cpg.CandID)
             WHERE 
             candidate.Entity_type = 'Human' AND candidate.Active = 'Y' ";
 
@@ -131,7 +115,38 @@ class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
             $this->query .= $DB->quote($user->getCenterID());
         }
 
-        $this->order_by     = 'psc.Name, candidate.CandID DESC';
+/*
+    XLB 2015-06-01 :: This chunk is for the restriction on data that can or can't be seen by specific users. 
+                      Since the need of the client needs to be clarify, it's commented. 
+                      - Will there be groups of user with the same restrictions? 
+
+        if (!$user->hasPermission('epigenomic_full_data')) {
+            // restrict displayed data to allowed_item defined in genomic_user_restriction
+            // only works for genomic_cpg prefixed fields (types).
+            $Allowed_item_results
+                = $DB->select("SELECT Restriction_type, Allowed_item FROM genomic_user_restriction WHERE user_ID=" . $user->getData('ID'));
+            $restricted_types = array_unique(array_column($Allowed_item_results, 'Restriction_type', null));
+            
+            $list_items = array_fill_keys($restricted_types, array());
+            foreach( $Allowed_item_results as $row ) {
+                array_push( $list_items[$row['Restriction_type']], $row['Allowed_item']);
+            }
+
+            $this->query .= ' AND ( ';
+            foreach($list_items as $type => $values) {
+                $this->query .= "genomic_cpg." . $type . " IN ('" . implode( "','", $values ) . "') OR ";
+            }
+            $this->query .= 'FALSE )';
+        }
+*/
+        if (!$user->hasPermission('genomic_browser_view_allsites')) {
+            // restrict data to own site
+            $this->query .= " AND candidate.CenterID=";
+            $this->query .= $DB->quote($user->getCenterID());
+        }
+
+        $this->group_by = "genomic_cpg.cpg, candidate.gender";
+        $this->order_by     = 'genomic_cpg.cpg, candidate.gender DESC';
         $this->validFilters = array(
                                'candidate.CenterID',
                                'candidate.CandID',
@@ -141,25 +156,22 @@ class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
                                'candidate.DoB',
                                'candidate.ExternalID',
                                'show_brief_results',
-                               'SNP.rsID',
-                               'SNP.SNPExternalName',
-                               'SNP.Description',
-                               'SNP.SNPExternalSource',
-                               'SNP.ObservedBase',
-                               'SNP.ReferenceBase',
-                               'SNP.ArrayReport',
-                               'SNP.Markers',
-                               'SNP.ValidationMethod',
-                               'SNP.Validated as Validated',
-                               'SNP.FunctionPrediction',
-                               'SNP.Damaging',
-                               'SNP.GenotypeQuality',
-                               'SNP.ExonicFunction',
-                               'genome_loc.Chromosome',
-                               'genome_loc.Strand',
-                               'gene.OfficialSymbol',
-                               'gene.OfficialName',
-                               'genotyping_platform.Name',
+                               'genomic_cpg.chromosome',
+                               'genomic_cpg.strand',
+                               'genomic_cpg.platform',
+                               'genomic_cpg.cpg',
+                               'genomic_cpg.beta_value',
+                               'genomic_cpg.tissue',
+                               'genomic_cpg.date_collected',
+                               'genomic_cpg.gene',
+                               'genomic_cpg.assembly',
+                               'genomic_cpg.genes_accession_number',
+                               'genomic_cpg.cpg_context',
+                               'genomic_cpg.strand',
+                               'genomic_cpg.methylation',
+                               'genomic_cpg.chip_id',
+                               'genomic_cpg.chip_position',
+                               'genomic_cpg.beta_value',
                               );
 
         $this->formToFilter = array(
@@ -171,23 +183,17 @@ class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
                                'dob'                 => 'candidate.DoB',
                                'External_ID'         => 'candidate.ExternalID',
                                'Show_Brief_Results'  => 'show_brief_results',
-                               'rsID'                => 'SNP.rsID',
-                               'SNP_Name'            => 'SNP.SNPExternalName',
-                               'SNP_Description'     => 'SNP.Description',
-                               'SNP_External_Source' => 'SNP.SNPExternalSource',
-                               'Observed_Base'       => 'SNP.ObservedBase',
-                               'Reference_Base'      => 'SNP.ReferenceBase',
-                               'Array_Report'        => 'SNP.ArrayReport',
-                               'Markers'             => 'SNP.Markers',
-                               'Validation_Method'   => 'SNP.ValidationMethod',
-                               'Validated'           => 'SNP.Validated',
-                               'Function_Prediction' => 'SNP.FunctionPrediction',
-                               'Damaging'            => 'SNP.Damaging',
-                               'Genotype_Quality'    => 'SNP.GenotypeQuality',
-                               'Exonic_Function'     => 'SNP.ExonicFunction',
-                               'Chromosome'          => 'genome_loc.Chromosome',
-                               'Gene_Symbol'         => 'gene.OfficalSymbol',
-                               'Platform'            => 'genotyping_platform.Name',
+                               'CpG'                 => 'genomic_cpg.cpg',
+                               'Beta_value'          => 'genomic_cpg.beta_value',
+                               'Tissue'              => 'genomic_cpg.tissue',
+                               'Date_collected'      => 'genomic_cpg.date_collected',
+                               'Gene'                => 'genomic_cpg.gene',
+                               'AccNumber'           => 'genomic_cpg.genes_accession_number',
+                               'Context'             => 'genomic_cpg.Context',
+                               'Strand'              => 'genomic_cpg.Strand',
+                               'Methylation'         => 'genomic_cpg.methylation',
+                               'Chromosome'          => 'genomic_cpg.chromosome',
+                               'Platform'            => 'genomic_cpg.platform',
                               );
 
         return true;
@@ -252,78 +258,55 @@ class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
               );
         $this->addSelect('Show_Brief_Results', 'Display:', $show_results_options);
 
-        // SNP
-        $this->addBasicText('rsID', 'rsID:');
-        $this->addBasicText('SNP_Name', 'Name:');
-        $this->addBasicText('SNP_Description', 'Description:');
-        $this->addBasicText('SNP_External_Source', 'External Source:');
+        // CpG
+        $this->addBasicText('CpG', 'CpG:');
+        $Base_options = array(
+                         null              => 'Any',
+                         'Island'          => 'Island',
+                         'N_Shore'         => 'North shore',
+                         'S_Shelf'         => 'South shelf',
+                         'S_Shore'         => 'South shore',
+                        );
+        $this->addSelect('Context', 'Context:', $Base_options);
+        $this->addBasicText('Date_collected', 'Date collected:');
+        $Base_options = array(
+                         null               => 'Any',
+                         'High-methylation' => 'High-methylation',
+                         'Partially'        => 'Partially',
+                         'Low-methylation'  => 'Low-methylation',
+                        );
+        $this->addSelect('Methylation', 'Methylation:', $Base_options);
+        $this->addBasicText('Beta_value', 'Beta-value:');
+        $Base_options = array(
+                         null     => 'Any',
+                         'Buccal' => 'Buccal',
+                        );
+        $this->addSelect('Tissue', 'Tissue:', $Base_options);
+
+        // Gene
+        $this->addBasicText('Chromosome', 'Chromosome:');
+        $Base_options = array(
+                         null     => 'Any',
+                         'GRCh37' => 'GRCh37',
+                        );
+        $this->addSelect('Assembly', 'Build:', $Base_options);
         $Base_options = array(
                          null => 'Any',
-                         'A'  => 'A',
-                         'C'  => 'C',
-                         'T'  => 'T',
-                         'G'  => 'G',
+                         'F'  => 'Foward',
+                         'R'  => 'Reverse',
                         );
-        $this->addSelect('Observed_Base', 'Observed Base:', $Base_options);
-        $this->addSelect('Reference_Base', 'Reference Base:', $Base_options);
-
-        $this->addSelect(
-            'Validated',
-            'Validated:',
-            array(
-             null => 'Any',
-             '0'  => '0',
-             '1'  => '1',
-            )
-        );
-        $this->addSelect(
-            'Function_Prediction',
-            'Function Prediction:',
-            array(
-             null          => 'Any',
-             'exonic'      => 'exonic',
-             'ncRNAexonic' => 'ncRNAexonic',
-             'splicing'    => 'splicing',
-             'UTR3'        => 'UTR3',
-             'UTR5'        => 'UTR5',
-            )
-        );
-        $this->addSelect(
-            'Damaging',
-            'Damaging:',
-            array(
-             null => 'Any',
-             'D'  => 'D',
-             'NA' => 'NA',
-            )
-        );
-        $this->addBasicText('Genotype_Quality', 'Genotype Quality:');
-        $this->addBasicText('Exonic_Function', 'Exonic Function:');
-
-        $this->addBasicText('Chromosome', 'Chromosome:');
-        $this->addBasicText('Strand', 'Strand:');
-        $this->addBasicText('Gene_Symbol', 'Symbol:');
-        $this->addBasicText('Gene_Name', 'Name:');
+        $this->addSelect('Strand', 'Strand:', $Base_options);
+        $this->addBasicText('Gene', 'Symbol:');
 
         $DB = Database::singleton();
         $platform_results
-            = $DB->select("SELECT distinct Name FROM genotyping_platform ");
+            = $DB->select("SELECT distinct platform FROM genomic_cpg ");
         $platform_options = array('' => 'Any');
         foreach ($platform_results as $row => $result ) {
-            $name = $result['Name'];
+            $name = $result['platform'];
             $platform_options[$name] = $name;
         }
         $this->addSelect('Platform', 'Platform:', $platform_options);
-        $Array_Report_options = array(
-                                 null        => 'Any',
-                                 'Abnormal'  => 'Abnormal',
-                                 'Normal'    => 'Normal',
-                                 'Pending'   => 'Pending',
-                                 'Uncertain' => 'Uncertain',
-                                );
-        $this->addSelect('Array_Report', 'Array Report:', $Array_Report_options);
-        $this->addBasicText('Markers', 'Markers:');
-        $this->addBasicText('Validation_Method', 'Validation Method:');
 
         return true;
     }
@@ -344,7 +327,6 @@ class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
 
         $this->tpl_data['resultcount']  = $this->TotalItems;
         $this->tpl_data['displayBrief'] = $this->_displayBrief;
-
         // re-set headers if Brief; if full, gets set by _setDataTable()
         if ($this->_displayBrief) {
             $this->headers = array(); // re-initialize i.e. wipe
@@ -399,6 +381,18 @@ class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
                         $this->tpl_data['items'][$x][$i]['value']
                             = $subprojectlist[$val];
                     }
+                }
+                if ($key=='Gene') {
+                    $this->tpl_data['items'][$x][$i]['value'] = '<a title="UCSC Genome Browser" href="http://genome.ucsc.edu/cgi-bin/hgTracks?org=human&position=' . strtok($item["Accession_number"], ';') . '" target="_blank">' . strtok($val, ';' ) . '</a>';
+                }
+                if ($key=='Imaging') {
+                    $this->tpl_data['items'][$x][$i]['value'] = '<a title="Imaging Browser" href="main.php?test_name=imaging_browser&subtest=viewSession&sessionID=7148&backURL=%2Fmain.php%3Ftest_name%3Dimaging_browser" target="_self">Yes</a>';
+                }
+                if ($key=='CpG') {
+                    $assembly = $item['Assembly'];
+                    $startLoc = $item['StartLoc'] - 500;
+                    $endLoc = $item['StartLoc'] + 500;
+	            $this->tpl_data['items'][$x][$i]['value'] = '<a title="UCSC Genome Browser" href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=' . $assembly . '&position=Chr' . $item['Chromosome'] . ':' . $startLoc . '-' . $endLoc . '" target="_blank">' . $val . '</a>';
                 }
                 $i++;
             }

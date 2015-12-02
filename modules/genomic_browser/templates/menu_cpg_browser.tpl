@@ -4,8 +4,9 @@
       <ul class="nav nav-tabs">
         <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser">Profile</a></li>
         <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=cnv_browser">CNV</a></li>
-        <li class="statsTab active"><a class="statsTabLink" id="onLoad"><strong>SNP</strong></a></li>
-        <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=cpg_browser">CpG</a></li>
+        <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=snp_browser">SNP</a></li>
+        <li class="statsTab active"><a class="statsTabLink" id="onLoad"><strong>CpG</strong></a></li>
+        <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=methylation_browser">CPG grouped</a></li>
         <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=lite_viewer">Visual Explorer</a></li>
       </ul>
       <br>
@@ -14,7 +15,7 @@
   <div class="row">
     <div class="tab-content">
       <div class="tab-pane active">
-        <form method="post" action="main.php?test_name=genomic_browser&submenu=snp_browser">
+        <form method="post" action="main.php?test_name=genomic_browser&submenu=cpg_browser">
           <div class="col-sm-12">
             <div class="row">
               <div class="form-group col-sm-7">
@@ -27,7 +28,7 @@
                   <div class="panel-body" id="panel-body-candidate">
                     <div class="row">
                       <div class="form-group col-sm-12">
-                        <label class="col-sm-12 col-md-1 col-lg-1">
+                        <label class="col-sm-12 col-md-1 col-lg-1" data-toggle="tooltip" title="Collecting sites of the candidates">
                           {$form.centerID.label}
                         </label>
                         <div class="col-sm-12 col-md-3 col-lg-3">
@@ -36,10 +37,10 @@
                         <label class="col-sm-12 col-md-2">
                           {$form.SubprojectID.label}
                         </label>
-                        <div class="col-sm-12 col-md-3">
+                        <div class="col-sm-12 col-md-2">
                           {$form.SubprojectID.html}
                         </div>
-                        <label class="col-sm-12 col-md-1">
+                        <label class="col-sm-12 col-md-2">
                           {$form.DCCID.label}
                         </label>
                         <div class="col-sm-12 col-md-2">
@@ -49,19 +50,19 @@
                     </div>
                     <div class="row">
                       <div class="form-group col-sm-12">
-                        <label class="col-sm-12 col-md-2 ">
+                        <label class="col-sm-12 col-md-2">
                           {$form.gender.label}
                         </label>
                         <div class="col-sm-12 col-md-2">
                           {$form.gender.html}
                         </div>
-                        <label class="col-sm-12 col-md-3">
-                          {$form.External_ID.label}
+                        <label class="col-sm-15 col-md-2">
+                          {$form.dob.label}
                         </label>
-                        <div class="col-sm-12 col-md-2 pull-left">
-                          {$form.External_ID.html}
+                        <div class="col-sm-12 col-md-2">
+                          {$form.dob.html}
                         </div>
-                        <label class="col-sm-12 col-md-1">
+                        <label class="col-sm-12 col-md-2">
                           {$form.PSCID.label}
                         </label>
                         <div class="col-sm-12 col-md-2">
@@ -82,33 +83,33 @@
                   <div class="panel-body" id="panel-body-gene">
                     <div class="row">
                       <div class="form-group col-sm-12">
-                        <label class="col-sm-12 col-md-2">
-                          {$form.Gene_Symbol.label}
+                        <label class="col-sm-12 col-md-2" data-toggle="tooltip" data-placement="top" title="HUGO Gene Nomenclature Committee ID ex: PINK1">
+                          {$form.Gene.label}
                         </label>
-                        <div class="col-sm-12 col-md-3">
-                          {$form.Gene_Symbol.html}
+                        <div class="col-sm-12 col-md-2">
+                          {$form.Gene.html}
                         </div>
-                        <label class="col-sm-12 col-md-2">
-                          {$form.Gene_Name.label}
+                        <label class="col-sm-12 col-md-2" data-toggle="tooltip" data-placement="top" title="Genome Reference Consortium ID">
+                          {$form.Assembly.label}
                         </label>
-                        <div class="col-sm-12 col-md-5">
-                          {$form.Gene_Name.html}
+                        <div class="col-sm-12 col-md-2">
+                          {$form.Assembly.html}
                         </div>
                       </div>
                     </div>
                     <div class="row">
                       <div class="form-group col-sm-12">
-                        <label class="col-sm-12 col-md-3">
+                        <label class="col-sm-12 col-md-2" data-toggle="tooltip" data-placement="top" title="Chromosome number or symbole">
                           {$form.Chromosome.label}
                         </label>
                         <div class="col-sm-12 col-md-2">
                           {$form.Chromosome.html}
                         </div>
-                        <label class="col-sm-12 col-md-3">
-                          {$form.Platform.label}
+                        <label class="col-sm-12 col-md-2">
+                          {$form.Strand.label}
                         </label>
-                        <div class="col-sm-12 col-md-4">
-                          {$form.Platform.html}
+                        <div class="col-sm-12 col-md-2">
+                          {$form.Strand.html}
                         </div>
                       </div>
                     </div>
@@ -117,99 +118,73 @@
               </div>
             </div> <!-- end of row: Candidate/Gene filter boxes-->
             <div class="row">
-            <!-- SNP section -->
+            <!-- CpG section -->
               <div class="form-group col-sm-8">
                 <div class="panel panel-primary">
-                  <div class="panel-heading" onclick="hideFilterSNP();">
-                    SNP Filters
-                    <span class="glyphicon glyphicon-chevron-down pull-right" style="display:none" id="down-snp"></span>
-                    <span class="glyphicon glyphicon-chevron-up pull-right" id="up-snp"></span>
+                  <div class="panel-heading" onclick="hideFilterCpG();">
+                    CpG Filters
+                    <span class="glyphicon glyphicon-chevron-down pull-right" style="display:none" id="down-cpg"></span>
+                    <span class="glyphicon glyphicon-chevron-up pull-right" id="up-cpg"></span>
                   </div>
-                  <div class="panel-body" id="panel-body-snp">
+                  <div class="panel-body" id="panel-body-cpg">
+                    <div class="row">
+                      <div class="form-group col-sm-12">
+                        <label class="col-sm-12 col-md-2" data-toggle="tooltip" data-placement="top" title="HAIB Methyl450 item ID ex: cg12045430">
+        		  {$form.CpG.label}
+                        </label>
+                    	<div class="col-sm-12 col-md-2">
+        		  {$form.CpG.html}
+			</div>
+                        <label style="" class="col-sm-12 col-md-2" data-toggle="tooltip" data-placement="top" title="High-methylation : beta-value > 0.6
+Partially methylated : 0.2 < beta-value <= 0.6
+Low-methylation : beta-value <= 0.2">
+        		  {$form.Methylation.label}
+                        </label>
+                    	<div class="col-sm-12 col-md-2">
+        		  {$form.Methylation.html}
+			</div>
+                        <label class="col-sm-12 col-md-2" data-toggle="tooltip" data-placement="top" title="Relation to UCSC CpG island">
+        		  {$form.Context.label}
+                        </label>
+                    	<div class="col-sm-12 col-md-2">
+        		  {$form.Context.html}
+			</div>
+		      </div>
+		    </div>
+		    <div class="row">
+                      <div class="form-group col-sm-12">
+                        <label class="col-sm-12 col-md-2">
+        		  {$form.Tissue.label}
+                        </label>
+                    	<div class="col-sm-12 col-md-2">
+        		  {$form.Tissue.html}
+			</div>
+                        <label class="col-sm-12 col-md-2">
+        		  {$form.Date_collected.label}
+                        </label>
+                    	<div class="col-sm-12 col-md-2">
+        		  {$form.Date_collected.html}
+			</div>
+                        <label class="col-sm-12 col-md-2">
+        		  {$form.Beta_value.label}
+                        </label>
+                    	<div class="col-sm-12 col-md-2">
+        		  {$form.Beta_value.html}
+			</div>
+		      </div>
+		    </div>
                     <div class="row">
                       <div class="form-group col-sm-12">
                         <label class="col-sm-12 col-md-2">
-        	          {$form.rsID.label}
+                          {$form.Platform.label}
                         </label>
-                    	<div class="col-sm-12 col-md-2">
-        	          {$form.rsID.html}
-			</div>
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.SNP_Name.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.SNP_Name.html}
-			</div>
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.SNP_Description.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.SNP_Description.html}
-			</div>
-		      </div>
-		    </div>
-		    <div class="row">
-                      <div class="form-group col-sm-12">
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.Observed_Base.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.Observed_Base.html}
-			</div>
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.Function_Prediction.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.Function_Prediction.html}
-			</div>
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.SNP_External_Source.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.SNP_External_Source.html}
-			</div>
-		      </div>
-		    </div>
-		    <div class="row">
-                      <div class="form-group col-sm-12">
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.Reference_Base.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.Reference_Base.html}
-			</div>
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.Exonic_Function.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.Exonic_Function.html}
-			</div>
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.Damaging.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.Damaging.html}
-			</div>
-		      </div>
-		    </div>
-		    <div class="row">
-                      <div class="form-group col-sm-12">
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.Validated.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.Validated.html}
-			</div>
-                        <label class="col-sm-12 col-md-2">
-        		  {$form.Genotype_Quality.label}
-                        </label>
-                    	<div class="col-sm-12 col-md-2">
-        		  {$form.Genotype_Quality.html}
-			</div>
-		      </div>
-		    </div>
+                        <div class="col-sm-12 col-md-4">
+                          {$form.Platform.html}
+                        </div>
+                      </div>
+                    </div>
 	          </div> 
-                </div> <!--end of SNP filters panel-->
+                </div> <!--end of CpG filters panel-->
               </div> 
               <div class="form-group col-sm-4">
                 <div class="row"><!--fixed vertical space-->
@@ -249,7 +224,7 @@
     <table border="0" valign="bottom" width="100%"><tr>
       <!-- title -->
       {if {$resultcount} != '' }
-        <td class="controlpanelsection">Variants found: <strong>{$resultcount}</strong> total</td>
+        <td class="controlpanelsection">Results found: <strong>{$resultcount}</strong> total</td>
           <a href="{$csvUrl}" download="{$csvFile}.csv">Download all fields as CSV</a>
       {else}
         <td>No variants found. </td>
@@ -267,7 +242,7 @@
           <th>No.</th>
           <!-- print out column headings - quick & dirty hack -->
           {section name=header loop=$headers}
-            <th><a href="main.php?test_name=genomic_browser&submenu=snp_browser&filter[order][field]={$headers[header].name}&filter[order][fieldOrder]={$headers[header].fieldOrder}">{$headers[header].displayName}</a></th>
+            <th><a href="main.php?test_name=genomic_browser&submenu=cpg_browser&filter[order][field]={$headers[header].name}&filter[order][fieldOrder]={$headers[header].fieldOrder}">{$headers[header].displayName}</a></th>
           {/section}
         </tr>
       </thead>
@@ -278,6 +253,8 @@
           {section name=piece loop=$items[item]}
             {if $items[item][piece].bgcolor != ''}
               <td style="background-color:{$items[item][piece].bgcolor}">
+            {elseif $items[item][piece].name == "Date_of_Birth" OR $items[item][piece].name == "Date_Collected"}
+              <td style="white-space: nowrap">
             {else}
               <td>
             {/if}

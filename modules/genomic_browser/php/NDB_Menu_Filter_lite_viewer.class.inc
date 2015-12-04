@@ -198,6 +198,8 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
         $www     = $config->getSetting('www');
         $baseurl = $www['url'];
 
+        $paths = $config->getSetting("paths");
+
         $baseDeps = parent::getJSDependencies();
 
         return array_merge(
@@ -205,7 +207,8 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
             array(
              $baseurl . '/js/d3.min.js',
              $baseurl . '/js/c3.min.js',
-             $baseurl . '/../modules/genomic_browser/js/lite_viewer_react.js',
+             $baseurl . '/../modules/genomic_browser/js/genomic_browser.js',
+             $baseurl . '/../modules/genomic_browser/js/lite_viewer_react_components.js',
              $baseurl . '/../modules/genomic_browser/js/lite_viewer.js',
             )   
         );  

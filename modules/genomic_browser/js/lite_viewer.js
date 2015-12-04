@@ -1,5 +1,3 @@
-    document.getElementById("update").onclick = showData;
-    
 
     function showData() {
 
@@ -14,7 +12,6 @@
           type: 'post',
           data: inputValues,
           success: function(data) {
-              console.log(JSON.stringify(data));
               c3.generate({
                   bindto: '#chart-placeholder-1',
                   size: {height: 480},

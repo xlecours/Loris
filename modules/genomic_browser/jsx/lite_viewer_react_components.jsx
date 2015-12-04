@@ -43,7 +43,7 @@ var GenomicViewer = React.createClass({
             },
             success: function(data) {
                 that.setState({
-                    data : data,
+                    data : that.calculateGroupedValues(data),
                     isLoaded : true
                 });
             },
@@ -51,6 +51,13 @@ var GenomicViewer = React.createClass({
                 that.setState({ "error" : "Unknown error loading data" });
             }
         });
+    },
+
+    calculateGroupedValues: function (data) {
+        return [
+            {x: 45, label: "cg0004301", median: 0.51, q1: 0.35, q3: 0.65, whiskerDown: 0.25, whiskerUp: 0.75, outlier: [0.9, 0.8, 0.1, 0.05]},
+            {x: 65, label: "cg0004301", median: 0.51, q1: 0.35, q3: 0.65, whiskerDown: 0.25, whiskerUp: 0.75, outlier: [0.9, 0.8, 0.1, 0.05]}
+        ];
     },
 
     filter: function () {
@@ -91,8 +98,6 @@ var Chart = React.createClass({
         }
     },
     render: function () {
-        var props = this.props;
-        var data = props.data;
         return (
             <svg
                 className="chart-container"
@@ -100,6 +105,7 @@ var Chart = React.createClass({
                 height={this.props.height}
                 className="box">
                 <g transform="translate(50,30)">
+                    <g transform="translate(50,30)"></g>
                     <Title
                         text="My title"
                     />
@@ -107,9 +113,9 @@ var Chart = React.createClass({
                     <XAxis />
                     <YAxis />
                     <Boxplot
-                        data={props.data}
-                        width={props.width - props.margin.left - props.margin.right}
-                        height={props.height - props.margin.top - props.margin.bottom}
+                        data={this.props.data}
+                        width={this.props.width - this.props.margin.left - this.props.margin.right}
+                        height={this.props.height - this.props.margin.top - this.props.margin.bottom}
                     />
                 </g>
             </svg>
@@ -250,9 +256,9 @@ var Boxplot = React.createClass({
         });
 
         var labels = data.map(function(point, i) {
-            var median = (<text x={xScale(point.x)} y={yScale(1 - point.median)} dx="6" dy=".3em" textAnchor="start" key={"a"+i}>{point.median}</text>);
-            var q1 = (<text x={xScale(point.x)+ xScale(15)} y={yScale(1 - point.q1)} dx="-6" dy=".3em" textAnchor="end" key={"b"+i}>{point.q1}</text>);
-            var q3 = (<text x={xScale(point.x)+ xScale(15)} y={yScale(1 - point.q3)} dx="-6" dy=".3em" textAnchor="end" key={"c"+i}>{point.q3}</text>);
+            var median = (<text x={xScale(point.x)} y={yScale(1 - point.median)} dx="-6" dy=".3em" textAnchor="end" key={"a"+i}>{point.median}</text>);
+            var q1 = (<text x={xScale(point.x) + xScale(21)} y={yScale(1 - point.q1)} dx="-6" dy=".3em" textAnchor="end" key={"b"+i}>{point.q1}</text>);
+            var q3 = (<text x={xScale(point.x) + xScale(21)} y={yScale(1 - point.q3)} dx="-6" dy=".3em" textAnchor="end" key={"c"+i}>{point.q3}</text>);
             var whiskersDown = (<text x={xScale(point.x)} y={yScale(1 - point.whiskerDown)} dx="-6" dy=".3em" textAnchor="end" key={"d"+i}>{point.whiskerDown}</text>);
             var whiskersUp = (<text x={xScale(point.x)} y={yScale(1 - point.whiskerUp)} dx="-6" dy=".3em" textAnchor="end" key={"e"+i}>{point.whiskerUp}</text>);
             return (
@@ -261,7 +267,7 @@ var Boxplot = React.createClass({
         });
 
         return (
-            <g>
+            <g className="plotPannel">
                 {verticalLines}
                 {boxes}
                 {medians}

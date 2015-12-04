@@ -1,6 +1,14 @@
+/*
+  Change the pointer over clickable objects
+*/
+.panel-clickable {
+  cursor: pointer;
+}
+
 .tooltip-inner {
     white-space:pre-wrap;
 }
+
 .chart div {
   font: 10px sans-serif;
   background-color: steelblue;

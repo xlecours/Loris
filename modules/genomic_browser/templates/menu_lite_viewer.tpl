@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="css/c3.css">
+<link rel="stylesheet" href="GetCSS.php?Module=genomic_browser&file=visual_explorer.css">
+<link rel="stylesheet" href="GetCSS.php?Module=genomic_browser&file=lite_viewer.css">
 <div class="col-sm-12">
   <div class="row">
     <div id="tabs">
@@ -18,7 +21,7 @@
           <div class="row">
             <div id="filters-div">
               <div class="panel panel-primary">
-                <div class="panel-heading" onclick="hideFilterCoord();">
+                <div class="panel-heading panel-clickable" onclick="hideFilterCoord();">
                   Coordinates selection
                   <span class="glyphicon glyphicon-chevron-down pull-right" style="display:none" id="down-coord"></span>
                   <span class="glyphicon glyphicon-chevron-up pull-right" id="up-coord"></span>
@@ -60,7 +63,7 @@
                           <select name="Gene" class="form-control input-sm user-success"></select>
                       </div>
                       <div class="col-sm-2 col-xs-6 col-md-2">
-                        <input type="button" id="update" value="Show data" class="btn btn-sm btn-primary col-xs-12"/>
+                        <input type="button" id="update" value="Show data" onclick="showData();" class="btn btn-sm btn-primary col-xs-12"/>
                       </div>
                     </div>
                   </div>
@@ -73,7 +76,7 @@
           <div class="row">
             <div id="chart-div-1">
               <div class="panel panel-primary">
-                <div class="panel-heading" onclick="hideFilterCoord();">
+                <div class="panel-heading panel-clickable" onclick="hideFilterCoord();">
                   Chart
                   <span class="glyphicon glyphicon-chevron-down pull-right" style="display:none" id="down-coord"></span>
                   <span class="glyphicon glyphicon-chevron-up pull-right" id="up-coord"></span>
@@ -89,7 +92,7 @@
           <div class="row">
             <div id="chart-div-2">
               <div class="panel panel-primary">
-                <div class="panel-heading" onclick="hideFilterCoord();">
+                <div class="panel-heading panel-clickable">
                   Chart
                   <span class="glyphicon glyphicon-chevron-down pull-right" style="display:none" id="down-coord"></span>
                   <span class="glyphicon glyphicon-chevron-up pull-right" id="up-coord"></span>
@@ -105,6 +108,3 @@
     </div>
   </div> <!-- end row containing all filters-->
 </div>
-<link rel="stylesheet" href="css/c3.css">
-<link rel="stylesheet" href="GetCSS.php?Module=genomic_browser&file=visual_explorer.css">
-<link rel="stylesheet" href="GetCSS.php?Module=genomic_browser&file=lite_viewer.css">

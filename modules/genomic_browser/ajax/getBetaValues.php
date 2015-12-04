@@ -56,15 +56,9 @@ ORDER  BY cpg,
 // TODO :: Add tr...catch for the Database exception
 $results = $DB->pselect($query, array() );
 
-// Arrange the results by calculation statics.
-$json = array();
-
 // return the results in JSON format
 header("content-type:application/json");
 ini_set('default_charset', 'utf-8');
-print(json_encode($json));
+print(json_encode($results));
 exit();
-
-
-
 ?>

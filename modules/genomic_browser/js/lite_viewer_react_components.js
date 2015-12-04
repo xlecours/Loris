@@ -44,7 +44,7 @@ var GenomicViewer = React.createClass({
             },
             success: function (data) {
                 that.setState({
-                    data: data,
+                    data: that.calculateGroupedValues(data),
                     isLoaded: true
                 });
             },
@@ -52,6 +52,10 @@ var GenomicViewer = React.createClass({
                 that.setState({ "error": "Unknown error loading data" });
             }
         });
+    },
+
+    calculateGroupedValues: function (data) {
+        return [{ x: 45, label: "cg0004301", median: 0.51, q1: 0.35, q3: 0.65, whiskerDown: 0.25, whiskerUp: 0.75, outlier: [0.9, 0.8, 0.1, 0.05] }, { x: 65, label: "cg0004301", median: 0.51, q1: 0.35, q3: 0.65, whiskerDown: 0.25, whiskerUp: 0.75, outlier: [0.9, 0.8, 0.1, 0.05] }];
     },
 
     filter: function () {
@@ -105,8 +109,6 @@ var Chart = React.createClass({
         };
     },
     render: function () {
-        var props = this.props;
-        var data = props.data;
         return React.createElement(
             'svg',
             {
@@ -117,6 +119,7 @@ var Chart = React.createClass({
             React.createElement(
                 'g',
                 { transform: 'translate(50,30)' },
+                React.createElement('g', { transform: 'translate(50,30)' }),
                 React.createElement(Title, {
                     text: 'My title'
                 }),
@@ -124,9 +127,9 @@ var Chart = React.createClass({
                 React.createElement(XAxis, null),
                 React.createElement(YAxis, null),
                 React.createElement(Boxplot, {
-                    data: props.data,
-                    width: props.width - props.margin.left - props.margin.right,
-                    height: props.height - props.margin.top - props.margin.bottom
+                    data: this.props.data,
+                    width: this.props.width - this.props.margin.left - this.props.margin.right,
+                    height: this.props.height - this.props.margin.top - this.props.margin.bottom
                 })
             )
         );
@@ -253,17 +256,17 @@ var Boxplot = React.createClass({
         var labels = data.map(function (point, i) {
             var median = React.createElement(
                 'text',
-                { x: xScale(point.x), y: yScale(1 - point.median), dx: '6', dy: '.3em', textAnchor: 'start', key: "a" + i },
+                { x: xScale(point.x), y: yScale(1 - point.median), dx: '-6', dy: '.3em', textAnchor: 'end', key: "a" + i },
                 point.median
             );
             var q1 = React.createElement(
                 'text',
-                { x: xScale(point.x) + xScale(15), y: yScale(1 - point.q1), dx: '-6', dy: '.3em', textAnchor: 'end', key: "b" + i },
+                { x: xScale(point.x) + xScale(21), y: yScale(1 - point.q1), dx: '-6', dy: '.3em', textAnchor: 'end', key: "b" + i },
                 point.q1
             );
             var q3 = React.createElement(
                 'text',
-                { x: xScale(point.x) + xScale(15), y: yScale(1 - point.q3), dx: '-6', dy: '.3em', textAnchor: 'end', key: "c" + i },
+                { x: xScale(point.x) + xScale(21), y: yScale(1 - point.q3), dx: '-6', dy: '.3em', textAnchor: 'end', key: "c" + i },
                 point.q3
             );
             var whiskersDown = React.createElement(
@@ -281,7 +284,7 @@ var Boxplot = React.createClass({
 
         return React.createElement(
             'g',
-            null,
+            { className: 'plotPannel' },
             verticalLines,
             boxes,
             medians,

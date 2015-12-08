@@ -53,5 +53,15 @@
           }   
         });
 
-        React.render(React.createElement(GenomicViewer, { DataURL: 'AjaxHelper.php?Module=genomic_browser&script=getBetaValues.php' }), document.getElementById('chart-placeholder-2'));
+        var chartContainer = document.getElementById('chart-placeholder-2');
+
+
+        React.render(React.createElement(
+            GenomicViewer,
+            {
+                DataURL: 'AjaxHelper.php?Module=genomic_browser&script=getBetaValues.php',
+                width: chartContainer.clientWidth,
+                height: 500
+            }
+        ), chartContainer);
     }

@@ -74,7 +74,7 @@
         </div>
         <div class="col-sm-12">
           <div class="row">
-            <div id="chart-div-1">
+            <div id="chart-div-2">
               <div class="panel panel-primary">
                 <div class="panel-heading panel-clickable" onclick="hideFilterCoord();">
                   Chart
@@ -82,7 +82,7 @@
                   <span class="glyphicon glyphicon-chevron-up pull-right" id="up-coord"></span>
                 </div>
                 <div class="panel-body" id="panel-body-coord">
-                  <div id="chart-placeholder-1"></div>
+                  <div id="chart-placeholder-2" class="chart-placeholder"></div>
                 </div>
               </div>
             </div>
@@ -90,7 +90,7 @@
         </div>
         <div class="col-sm-12">
           <div class="row">
-            <div id="chart-div-2">
+            <div id="chart-div-1">
               <div class="panel panel-primary">
                 <div class="panel-heading panel-clickable">
                   Chart
@@ -98,7 +98,7 @@
                   <span class="glyphicon glyphicon-chevron-up pull-right" id="up-coord"></span>
                 </div>
                 <div class="panel-body" id="panel-body-coord">
-                  <div id="chart-placeholder-2"></div>
+                  <div id="chart-placeholder-1" class="col-sm-12"></div>
                 </div>
               </div>
             </div>

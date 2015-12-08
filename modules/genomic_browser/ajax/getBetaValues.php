@@ -29,6 +29,13 @@ if (false) {
     exit(3);
 }
 
+// TODO :: Add params from $_SESSION
+$params = array(
+    'v_cpgchromosome' => $_REQUEST['chromosome'],
+    'v_cpgstartloc'   => $_REQUEST['startLoc'],
+    'v_cpgendloc'     => $_REQUEST['endLoc']
+);
+
 $DB          = Database::singleton();
 $query       = "
 SELECT genomic_cpg.cpg,
@@ -46,15 +53,15 @@ FROM   candidate
               AND genomic_cpg.visit_id = session.id )
 WHERE  candidate.entity_type = 'Human'
        AND candidate.active = 'Y'
-       AND genomic_cpg.chromosome = '1'
-       AND genomic_cpg.cpg_loc BETWEEN 1 AND 100000000
+       AND genomic_cpg.chromosome = :v_cpgchromosome
+       AND genomic_cpg.cpg_loc BETWEEN :v_cpgstartloc AND :v_cpgendloc
 ORDER  BY cpg,
           gender,
           pscid
 ";
 
 // TODO :: Add tr...catch for the Database exception
-$results = $DB->pselect($query, array() );
+$results = $DB->pselect($query, $params );
 
 // return the results in JSON format
 header("content-type:application/json");

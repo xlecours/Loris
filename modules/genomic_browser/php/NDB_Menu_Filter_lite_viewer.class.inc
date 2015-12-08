@@ -205,11 +205,13 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
         return array_merge(
             $baseDeps,
             array(
-             $baseurl . '/js/d3.min.js',
-             $baseurl . '/js/c3.min.js',
-             $baseurl . '/../modules/genomic_browser/js/genomic_browser.js',
-             $baseurl . '/../modules/genomic_browser/js/lite_viewer_react_components.js',
-             $baseurl . '/../modules/genomic_browser/js/lite_viewer.js',
+                $baseurl . '/js/d3.min.js',
+                $baseurl . '/js/c3.min.js',
+                $baseurl . '/../modules/genomic_browser/js/jstat.min.js',
+                $baseurl . '/../modules/genomic_browser/js/genomic_browser.js',
+                $baseurl . '/../modules/genomic_browser/js/lite_viewer_react_components.js',
+                $baseurl . '/../modules/genomic_browser/js/lite_viewer.js',
+                $baseurl . '/../modules/genomic_browser/js/jstat.min.js',
             )   
         );  
 

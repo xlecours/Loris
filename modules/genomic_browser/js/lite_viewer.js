@@ -3,9 +3,9 @@
 
         console.log('showData');
         var inputValues = {
-            chromosome: "1",
-            startLoc: 1,
-            endLoc: 100000000
+            chromosome: document.getElementsByName('Chromosome')[0].value,
+            startLoc: document.getElementsByName('Start_loc')[0].value,
+            endLoc: document.getElementsByName('End_loc')[0].value
         };
         $.ajax({
           url: "AjaxHelper.php?Module=genomic_browser&script=getOldFormat.php",
@@ -53,15 +53,18 @@
           }   
         });
 
+        $('#chart-placeholder-2 div').remove();
+
         var chartContainer = document.getElementById('chart-placeholder-2');
-
-
         React.render(React.createElement(
             GenomicViewer,
             {
                 DataURL: 'AjaxHelper.php?Module=genomic_browser&script=getBetaValues.php',
                 width: chartContainer.clientWidth,
-                height: 500
+                height: 500,
+                chromosome: inputValues.chromosome,
+                startLoc: inputValues.startLoc,
+                endLoc: inputValues.endLoc
             }
         ), chartContainer);
     }

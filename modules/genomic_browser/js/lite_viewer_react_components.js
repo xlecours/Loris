@@ -7,7 +7,7 @@
  */
 
 var GenomicViewer = React.createClass({
-    displayName: 'GenomicViewer',
+    displayName: "GenomicViewer",
 
     propTypes: {
         DataURL: React.PropTypes.string.isRequired
@@ -17,7 +17,10 @@ var GenomicViewer = React.createClass({
         return {
             width: 0,
             height: 0,
-            DataURL: ''
+            DataURL: "",
+            chromosome: "1",
+            startLoc: "1",
+            endLoc: "1"
         };
     },
 
@@ -25,20 +28,21 @@ var GenomicViewer = React.createClass({
         return {
             width: this.props.width,
             height: this.props.height,
-            data: this.showAll(),
+            data: [],
             isLoaded: false,
             loadedData: 0
         };
     },
 
-    showAll: function () {
+    componentDidMount: function () {
         var that = this;
+        var props = this.props;
         $.ajax(this.props.DataURL, {
             dataType: 'json',
             data: {
-                chromosome: "1",
-                startLoc: "1",
-                endLoc: "100000000"
+                chromosome: props.chromosome,
+                startLoc: props.startLoc,
+                endLoc: props.endLoc
             },
             xhr: function () {
                 var xhr = new window.XMLHttpRequest();
@@ -49,12 +53,12 @@ var GenomicViewer = React.createClass({
                 });
                 return xhr;
             },
-            success: function (data) {
+            success: (function (data) {
                 that.setState({
                     data: that.calculateGroupedValues(data),
                     isLoaded: true
                 });
-            },
+            }).bind(that),
             error: function (data) {
                 that.setState({ "error": "Unknown error loading data" });
             }
@@ -109,86 +113,107 @@ var GenomicViewer = React.createClass({
         }
 
         return aggregatedValues;
-        /*
-                return [
-                    {x: 45, name: "cg0004301", median: 0.51, q1: 0.35, q3: 0.65, whiskerDown: 0.15, whiskerUp: 0.75, outliers: [1.0, 0.8, 0.1, 0.05]},
-                    {x: 65, name: "cg0004302", median: 0.51, q1: 0.35, q3: 0.65, whiskerDown: 0.25, whiskerUp: 0.75, outliers: [0.9, 0.8, 0.1, 0.05]}
-                ];
-        */
+    },
+
+    shouldComponentUpdate: function (nextProps, nextState) {
+        return true;
     },
 
     render: function () {
         return React.createElement(
-            'div',
+            "div",
             null,
             React.createElement(Chart, {
-                className: 'chart-div',
+                className: "chart-div",
                 width: this.props.width,
                 height: this.props.height,
-                data: this.state.data })
+                data: this.state.data,
+                from: this.props.startLoc,
+                to: this.props.endLoc
+            })
         );
     }
 });
 
 var Chart = React.createClass({
-    displayName: 'Chart',
+    displayName: "Chart",
 
     getDefaultProps: function () {
         return {
-            margin: { top: 20, right: 100, bottom: 20, left: 20 },
+            margin: { top: 10, right: 20, bottom: 10, left: 20 },
+            yAxisWidth: 20,
+            topTitleHeight: 20,
+            xAxisHeight: 20,
+            leftLegendSpacing: 200,
+            from: 0,
+            to: 0,
             data: []
         };
     },
+
     getInitialState: function () {
         return {
             data: this.props.data
         };
     },
 
+    shouldComponentUpdate: function (nextProps, nextState) {
+        return true;
+    },
+
     render: function () {
+
+        var origin = {
+            x: this.props.margin.left + this.props.yAxisWidth,
+            y: this.props.height - this.props.xAxisHeight
+        };
 
         var xCoord = this.props.data.map(function (e) {
             return e.x;
         });
 
-        var xScale = d3.scale.linear().domain([jStat.min(xCoord), jStat.max(xCoord)]).range([0, this.props.width - (this.props.margin.right + this.props.margin.left)]);
+        var xScale = d3.scale.linear().domain([this.props.from, this.props.to]).range([origin.x + 15, this.props.width - this.props.margin.left - this.props.leftLegendSpacing - 15]);
 
-        var yScale = d3.scale.linear().domain([0, 1]).range([0, this.props.height - (this.props.margin.top + this.props.margin.bottom)]);
-
-        var t = `translate(0 ,${ this.props.margin.left }, ${ this.props.margin.top })`;
+        var yScale = d3.scale.linear().domain([0, 1]).range([origin.y, this.props.margin.top + this.props.topTitleHeight]);
 
         return React.createElement(
-            'svg',
+            "svg",
             {
-                className: 'box',
+                className: "chart",
                 width: this.props.width,
-                height: this.props.height,
-                transform: t
+                height: this.props.height
             },
             React.createElement(
-                'g',
+                "g",
                 null,
                 React.createElement(Title, {
-                    text: 'My title'
+                    text: "My title",
+                    x: (this.props.width - this.props.margin.left - this.props.yAxisWidth - this.props.leftLegendSpacing - this.props.margin.right) / 2 + this.props.margin.left + this.props.yAxisWidth,
+                    y: this.props.margin.top + this.props.topTitleHeight
                 }),
-                React.createElement(Legend, null),
+                React.createElement(Legend, {
+                    x: this.props.width - this.props.margin.right - this.props.leftLegendSpacing,
+                    y: this.props.margin.top + this.props.topTitleHeight,
+                    width: this.props.leftLegendSpacing,
+                    height: this.props.height - this.props.margin.top - this.props.topTitleHeight - this.props.margin.bottom - this.props.xAxisHeight
+                }),
                 React.createElement(YAxis, {
                     leftMargin: this.props.margin.left,
-                    topMargin: this.props.margin.top,
-                    width: '20',
-                    height: this.props.height - this.props.margin.top - this.props.margin.bottom,
+                    origin: origin,
+                    height: this.props.height - this.props.margin.top - this.props.topTitleHeight - this.props.margin.bottom - this.props.xAxisHeight,
                     yScale: yScale
                 }),
                 React.createElement(XAxis, {
-                    x1: this.props.margin.left,
-                    x2: this.props.width - this.props.margin.left - this.props.margin.right,
-                    y1: 0,
-                    y2: 100
+                    origin: origin,
+                    width: this.props.width - this.props.margin.left - this.props.margin.right - this.props.leftLegendSpacing - this.props.yAxisWidth,
+                    xScale: xScale
                 }),
                 React.createElement(Boxplot, {
                     width: this.props.width - this.props.margin.left - this.props.margin.right,
                     height: this.props.height - this.props.margin.top - this.props.margin.bottom,
-                    data: this.props.data
+                    data: this.props.data,
+                    xScale: xScale,
+                    yScale: yScale
                 })
             )
         );
@@ -196,12 +221,15 @@ var Chart = React.createClass({
 });
 
 var Boxplot = React.createClass({
-    displayName: 'Boxplot',
+    displayName: "Boxplot",
 
     getDefaultProps: function () {
         return {
             data: [],
-            width: 0
+            width: 0,
+            xScale: null,
+            yScale: null,
+            boxWidth: 15
         };
     },
 
@@ -211,65 +239,60 @@ var Boxplot = React.createClass({
 
     render: function () {
 
+        var xScale = this.props.xScale;
+        var yScale = this.props.yScale;
         var data = this.props.data;
-        var xCoord = data.map(function (e) {
-            return e.x;
-        });
-
-        var xScale = d3.scale.linear().domain([jStat.min(xCoord), jStat.max(xCoord)]).range([0, this.props.width]);
-
-        var yScale = d3.scale.linear().domain([0, 1]).range([0, this.props.height]);
+        var boxwidth = this.props.boxWidth;
 
         var boxes = this.props.data.map(function (point) {
             return React.createElement(SpreadBox, {
-                x: xScale(point.x),
+                x: xScale(point.x) - boxwidth / 2,
                 name: point.name,
-                median: yScale(1 - point.median),
-                width: 20,
-                q1: yScale(1 - point.q1),
-                q3: yScale(1 - point.q3),
-                whiskerUp: yScale(1 - point.whiskerUp),
-                whiskerDown: yScale(1 - point.whiskerDown),
+                median: yScale(point.median),
+                width: boxwidth,
+                q1: yScale(point.q1),
+                q3: yScale(point.q3),
+                whiskerUp: yScale(point.whiskerUp),
+                whiskerDown: yScale(point.whiskerDown),
                 outliers: point.outliers.map(function (value) {
-                    return yScale(1 - value);
+                    return yScale(value);
                 })
             });
         });
 
         var labels = data.map(function (point, i) {
             var median = React.createElement(
-                'text',
-                { x: xScale(point.x), y: yScale(1 - point.median), dx: '-6', dy: '.3em', textAnchor: 'end', key: "a" + i },
+                "text",
+                { x: xScale(point.x), y: yScale(point.median), dx: "-6", dy: ".3em", textAnchor: "end", key: "a" + i },
                 point.median
             );
             var q1 = React.createElement(
-                'text',
-                { x: xScale(point.x) + xScale(21), y: yScale(1 - point.q1), dx: '-6', dy: '.3em', textAnchor: 'end', key: "b" + i },
+                "text",
+                { x: xScale(point.x) + xScale(21), y: yScale(point.q1), dx: "-6", dy: ".3em", textAnchor: "end", key: "b" + i },
                 point.q1
             );
             var q3 = React.createElement(
-                'text',
-                { x: xScale(point.x) + xScale(21), y: yScale(1 - point.q3), dx: '-6', dy: '.3em', textAnchor: 'end', key: "c" + i },
+                "text",
+                { x: xScale(point.x) + xScale(21), y: yScale(point.q3), dx: "-6", dy: ".3em", textAnchor: "end", key: "c" + i },
                 point.q3
             );
             var whiskersDown = React.createElement(
-                'text',
-                { x: xScale(point.x), y: yScale(1 - point.whiskerDown), dx: '-6', dy: '.3em', textAnchor: 'end', key: "d" + i },
+                "text",
+                { x: xScale(point.x), y: yScale(point.whiskerDown), dx: "-6", dy: ".3em", textAnchor: "end", key: "d" + i },
                 point.whiskerDown
             );
             var whiskersUp = React.createElement(
-                'text',
-                { x: xScale(point.x), y: yScale(1 - point.whiskerUp), dx: '-6', dy: '.3em', textAnchor: 'end', key: "e" + i },
+                "text",
+                { x: xScale(point.x), y: yScale(point.whiskerUp), dx: "-6", dy: ".3em", textAnchor: "end", key: "e" + i },
                 point.whiskerUp
             );
             return [median, q1, q3, whiskersDown, whiskersUp];
         });
 
         return React.createElement(
-            'g',
+            "g",
             {
-                className: 'plotPannel',
-                translate: 'transform(30,50)'
+                className: "plotPannel"
             },
             boxes
         );
@@ -277,7 +300,7 @@ var Boxplot = React.createClass({
 });
 
 var SpreadBox = React.createClass({
-    displayName: 'SpreadBox',
+    displayName: "SpreadBox",
 
     getDefaultProps: function () {
         return {
@@ -300,47 +323,49 @@ var SpreadBox = React.createClass({
     render: function () {
         var xCenter = this.props.x + this.props.width * 0.5;
         var outliers = this.props.outliers.map(function (value) {
-            return React.createElement('circle', {
-                className: 'outlier',
+            return React.createElement("circle", {
+                className: "outlier",
                 cx: xCenter,
                 cy: value,
-                r: '2'
+                r: "2"
             });
         });
-        console.log(this.props.x);
 
         return React.createElement(
-            'g',
-            { className: 'spread-box' },
-            React.createElement('line', {
-                className: 'center-line',
+            "g",
+            {
+                className: "spread-box",
+                "data-probename": this.props.name
+            },
+            React.createElement("line", {
+                className: "center-line",
                 x1: xCenter,
                 x2: xCenter,
                 y1: this.props.whiskerUp,
                 y2: this.props.whiskerDown
             }),
-            React.createElement('rect', {
+            React.createElement("rect", {
                 height: this.props.q1 - this.props.q3,
                 width: this.props.width,
                 x: this.props.x,
                 y: this.props.q3
             }),
-            React.createElement('line', {
-                className: 'median',
+            React.createElement("line", {
+                className: "median",
                 x1: this.props.x,
                 x2: this.props.x + this.props.width,
                 y1: this.props.median,
                 y2: this.props.median
             }),
-            React.createElement('line', {
-                className: 'whisker',
+            React.createElement("line", {
+                className: "whisker",
                 x1: this.props.x,
                 x2: this.props.x + this.props.width,
                 y1: this.props.whiskerUp,
                 y2: this.props.whiskerUp
             }),
-            React.createElement('line', {
-                className: 'whisker',
+            React.createElement("line", {
+                className: "whisker",
                 x1: this.props.x,
                 x2: this.props.x + this.props.width,
                 y1: this.props.whiskerDown,
@@ -352,68 +377,141 @@ var SpreadBox = React.createClass({
 });
 
 var Title = React.createClass({
-    displayName: 'Title',
+    displayName: "Title",
 
     render: function () {
         return React.createElement(
-            'text',
-            null,
+            "text",
+            {
+                className: "chart-title",
+                x: this.props.x,
+                y: this.props.y,
+                textAnchor: "middle"
+            },
             this.props.text
         );
     }
 });
 
 var Legend = React.createClass({
-    displayName: 'Legend',
+    displayName: "Legend",
 
     render: function () {
-        return React.createElement(
-            'text',
-            null,
-            'Legend'
-        );
+        return React.createElement("rect", {
+            x: this.props.x,
+            y: this.props.y,
+            width: this.props.width,
+            height: this.props.height
+        });
     }
 });
 
 var XAxis = React.createClass({
-    displayName: 'XAxis',
+    displayName: "XAxis",
+
+    getDefaultProps: function () {
+        var xScale = d3.scale.linear().domain([0, 1]).range([0, 1]);
+
+        return {
+            label: "",
+            origin: 0,
+            xCanter: 0,
+            width: 0,
+            xScale: { xScale },
+            ticks: []
+        };
+    },
+
+    render: function () {
+
+        var props = this.props;
+        var ticks = props.xScale.ticks(10).map(function (t) {
+            return React.createElement(XTick, {
+                x: props.xScale(t),
+                y: props.origin.y,
+                label: t
+            });
+        });
+
+        return React.createElement(
+            "g",
+            null,
+            React.createElement(
+                "text",
+                null,
+                this.props.label
+            ),
+            React.createElement("line", {
+                x1: this.props.origin.x,
+                x2: this.props.origin.x + this.props.width,
+                y1: this.props.origin.y,
+                y2: this.props.origin.y
+            }),
+            ticks
+        );
+    }
+
+});
+
+var YAxis = React.createClass({
+    displayName: "YAxis",
 
     getDefaultProps: function () {
         return {
             label: "",
-            x1: 0,
-            x2: 0,
-            y1: 0,
-            y2: 0,
-            ticks: []
+            origin: 0,
+            width: 0,
+            yScale: null
         };
     },
+
     render: function () {
         return React.createElement(
-            'g',
+            "g",
             null,
-            React.createElement('line', {
-                x1: this.props.x1,
-                x2: this.props.x2,
-                y1: this.props.y1,
-                y2: this.props.y2
+            React.createElement("line", {
+                x1: this.props.origin.x,
+                x2: this.props.origin.x,
+                y1: this.props.origin.y,
+                y2: this.props.origin.y - this.props.height
             })
         );
     }
 });
 
-var YAxis = React.createClass({
-    displayName: 'YAxis',
+var XTick = React.createClass({
+    displayName: "XTick",
+
+    getDefaultProps: function () {
+        return {
+            label: "",
+            x: 0,
+            y: 0
+        };
+    },
 
     render: function () {
+        var props = this.props;
         return React.createElement(
-            'g',
+            "g",
             null,
-            React.createElement('line', {
-                x1: this.props.leftMargin,
-                x2: this.props.leftMargin,
-                y1: this.props.topMargin,
-                y2: this.props.yScale(1)
+            React.createElement(
+                "text",
+                {
+                    className: "x-axis-ticks-label",
+                    x: props.x,
+                    y: props.y + 5,
+                    dy: "1em",
+                    textAnchor: "middle"
+                },
+                props.label
+            ),
+            React.createElement("line", {
+                className: "x-axis-ticks-line",
+                x1: props.x,
+                x2: props.x,
+                y1: props.y,
+                y2: props.y + 5
             })
         );
     }

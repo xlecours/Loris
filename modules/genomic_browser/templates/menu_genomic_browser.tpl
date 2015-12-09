@@ -14,7 +14,7 @@
   <div class="row">
     <div class="tab-content">
       <div class="tab-pane active">
-        <form method="post" action="main.php?test_name=genomic_browser">
+        <form method="post" action="{$baseurl}/genomic_browser/">
           <div class="col-sm-12">
             <div class="row">
               <div class="form-group col-sm-8">
@@ -88,7 +88,7 @@
                     <div class="visible-xs col-xs-12"> </div>
                     <div class="visible-xs col-xs-12"> </div>
                     <div class="col-sm-6 col-xs-12 col-md-5">
-                      <input type="button" name="reset" value="Clear Form" class="btn btn-sm btn-primary col-xs-12" onclick="location.href='main.php?test_name=genomic_browser&reset=true'"/>
+                      <input type="button" name="reset" value="Clear Form" class="btn btn-sm btn-primary col-xs-12" onclick="location.href='{$baseurl}/genomic_browser/?reset=true'"/>
                     </div>
                   </div>
                 </div>
@@ -124,7 +124,7 @@
           <th>No.</th>
           <!-- print out column headings - quick & dirty hack -->
           {section name=header loop=$headers}
-            <th><a href="main.php?test_name=genomic_browser&filter[order][field]={$headers[header].name}&filter[order][fieldOrder]={$headers[header].fieldOrder}">{$headers[header].displayName}</a></th>
+            <th><a href="{$baseurl}/genomic_browser/?filter[order][field]={$headers[header].name}&filter[order][fieldOrder]={$headers[header].fieldOrder}">{$headers[header].displayName}</a></th>
           {/section}
         </tr>
       </thead>
@@ -204,7 +204,7 @@ var pageLinks = RPaginationLinks(
     RowsPerPage : {$rowsPerPage},
     Total: {$TotalItems},
     onChangePage: function(pageNum) {
-        location.href="{$baseurl}/main.php?test_name=genomic_browser&pageID=" + pageNum
+        location.href="{$baseurl}/genomic_browser/?pageID=" + pageNum
     },
     Active: {$pageID}
 });

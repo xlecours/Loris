@@ -53,6 +53,8 @@ var GenomicViewer = React.createClass({
                 return xhr;
             },
             success: function(data) {
+                console.log('data');
+                console.log(data);
                 that.setState({
                     data : that.calculateGroupedValues(data),
                     isLoaded : true
@@ -67,28 +69,33 @@ var GenomicViewer = React.createClass({
     calculateGroupedValues: function (data) {
 
         var datadict = {};
-        var aggregatedValues = [];
+        var aggregatedValues = {};
 
         var formatedData = data.map(function(elem) {
 
             datadict[elem.cpg] = {genomic_location: Number(elem.cpg_loc)};
-
-            return [elem.cpg, Number(elem.beta_value)];
+            var id = elem.cpg + "_" + elem.gender;
+            return [id, Number(elem.beta_value)];
 
         }).reduce(function(last, now) {
 
+            var uniqueId = now[0];
+            var beta_value = now[1]
             if (Array.isArray(last[now[0]])) {
-                last[now[0]].push(now[1]);
+                last[uniqueId].push(beta_value);
             } else {
-                last[now[0]] = [now[1]];
+                last[uniqueId] = [beta_value];
             }
 
             return last;
 
         }, {});
 
-        for(var cpg in formatedData) {
-            var beta_values = formatedData[cpg].sort();
+        console.log('formatedData');
+        console.log(formatedData);
+
+        for(var group in formatedData) {
+            var beta_values = formatedData[group].sort();
             var quartiles = jStat.quartiles(beta_values);
             var iqr = quartiles[2] - quartiles[0];
             var whiskerUp = jStat.max(beta_values.filter(function(x) {
@@ -100,19 +107,38 @@ var GenomicViewer = React.createClass({
             var outliers = beta_values.filter(function(x) {
                 return x < (quartiles[0] - 1.5 * iqr) || x > (quartiles[2] + 1.5 * iqr)
             });
+            var arayedId = group.split('_');
+            var cpg_name = arayedId[0];
+            var group_label = arayedId[1];
 
-            aggregatedValues.push({
-                x: datadict[cpg].genomic_location,
-                name: cpg,
-                q1: quartiles[0],
-                median: quartiles[1],
-                q3: quartiles[2],
-                whiskerUp: whiskerUp,
-                whiskerDown: whiskerDown,
-                outliers: outliers
-            });
+            if(typeof aggregatedValues[cpg_name] != "undefined") {
+                aggregatedValues[cpg_name].grouped_values.push({
+                    group_label: group_label,
+                    q1: quartiles[0],
+                    median: quartiles[1],
+                    q3: quartiles[2],
+                    whiskerUp: whiskerUp,
+                    whiskerDown: whiskerDown,
+                    outliers: outliers
+                });
+
+            } else {
+                aggregatedValues[cpg_name] = {
+                    x: datadict[cpg_name].genomic_location,
+                    grouped_values: [{
+                        group_label: group_label,
+                        q1: quartiles[0],
+                        median: quartiles[1],
+                        q3: quartiles[2],
+                        whiskerUp: whiskerUp,
+                        whiskerDown: whiskerDown,
+                        outliers: outliers
+                    }]
+                };
+            }
         }
-
+        console.log('aggregatedValues');
+        console.log(aggregatedValues);
         return aggregatedValues;
     },
 
@@ -168,10 +194,6 @@ var Chart = React.createClass({
             x: this.props.margin.left + this.props.yAxisWidth,
             y: this.props.height - this.props.xAxisHeight
         };
-
-        var xCoord = this.props.data.map(function(e) {
-            return e.x;
-        });
 
         var xScale = d3.scale.linear()
             .domain([this.props.from,this.props.to])
@@ -235,7 +257,7 @@ var Boxplot = React.createClass({
             width: 0,
             xScale: null,
             yScale: null,
-            boxWidth: 15
+            boxWidth: 40
         }
     },
 
@@ -249,23 +271,45 @@ var Boxplot = React.createClass({
         var yScale = this.props.yScale;
         var data = this.props.data;
         var boxwidth = this.props.boxWidth;
+        var boxes = [];
 
-        var boxes = this.props.data.map(function(point) {
-            return (
-                <SpreadBox
-                    x={xScale(point.x) - (boxwidth/2)}
-                    name={point.name}
-                    median={yScale(point.median)}
-                    width={boxwidth}
-                    q1={yScale(point.q1)}
-                    q3={yScale(point.q3)}
-                    whiskerUp={yScale(point.whiskerUp)}
-                    whiskerDown={yScale(point.whiskerDown)}
-                    outliers={point.outliers.map(function (value) {return yScale(value)})}
-                />
+        Object.keys(data).forEach( function(key) {
+            var point = data[key];
+            var group_size = point.grouped_values.length;
+            boxes.push(
+                point.grouped_values.map(function(elem, index) {
+
+                    var x = point.x
+                    var elemWidth = boxwidth / group_size;
+
+                    return (
+                        <SpreadBox
+                            x={xScale(x) - (boxwidth/2) + elemWidth * index}
+                            name={key}
+                            group_label={elem.group_label}
+                            median={yScale(elem.median)}
+                            width={elemWidth}
+                            q1={yScale(elem.q1)}
+                            q3={yScale(elem.q3)}
+                            whiskerUp={yScale(elem.whiskerUp)}
+                            whiskerDown={yScale(elem.whiskerDown)}
+                            outliers={elem.outliers.map(function (value) {return yScale(value)})}
+                        />
+                    )
+                }).reduce(function(last, now) {
+                    console.log('last');
+                    console.log(last);
+                    console.log('now');
+                    console.log(now);
+                    last.push(now)
+                    return last;
+                }, [])
             );
         });
 
+        console.log("boxes");
+        console.log(boxes);
+/*
         var labels = data.map(function(point, i) {
             var median = (<text x={xScale(point.x)} y={yScale(point.median)} dx="-6" dy=".3em" textAnchor="end" key={"a"+i}>{point.median}</text>);
             var q1 = (<text x={xScale(point.x) + xScale(21)} y={yScale(point.q1)} dx="-6" dy=".3em" textAnchor="end" key={"b"+i}>{point.q1}</text>);
@@ -276,7 +320,7 @@ var Boxplot = React.createClass({
                 [median, q1, q3, whiskersDown, whiskersUp]
             )
         });
-
+*/
         return (
             <g
                 className="plotPannel"

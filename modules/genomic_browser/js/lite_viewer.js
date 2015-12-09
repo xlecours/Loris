@@ -61,7 +61,7 @@
             {
                 DataURL: 'AjaxHelper.php?Module=genomic_browser&script=getBetaValues.php',
                 width: chartContainer.clientWidth,
-                height: 300,
+                height: 400,
                 chromosome: inputValues.chromosome,
                 startLoc: inputValues.startLoc,
                 endLoc: inputValues.endLoc

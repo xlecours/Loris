@@ -61,10 +61,12 @@
             {
                 DataURL: 'AjaxHelper.php?Module=genomic_browser&script=getBetaValues.php',
                 width: chartContainer.clientWidth,
-                height: 500,
+                height: 300,
                 chromosome: inputValues.chromosome,
                 startLoc: inputValues.startLoc,
                 endLoc: inputValues.endLoc
             }
         ), chartContainer);
     }
+
+    $('[data-toggle="tooltip"]').tooltip();

@@ -1,0 +1,70 @@
+#chartContainer {
+    font-family: sans-serif;
+    font-size: 8px;
+}
+
+.chart-placeholder {
+    border: thick solid #dddddd;
+    border-width: 1px;
+}
+
+.spread-box:hover .box-label {
+    /* display: initial; */
+    font-size: 10px;
+}
+
+.median {
+    stroke:rgb(255,255,255);
+    stroke-width:1;
+}
+
+.chart rect{
+    fill: steelblue;
+    stroke: #333;
+    stroke-width: 1px;
+}
+
+.chart .axis line{
+    stroke: #000;
+    stroke-width: 1px;
+}
+
+.center-line {
+    stroke-dasharray: 3,3;
+    stroke: #333;
+}
+
+.outlier {
+    fill: steelblue;
+    stroke: #000;
+    stroke-width: 1px;
+}
+
+.whisker {
+    stroke:rgb(0,0,0);
+    stroke-width:1;
+}
+
+.x-axis-ticks-label {
+    font-family: sans-serif;
+    font-size: 10px;
+    color: #333
+}
+
+.x-axis-label {
+    font-family: sans-serif;
+    font-size: 1em;
+    color: #333
+}
+
+.y-axis-label {
+    font-family: sans-serif;
+    font-size: 1em;
+    color: #333
+}
+
+.y-axis-ticks-label {
+    font-family: sans-serif;
+    font-size: 10px;
+    color: #333
+}

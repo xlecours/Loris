@@ -143,7 +143,7 @@ var Chart = React.createClass({
             margin: { top: 10, right: 20, bottom: 10, left: 20 },
             yAxisWidth: 20,
             topTitleHeight: 20,
-            xAxisHeight: 20,
+            xAxisHeight: 40,
             leftLegendSpacing: 200,
             from: 0,
             to: 0,
@@ -198,15 +198,18 @@ var Chart = React.createClass({
                     height: this.props.height - this.props.margin.top - this.props.topTitleHeight - this.props.margin.bottom - this.props.xAxisHeight
                 }),
                 React.createElement(YAxis, {
+                    label: "beta value",
                     leftMargin: this.props.margin.left,
                     origin: origin,
                     height: this.props.height - this.props.margin.top - this.props.topTitleHeight - this.props.margin.bottom - this.props.xAxisHeight,
                     yScale: yScale
                 }),
                 React.createElement(XAxis, {
+                    label: "genomic location",
                     origin: origin,
                     width: this.props.width - this.props.margin.left - this.props.margin.right - this.props.leftLegendSpacing - this.props.yAxisWidth,
-                    xScale: xScale
+                    xScale: xScale,
+                    height: this.props.xAxisHeight
                 }),
                 React.createElement(Boxplot, {
                     width: this.props.width - this.props.margin.left - this.props.margin.right,
@@ -320,6 +323,15 @@ var SpreadBox = React.createClass({
         console.log(this.props.name + " mounted");
     },
 
+    onMouseOver: function (e) {
+        alert(e.clientX);
+        return React.createElement(
+            "text",
+            { x: "20", y: "20" },
+            "BOB!!"
+        );
+    },
+
     render: function () {
         var xCenter = this.props.x + this.props.width * 0.5;
         var outliers = this.props.outliers.map(function (value) {
@@ -335,7 +347,10 @@ var SpreadBox = React.createClass({
             "g",
             {
                 className: "spread-box",
-                "data-probename": this.props.name
+                title: this.props.name,
+                "data-toggle": "tooltip",
+                "data-placement": "right",
+                onMouseOver: this.onMouseOver
             },
             React.createElement("line", {
                 className: "center-line",
@@ -414,9 +429,9 @@ var XAxis = React.createClass({
 
         return {
             label: "",
-            origin: 0,
-            xCanter: 0,
+            origin: { x: 0, y: 0 },
             width: 0,
+            height: 0,
             xScale: { xScale },
             ticks: []
         };
@@ -435,17 +450,23 @@ var XAxis = React.createClass({
 
         return React.createElement(
             "g",
-            null,
+            { className: "axis", id: "x-axis" },
             React.createElement(
                 "text",
-                null,
-                this.props.label
+                {
+                    x: props.origin.x + props.width,
+                    y: props.origin.y + props.height,
+                    dx: "0",
+                    dy: "-0.5em",
+                    textAnchor: "end"
+                },
+                props.label
             ),
             React.createElement("line", {
-                x1: this.props.origin.x,
-                x2: this.props.origin.x + this.props.width,
-                y1: this.props.origin.y,
-                y2: this.props.origin.y
+                x1: props.origin.x,
+                x2: props.origin.x + props.width,
+                y1: props.origin.y,
+                y2: props.origin.y
             }),
             ticks
         );
@@ -457,24 +478,53 @@ var YAxis = React.createClass({
     displayName: "YAxis",
 
     getDefaultProps: function () {
+        var yScale = d3.scale.linear().domain([0, 1]).range([0, 1]);
+
         return {
             label: "",
             origin: 0,
             width: 0,
-            yScale: null
+            yScale: { yScale },
+            ticks: []
         };
     },
 
     render: function () {
+
+        var props = this.props;
+        var tickValues = [0, 0.2, 0.6, 1];
+        var ticks = tickValues.map(function (t) {
+            return React.createElement(YTick, {
+                x: props.origin.x,
+                y: props.yScale(t),
+                label: t
+            });
+        });
+        var dx = "-" + props.label.length + "em";
+
         return React.createElement(
             "g",
-            null,
+            { className: "axis", id: "y-axis" },
+            React.createElement(
+                "text",
+                {
+                    className: "y-axis-label",
+                    x: props.origin.x,
+                    y: props.yScale(1),
+                    dx: dx,
+                    dy: "-1em",
+                    textAnchor: "start",
+                    transform: "translate(0,0) rotate(-90)"
+                },
+                props.label
+            ),
             React.createElement("line", {
-                x1: this.props.origin.x,
-                x2: this.props.origin.x,
-                y1: this.props.origin.y,
-                y2: this.props.origin.y - this.props.height
-            })
+                x1: props.origin.x,
+                x2: props.origin.x,
+                y1: props.yScale(0),
+                y2: props.yScale(1)
+            }),
+            ticks
         );
     }
 });
@@ -494,7 +544,7 @@ var XTick = React.createClass({
         var props = this.props;
         return React.createElement(
             "g",
-            null,
+            { className: "axis" },
             React.createElement(
                 "text",
                 {
@@ -512,6 +562,44 @@ var XTick = React.createClass({
                 x2: props.x,
                 y1: props.y,
                 y2: props.y + 5
+            })
+        );
+    }
+});
+
+var YTick = React.createClass({
+    displayName: "YTick",
+
+    getDefaultProps: function () {
+        return {
+            label: "",
+            x: 0,
+            y: 0
+        };
+    },
+
+    render: function () {
+        var props = this.props;
+        return React.createElement(
+            "g",
+            { className: "axis" },
+            React.createElement(
+                "text",
+                {
+                    className: "y-axis-ticks-label",
+                    x: props.x - 6,
+                    y: props.y,
+                    dy: ".3em",
+                    textAnchor: "end"
+                },
+                props.label
+            ),
+            React.createElement("line", {
+                className: "y-axis-ticks-line",
+                x1: props.x,
+                x2: props.x - 5,
+                y1: props.y,
+                y2: props.y
             })
         );
     }

@@ -20,7 +20,8 @@ var GenomicViewer = React.createClass({
             DataURL: "",
             chromosome: "1",
             startLoc: "1",
-            endLoc: "1"
+            endLoc: "1",
+            groupBy: "gender"
         };
     },
 
@@ -34,9 +35,14 @@ var GenomicViewer = React.createClass({
         };
     },
 
+    addGroup: function (group) {
+        this.setState({ groupBy: group });
+    },
+
     componentDidMount: function () {
         var that = this;
         var props = this.props;
+        that.addGroup("gender");
         $.ajax(this.props.DataURL, {
             dataType: 'json',
             data: {
@@ -57,7 +63,7 @@ var GenomicViewer = React.createClass({
                 console.log('data');
                 console.log(data);
                 that.setState({
-                    data: that.calculateGroupedValues(data),
+                    data: that.calculateGroupedValues(data, that.state.groupBy),
                     isLoaded: true
                 });
             }).bind(that),
@@ -67,7 +73,7 @@ var GenomicViewer = React.createClass({
         });
     },
 
-    calculateGroupedValues: function (data) {
+    calculateGroupedValues: function (data, groupBy) {
 
         var datadict = {};
         var aggregatedValues = {};
@@ -75,7 +81,11 @@ var GenomicViewer = React.createClass({
         var formatedData = data.map(function (elem) {
 
             datadict[elem.cpg] = { genomic_location: Number(elem.cpg_loc) };
-            var id = elem.cpg + "_" + elem.gender;
+
+            console.log(groupBy);
+
+            var id = elem.cpg + "_" + elem[groupBy];
+
             return [id, Number(elem.beta_value)];
         }).reduce(function (last, now) {
 
@@ -135,8 +145,6 @@ var GenomicViewer = React.createClass({
                 };
             }
         }
-        console.log('aggregatedValues');
-        console.log(aggregatedValues);
         return aggregatedValues;
     },
 
@@ -153,6 +161,7 @@ var GenomicViewer = React.createClass({
                 width: this.props.width,
                 height: this.props.height,
                 data: this.state.data,
+                chromosome: this.props.chromosome,
                 from: this.props.startLoc,
                 to: this.props.endLoc
             })
@@ -170,6 +179,7 @@ var Chart = React.createClass({
             topTitleHeight: 20,
             xAxisHeight: 40,
             leftLegendSpacing: 200,
+            chromosome: 0,
             from: 0,
             to: 0,
             data: []
@@ -197,6 +207,8 @@ var Chart = React.createClass({
 
         var yScale = d3.scale.linear().domain([0, 1]).range([origin.y, this.props.margin.top + this.props.topTitleHeight]);
 
+        var title = "Beta values of participants grouped by gender for CpGs located on Chr" + this.props.chromosome + ":" + this.props.from + "-" + this.props.to;
+
         return React.createElement(
             "svg",
             {
@@ -208,7 +220,7 @@ var Chart = React.createClass({
                 "g",
                 null,
                 React.createElement(Title, {
-                    text: "My title",
+                    text: title,
                     x: (this.props.width - this.props.margin.left - this.props.yAxisWidth - this.props.leftLegendSpacing - this.props.margin.right) / 2 + this.props.margin.left + this.props.yAxisWidth,
                     y: this.props.margin.top + this.props.topTitleHeight
                 }),

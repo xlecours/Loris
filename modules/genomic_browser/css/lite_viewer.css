@@ -7,7 +7,7 @@
 }
 
 #chart-container {
-    background-color: yellow;
+    background-color: #FFFFFF;
     position: relative;
 }
 
@@ -24,6 +24,11 @@
     position: relative;
 }
 
+.legend {
+    stroke: #333;
+    stroke-width: 1px;
+    fill: white;
+}
 /*
     Axis
 */

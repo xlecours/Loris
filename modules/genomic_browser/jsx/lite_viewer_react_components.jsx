@@ -20,7 +20,7 @@ var GenomicViewer = React.createClass({
             chromosome: "1",
             startLoc: "1",
             endLoc: "1",
-            groupBy: "gender"
+            groupBy: "gender",
         }
     },
 
@@ -29,6 +29,7 @@ var GenomicViewer = React.createClass({
             width: this.props.width,
             height: this.props.height,
             data: [],
+            summaryItems: [],
             isLoaded: false,
             loadedData: 0
         }
@@ -37,8 +38,13 @@ var GenomicViewer = React.createClass({
     addGroup: function (group) {
         this.setState({groupBy: group});
     },
-    
+
+    handleResize: function(event) {
+        console.log('resizing');
+    },
+
     componentDidMount: function () {
+        window.addEventListener('resize', this.handleResize);
         var that = this;
         var props = this.props;
         that.addGroup("gender");
@@ -99,6 +105,7 @@ var GenomicViewer = React.createClass({
 
         for(var group in formatedData) {
             var beta_values = formatedData[group].sort();
+            var n = beta_values.lenght;
             var quartiles = jStat.quartiles(beta_values);
             var iqr = quartiles[2] - quartiles[0];
             var whiskerUp = jStat.max(beta_values.filter(function(x) {
@@ -117,12 +124,13 @@ var GenomicViewer = React.createClass({
             if(typeof aggregatedValues[cpg_name] != "undefined") {
                 aggregatedValues[cpg_name].grouped_values.push({
                     group_label: group_label,
-                    q1: quartiles[0],
-                    median: quartiles[1],
-                    q3: quartiles[2],
-                    whiskerUp: whiskerUp,
-                    whiskerDown: whiskerDown,
-                    outliers: outliers
+                    n: n,
+                    q1: quartiles[0].toFixed(3),
+                    median: quartiles[1].toFixed(3),
+                    q3: quartiles[2].toFixed(3),
+                    whiskerUp: whiskerUp.toFixed(3),
+                    whiskerDown: whiskerDown.toFixed(3),
+                    outliers: outliers.map(function(o) {return o.toFixed(3)})
                 });
 
             } else {
@@ -130,12 +138,13 @@ var GenomicViewer = React.createClass({
                     x: datadict[cpg_name].genomic_location,
                     grouped_values: [{
                         group_label: group_label,
-                        q1: quartiles[0],
-                        median: quartiles[1],
-                        q3: quartiles[2],
-                        whiskerUp: whiskerUp,
-                        whiskerDown: whiskerDown,
-                        outliers: outliers
+                        n: n,
+                        q1: quartiles[0].toFixed(3),
+                        median: quartiles[1].toFixed(3),
+                        q3: quartiles[2].toFixed(3),
+                        whiskerUp: whiskerUp.toFixed(3),
+                        whiskerDown: whiskerDown.toFixed(3),
+                        outliers: outliers.map(function(o) {return o.toFixed(3)})
                     }]
                 };
             }
@@ -145,6 +154,13 @@ var GenomicViewer = React.createClass({
 
     shouldComponentUpdate: function(nextProps, nextState) {
         return true;
+    },
+
+    myFunction: function (event) {
+        var boxName = $(event.currentTarget).attr("title");
+        var item = {};
+        item[boxName] = this.state.data[boxName]
+        this.setState({summaryItems: [item]});
     },
 
     render: function () {
@@ -158,9 +174,83 @@ var GenomicViewer = React.createClass({
                     chromosome={this.props.chromosome}
                     from={this.props.startLoc}
                     to={this.props.endLoc}
+                    onClickHandler={this.myFunction}
                 >
                 </Chart>
-                <div id="info-panel"></div>
+                <InfoPanel
+                    id="infoPannel"
+                    data={this.state.summaryItems}
+                />
+            </div>
+        );
+    }
+});
+
+var InfoPanel = React.createClass({
+    getDefaultProps: function () {
+        return {
+            data: []
+        }
+    },
+
+    getInitialState: function () {
+        return {
+            items: this.props.data
+        }
+    },
+
+    shouldComponentUpdate: function(nextProps, nextState) {
+        return true;
+    },
+
+    render: function () {
+        var info = this.props.data.map(function(o, i) {
+            var labels = Object.keys(o);
+            var content = labels.map(function (label, j) {
+
+                var rowObject = o[label];
+                var rowItems = rowObject.grouped_values.map(function(group, k) {
+                    return (
+                        <tr>
+                            <td>{group.group_label}</td>
+                            <td>{group.n}</td>
+                            <td>{group.whiskerDown}</td>
+                            <td>{group.q1}</td>
+                            <td>{group.median}</td>
+                            <td>{group.q3}</td>
+                            <td>{group.whiskerUp}</td>
+                            <td>{group.outliers}</td>
+                        </tr>
+                    )
+                });
+
+                return (
+                    <div
+                        key={ String.fromCharCode(65 + i, 65 + j)}
+                    >
+                        <table>
+                            <caption>{label}</caption>
+                            <th>
+                                <td>Group</td>
+                                <td>n</td>
+                                <td>Low</td>
+                                <td>Q1</td>
+                                <td>Median</td>
+                                <td>Q3</td>
+                                <td>High</td>
+                                <td>Outliers</td>
+                            </th>
+                            {rowItems}
+                        </table>
+                    </div>
+                )
+            });
+            return content;
+        });
+
+        return (
+            <div id="info-panel">
+            {info}
             </div>
         );
     }
@@ -177,7 +267,8 @@ var Chart = React.createClass({
             leftLegendSpacing: 200,
             chromosome: 0,
             from: 0,
-            to: 0
+            to: 0,
+            onClickHandler: null
         }
     },
 
@@ -246,6 +337,7 @@ var Chart = React.createClass({
                         data={this.props.data}
                         xScale={xScale}
                         yScale={yScale}
+                        onClickHandler={this.props.onClickHandler}
                     />
                 </g>
             </svg>
@@ -253,6 +345,38 @@ var Chart = React.createClass({
     }
 });
 
+
+/*
+    Boxplot class
+    data should look like:
+
+ {
+     "item1":{
+        "x":91194674,
+        "grouped_values":[
+            {"group_label":"Male","q1":0.072003702,"median":0.079377803,"q3":0.084961371,"whiskerUp":0.097754396,"whiskerDown":0.053048172,"outliers":[0.127140137]},
+            {"group_label":"Female","q1":0.070308489,"median":0.07845805,"q3":0.089381738,"whiskerUp":0.109469795,"whiskerDown":0.058080513,"outliers":[]},
+            ...
+        ]
+     },
+    "item2":{
+        "x": number
+        "grouped_values": [...]
+     },
+     ...
+ }
+
+
+ <Boxplot
+     width={this.props.width - this.props.margin.left - this.props.margin.right}
+     height={this.props.height - this.props.margin.top - this.props.margin.bottom}
+     data={this.props.data}
+     xScale={xScale}
+     yScale={yScale}
+     onClickHandler={this.props.onClickHandler}
+ />
+
+ */
 var Boxplot = React.createClass({
 
 
@@ -262,7 +386,8 @@ var Boxplot = React.createClass({
             width: 0,
             xScale: null,
             yScale: null,
-            boxWidth: 40
+            boxWidth: 40,
+            onClickHandler: null
         }
     },
 
@@ -270,20 +395,11 @@ var Boxplot = React.createClass({
         console.log("Boxplot loaded");
     },
 
-    showTooltip: function (event) {
-        console.log(event.currentTarget);
-    },
-
     handleClick: function(event) {
-        console.log(this);
-        /*
-        console.log(event);
-        console.log(event.currentTarget);
-        */
         var boxName = $(event.currentTarget).attr("title");
-        console.log(boxName);
-        var content = JSON.stringify(this.props.data[boxName]);
-        $('#info-panel').html(content);
+        var content = this.props.data[boxName];
+        var summary = <Mock />;
+        ReactDOM.render(summary, 'info-panel');
     },
 
     render: function () {
@@ -294,6 +410,8 @@ var Boxplot = React.createClass({
         var data = this.props.data;
         var boxwidth = this.props.boxWidth;
         var boxes = [];
+
+        console.log(JSON.stringify(this.props.data));
 
         Object.keys(data).forEach( function(key) {
             var point = data[key];
@@ -322,14 +440,15 @@ var Boxplot = React.createClass({
             );
         });
 
-        boxes = boxes.map(function(e) {
+        boxes = boxes.map(function(spreadBox) {
             return (
                 <g
                     className="group-box"
-                    title={e[0].props.name}
-                    onClick={that.handleClick}
+                    title={spreadBox[0].props.name}
+                    //onClick={that.handleClick}
+                    onClick={that.props.onClickHandler}
                 >
-                    {e.map(function(d) { return d })}
+                    {spreadBox.map(function(d) { return d })}
                 </g>
             )
         });
@@ -456,6 +575,7 @@ var Legend = React.createClass({
     render: function () {
         return (
             <rect
+                className="legend"
                 x={this.props.x}
                 y={this.props.y}
                 width={this.props.width}
@@ -640,3 +760,4 @@ var YTick = React.createClass({
         )
     }
 });
+

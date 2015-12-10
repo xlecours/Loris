@@ -37,7 +37,7 @@ var GenomicViewer = React.createClass({
     addGroup: function (group) {
         this.setState({groupBy: group});
     },
-
+    
     componentDidMount: function () {
         var that = this;
         var props = this.props;
@@ -59,8 +59,6 @@ var GenomicViewer = React.createClass({
                 return xhr;
             },
             success: function(data) {
-                console.log('data');
-                console.log(data);
                 that.setState({
                     data : that.calculateGroupedValues(data, that.state.groupBy),
                     isLoaded : true
@@ -81,8 +79,6 @@ var GenomicViewer = React.createClass({
 
             datadict[elem.cpg] = {genomic_location: Number(elem.cpg_loc)};
 
-            console.log(groupBy);
-
             var id = elem.cpg + "_" + elem[groupBy];
 
             return [id, Number(elem.beta_value)];
@@ -100,9 +96,6 @@ var GenomicViewer = React.createClass({
             return last;
 
         }, {});
-
-        console.log('formatedData');
-        console.log(formatedData);
 
         for(var group in formatedData) {
             var beta_values = formatedData[group].sort();
@@ -156,9 +149,9 @@ var GenomicViewer = React.createClass({
 
     render: function () {
         return (
-            <div>
+            <div id="chart-container">
                 <Chart
-                    className="chart-div"
+                    className="chart"
                     width={this.props.width}
                     height={this.props.height}
                     data={this.state.data}
@@ -167,6 +160,7 @@ var GenomicViewer = React.createClass({
                     to={this.props.endLoc}
                 >
                 </Chart>
+                <div id="info-panel"></div>
             </div>
         );
     }
@@ -183,8 +177,7 @@ var Chart = React.createClass({
             leftLegendSpacing: 200,
             chromosome: 0,
             from: 0,
-            to: 0,
-            data: []
+            to: 0
         }
     },
 
@@ -277,8 +270,25 @@ var Boxplot = React.createClass({
         console.log("Boxplot loaded");
     },
 
+    showTooltip: function (event) {
+        console.log(event.currentTarget);
+    },
+
+    handleClick: function(event) {
+        console.log(this);
+        /*
+        console.log(event);
+        console.log(event.currentTarget);
+        */
+        var boxName = $(event.currentTarget).attr("title");
+        console.log(boxName);
+        var content = JSON.stringify(this.props.data[boxName]);
+        $('#info-panel').html(content);
+    },
+
     render: function () {
 
+        var that = this;
         var xScale = this.props.xScale;
         var yScale = this.props.yScale;
         var data = this.props.data;
@@ -308,20 +318,24 @@ var Boxplot = React.createClass({
                             outliers={elem.outliers.map(function (value) {return yScale(value)})}
                         />
                     )
-                }).reduce(function(last, now) {
-                    console.log('last');
-                    console.log(last);
-                    console.log('now');
-                    console.log(now);
-                    last.push(now)
-                    return last;
-                }, [])
+                })
             );
         });
 
-        console.log("boxes");
-        console.log(boxes);
-/*
+        boxes = boxes.map(function(e) {
+            return (
+                <g
+                    className="group-box"
+                    title={e[0].props.name}
+                    onClick={that.handleClick}
+                >
+                    {e.map(function(d) { return d })}
+                </g>
+            )
+        });
+
+
+   /*
         var labels = data.map(function(point, i) {
             var median = (<text x={xScale(point.x)} y={yScale(point.median)} dx="-6" dy=".3em" textAnchor="end" key={"a"+i}>{point.median}</text>);
             var q1 = (<text x={xScale(point.x) + xScale(21)} y={yScale(point.q1)} dx="-6" dy=".3em" textAnchor="end" key={"b"+i}>{point.q1}</text>);
@@ -336,6 +350,7 @@ var Boxplot = React.createClass({
         return (
             <g
                 className="plotPannel"
+                id="data-panel"
             >
                 {boxes}
             </g>
@@ -364,13 +379,6 @@ var SpreadBox = React.createClass({
         console.log(this.props.name + " mounted");
     },
 
-    onMouseOver: function (e) {
-        alert(e.clientX);
-        return (
-            <text x="20" y = "20" >BOB!!</text>
-        )
-    },
-
     render: function () {
         var xCenter = this.props.x + (this.props.width * 0.5);
         var outliers = this.props.outliers.map(function(value) {
@@ -387,10 +395,6 @@ var SpreadBox = React.createClass({
         return (
             <g
                 className="spread-box"
-                title={this.props.name}
-                data-toggle="tooltip"
-                data-placement="right"
-                onMouseOver={this.onMouseOver}
             >
                 <line
                     className="center-line"
@@ -400,6 +404,7 @@ var SpreadBox = React.createClass({
                     y2={this.props.whiskerDown}
                 />
                 <rect
+                    className="iqr-box"
                     height={this.props.q1 - this.props.q3}
                     width={this.props.width}
                     x={this.props.x}

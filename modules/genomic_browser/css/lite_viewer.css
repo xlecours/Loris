@@ -3,7 +3,7 @@
 */
 .chart-placeholder {
     border: thick solid #dddddd;
-    border-width: 1px;
+    border-width: 0px;
 }
 
 #chart-container {
@@ -11,12 +11,20 @@
     position: relative;
 }
 
-#chart-container .info-panel {
-    background-color: red;
-    color: red;
-    position: absolute;
+#info-panel {
+    background-color: white;
+    position: relative;
     top: 10px;
     left: 10px;
+}
+
+#info-panel div {
+    margin-left: 30px;
+}
+
+#info-panel table caption {
+    font-size: 12px;
+    color: #222222
 }
 
 .chart {
@@ -63,11 +71,12 @@
 .group-box {
     stroke: #333;
     stroke-width: 1px;
-    fill: steelblue;
 }
 
+.selected,
 .group-box:hover {
-    fill: yellow;
+    stroke: red;
+    stroke-width: 1px;
 }
 
 .center-line {
@@ -78,3 +87,31 @@
     stroke: white;
 }
 
+/*
+    Summary table
+*/
+
+#info-panel table {
+    font-family: verdana,arial,sans-serif;
+    font-size:11px;
+    color:#333333;
+    border-width: 1px;
+    border-color: #666666;
+    border-collapse: collapse;
+}
+
+#info-panel table th {
+    border-width: 1px;
+    padding: 8px;
+    border-style: solid;
+    border-color: #666666;
+    background-color: #dedede;
+}
+
+#info-panel table td {
+    border-width: 1px;
+    padding: 8px;
+    border-style: solid;
+    border-color: #666666;
+    background-color: #ffffff;
+}

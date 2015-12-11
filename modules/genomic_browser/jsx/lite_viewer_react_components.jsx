@@ -20,15 +20,13 @@ var GenomicViewer = React.createClass({
             chromosome: "1",
             startLoc: "1",
             endLoc: "1",
-            groupBy: "gender",
+            groupBy: ""
         }
     },
 
     getInitialState: function () {
         return {
-            width: this.props.width,
-            height: this.props.height,
-            data: [],
+            data: {},
             summaryItems: [],
             isLoaded: false,
             loadedData: 0
@@ -36,7 +34,7 @@ var GenomicViewer = React.createClass({
     },
 
     addGroup: function (group) {
-        this.setState({groupBy: group});
+        this.props.groupBy= group;
     },
 
     handleResize: function(event) {
@@ -44,16 +42,20 @@ var GenomicViewer = React.createClass({
     },
 
     componentDidMount: function () {
-        window.addEventListener('resize', this.handleResize);
         var that = this;
         var props = this.props;
+
+        window.addEventListener('resize', this.handleResize);
+
+        // Temporary grouping
         that.addGroup("gender");
+
         $.ajax(this.props.DataURL, {
             dataType: 'json',
             data: {
                 chromosome: props.chromosome,
                 startLoc: props.startLoc,
-                endLoc: props.endLoc,
+                endLoc: props.endLoc
             },
             xhr: function() {
                 var xhr = new window.XMLHttpRequest();
@@ -66,8 +68,8 @@ var GenomicViewer = React.createClass({
             },
             success: function(data) {
                 that.setState({
-                    data : that.calculateGroupedValues(data, that.state.groupBy),
-                    isLoaded : true
+                    data: that.calculateGroupedValues(data, that.props.groupBy),
+                    isLoaded: true
                 });
             }.bind(that),
             error: function(data) {
@@ -78,21 +80,25 @@ var GenomicViewer = React.createClass({
 
     calculateGroupedValues: function (data, groupBy) {
 
-        var datadict = {};
         var aggregatedValues = {};
+        var datadict = {};
+
+        console.log('data');
+        console.log(data);
 
         var formatedData = data.map(function(elem) {
 
-            datadict[elem.cpg] = {genomic_location: Number(elem.cpg_loc)};
-
+            // TODO :: This need to be dynamic
             var id = elem.cpg + "_" + elem[groupBy];
+
+            datadict[elem.cpg] = {genomic_location: Number(elem.cpg_loc)};
 
             return [id, Number(elem.beta_value)];
 
         }).reduce(function(last, now) {
 
             var uniqueId = now[0];
-            var beta_value = now[1]
+            var beta_value = now[1];
             if (Array.isArray(last[now[0]])) {
                 last[uniqueId].push(beta_value);
             } else {
@@ -103,9 +109,12 @@ var GenomicViewer = React.createClass({
 
         }, {});
 
+        console.log('formatedData');
+        console.log(formatedData);
+
         for(var group in formatedData) {
             var beta_values = formatedData[group].sort();
-            var n = beta_values.lenght;
+            var cardinality = beta_values.length;
             var quartiles = jStat.quartiles(beta_values);
             var iqr = quartiles[2] - quartiles[0];
             var whiskerUp = jStat.max(beta_values.filter(function(x) {
@@ -124,7 +133,7 @@ var GenomicViewer = React.createClass({
             if(typeof aggregatedValues[cpg_name] != "undefined") {
                 aggregatedValues[cpg_name].grouped_values.push({
                     group_label: group_label,
-                    n: n,
+                    n: cardinality,
                     q1: quartiles[0].toFixed(3),
                     median: quartiles[1].toFixed(3),
                     q3: quartiles[2].toFixed(3),
@@ -138,7 +147,7 @@ var GenomicViewer = React.createClass({
                     x: datadict[cpg_name].genomic_location,
                     grouped_values: [{
                         group_label: group_label,
-                        n: n,
+                        n: cardinality,
                         q1: quartiles[0].toFixed(3),
                         median: quartiles[1].toFixed(3),
                         q3: quartiles[2].toFixed(3),
@@ -149,6 +158,10 @@ var GenomicViewer = React.createClass({
                 };
             }
         }
+
+        console.log('aggregatedValues');
+        console.log(aggregatedValues);
+
         return aggregatedValues;
     },
 
@@ -156,14 +169,35 @@ var GenomicViewer = React.createClass({
         return true;
     },
 
-    myFunction: function (event) {
+    showBoxSummary: function (event) {
         var boxName = $(event.currentTarget).attr("title");
         var item = {};
-        item[boxName] = this.state.data[boxName]
+
+        item[boxName] = this.state.data[boxName];
         this.setState({summaryItems: [item]});
+
+    },
+
+    getColorScale: function () {
+        var that = this;
+        var groupLabels = [];
+
+        Object.keys(that.state.data).forEach(function(key) {
+            that.state.data[key].grouped_values.forEach(function(g) {
+                var label = g.group_label;
+                if (undefined === groupLabels.find(function(e) {return e == label})) {
+                    groupLabels.push(label);
+                }
+            });
+        });
+
+        return d3.scale.category10(groupLabels);
+
     },
 
     render: function () {
+        var colorScale = this.getColorScale();
+
         return (
             <div id="chart-container">
                 <Chart
@@ -171,15 +205,17 @@ var GenomicViewer = React.createClass({
                     width={this.props.width}
                     height={this.props.height}
                     data={this.state.data}
+                    colorScale={colorScale}
                     chromosome={this.props.chromosome}
                     from={this.props.startLoc}
                     to={this.props.endLoc}
-                    onClickHandler={this.myFunction}
+                    onClickHandler={this.showBoxSummary}
                 >
                 </Chart>
                 <InfoPanel
                     id="infoPannel"
                     data={this.state.summaryItems}
+                    colorScale={colorScale}
                 />
             </div>
         );
@@ -189,7 +225,8 @@ var GenomicViewer = React.createClass({
 var InfoPanel = React.createClass({
     getDefaultProps: function () {
         return {
-            data: []
+            data: [],
+            colorScale: null
         }
     },
 
@@ -204,22 +241,27 @@ var InfoPanel = React.createClass({
     },
 
     render: function () {
+        var colorScale = this.props.colorScale;
         var info = this.props.data.map(function(o, i) {
             var labels = Object.keys(o);
             var content = labels.map(function (label, j) {
 
                 var rowObject = o[label];
-                var rowItems = rowObject.grouped_values.map(function(group, k) {
+                var rowItems = rowObject.grouped_values.map(function(group) {
+                    var style = {
+                        backgroundColor: colorScale(group.group_label),
+                        color: "white"
+                    };
                     return (
                         <tr>
-                            <td>{group.group_label}</td>
+                            <td style={style}>{group.group_label}</td>
                             <td>{group.n}</td>
                             <td>{group.whiskerDown}</td>
                             <td>{group.q1}</td>
                             <td>{group.median}</td>
                             <td>{group.q3}</td>
                             <td>{group.whiskerUp}</td>
-                            <td>{group.outliers}</td>
+                            <td>{group.outliers.join(', ')}</td>
                         </tr>
                     )
                 });
@@ -231,7 +273,6 @@ var InfoPanel = React.createClass({
                         <table>
                             <caption>{label}</caption>
                             <th>
-                                <td>Group</td>
                                 <td>n</td>
                                 <td>Low</td>
                                 <td>Q1</td>
@@ -265,6 +306,7 @@ var Chart = React.createClass({
             topTitleHeight: 20,
             xAxisHeight: 40,
             leftLegendSpacing: 200,
+            colorScale: null,
             chromosome: 0,
             from: 0,
             to: 0,
@@ -338,6 +380,7 @@ var Chart = React.createClass({
                         xScale={xScale}
                         yScale={yScale}
                         onClickHandler={this.props.onClickHandler}
+                        colorScale={this.props.colorScale}
                     />
                 </g>
             </svg>
@@ -411,8 +454,6 @@ var Boxplot = React.createClass({
         var boxwidth = this.props.boxWidth;
         var boxes = [];
 
-        console.log(JSON.stringify(this.props.data));
-
         Object.keys(data).forEach( function(key) {
             var point = data[key];
             var group_size = point.grouped_values.length;
@@ -434,6 +475,7 @@ var Boxplot = React.createClass({
                             whiskerUp={yScale(elem.whiskerUp)}
                             whiskerDown={yScale(elem.whiskerDown)}
                             outliers={elem.outliers.map(function (value) {return yScale(value)})}
+                            color={that.props.colorScale(elem.group_label)}
                         />
                     )
                 })
@@ -490,7 +532,8 @@ var SpreadBox = React.createClass({
             q3: 0,
             whiskerUp: 0,
             whiskerDown: 0,
-            outliers: []
+            outliers: [],
+            color: "white"
         }
     },
 
@@ -500,9 +543,11 @@ var SpreadBox = React.createClass({
 
     render: function () {
         var xCenter = this.props.x + (this.props.width * 0.5);
+        var style = { fill: this.props.color };
         var outliers = this.props.outliers.map(function(value) {
             return (
                 <circle
+                    style={style}
                     className="outlier"
                     cx={xCenter}
                     cy={value}
@@ -524,6 +569,7 @@ var SpreadBox = React.createClass({
                 />
                 <rect
                     className="iqr-box"
+                    style={style}
                     height={this.props.q1 - this.props.q3}
                     width={this.props.width}
                     x={this.props.x}

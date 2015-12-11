@@ -56,12 +56,6 @@
                       </div>
                     </div>
                     <div class="form-group col-sm-12">
-                      <label class="col-sm-12 col-md-1 col-lg-1">
-                          Gene:
-                      </label>
-                      <div class="col-sm-12 col-md-1 col-lg-1">
-                          <select name="Gene" class="form-control input-sm user-success"></select>
-                      </div>
                       <div class="col-sm-2 col-xs-6 col-md-2">
                         <input type="button" id="update" value="Show data" onclick="showData();" class="btn btn-sm btn-primary col-xs-12"/>
                       </div>

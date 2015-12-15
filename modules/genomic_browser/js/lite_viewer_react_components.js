@@ -173,33 +173,34 @@ var GenomicViewer = React.createClass({
 
     showBoxSummary: function (event) {
         var boxName = $(event.currentTarget).attr("title");
+        $(event.currentTarget).addClass('selected');
         var item = {};
 
         item[boxName] = this.state.data[boxName];
         this.setState({ summaryItems: [item] });
     },
 
-    getColorScale: function () {
+    getGroupColors: function () {
         var that = this;
-        var groupLabels = [];
+        var groupColors = {};
+        var colorScale = d3.scale.category10();
 
         Object.keys(that.state.data).forEach(function (key) {
             that.state.data[key].grouped_values.forEach(function (g) {
-                var label = g.group_label;
-                if (undefined === groupLabels.find(function (e) {
-                    return e == label;
-                })) {
-                    groupLabels.push(label);
-                }
+                groupColors[g.group_label] = colorScale(g.group_label);
             });
+            console.log('groupColors');
+            console.log(groupColors);
         });
 
-        return d3.scale.category10(groupLabels);
+        console.log('groupColors fin');
+        console.log(groupColors);
+        return groupColors;
     },
 
     render: function () {
-        var colorScale = this.getColorScale();
 
+        var groupColors = this.getGroupColors();
         return React.createElement(
             "div",
             { id: "chart-container" },
@@ -208,7 +209,7 @@ var GenomicViewer = React.createClass({
                 width: this.props.width,
                 height: this.props.height,
                 data: this.state.data,
-                colorScale: colorScale,
+                groupColors: groupColors,
                 chromosome: this.props.chromosome,
                 from: this.props.startLoc,
                 to: this.props.endLoc,
@@ -217,7 +218,7 @@ var GenomicViewer = React.createClass({
             React.createElement(InfoPanel, {
                 id: "infoPannel",
                 data: this.state.summaryItems,
-                colorScale: colorScale
+                groupColors: groupColors
             })
         );
     }
@@ -244,7 +245,7 @@ var InfoPanel = React.createClass({
     },
 
     render: function () {
-        var colorScale = this.props.colorScale;
+        var groupColors = this.props.groupColors;
         var info = this.props.data.map(function (o, i) {
             var labels = Object.keys(o);
             var content = labels.map(function (label, j) {
@@ -252,7 +253,7 @@ var InfoPanel = React.createClass({
                 var rowObject = o[label];
                 var rowItems = rowObject.grouped_values.map(function (group) {
                     var style = {
-                        backgroundColor: colorScale(group.group_label),
+                        backgroundColor: groupColors[group.group_label],
                         color: "white"
                     };
                     return React.createElement(
@@ -378,7 +379,7 @@ var Chart = React.createClass({
             topTitleHeight: 20,
             xAxisHeight: 40,
             leftLegendSpacing: 200,
-            colorScale: null,
+            groupColors: null,
             chromosome: 0,
             from: 0,
             to: 0,
@@ -388,7 +389,8 @@ var Chart = React.createClass({
 
     getInitialState: function () {
         return {
-            data: this.props.data
+            data: this.props.data,
+            features: []
         };
     },
 
@@ -451,7 +453,7 @@ var Chart = React.createClass({
                     xScale: xScale,
                     yScale: yScale,
                     onClickHandler: this.props.onClickHandler,
-                    colorScale: this.props.colorScale
+                    groupColors: this.props.groupColors
                 })
             )
         );
@@ -498,6 +500,7 @@ var Boxplot = React.createClass({
             width: 0,
             xScale: null,
             yScale: null,
+            groupColors: {},
             boxWidth: 40,
             onClickHandler: null
         };
@@ -505,13 +508,6 @@ var Boxplot = React.createClass({
 
     componentDidMount: function () {
         console.log("Boxplot loaded");
-    },
-
-    handleClick: function (event) {
-        var boxName = $(event.currentTarget).attr("title");
-        var content = this.props.data[boxName];
-        var summary = React.createElement(Mock, null);
-        ReactDOM.render(summary, 'info-panel');
     },
 
     render: function () {
@@ -544,7 +540,7 @@ var Boxplot = React.createClass({
                     outliers: elem.outliers.map(function (value) {
                         return yScale(value);
                     }),
-                    color: that.props.colorScale(elem.group_label)
+                    color: that.props.groupColors[elem.group_label]
                 });
             }));
         });

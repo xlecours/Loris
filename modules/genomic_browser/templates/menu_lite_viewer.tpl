@@ -29,7 +29,6 @@
                 <div class="panel-body" id="panel-body-coord">
                   <div class="row">
                     <div class="form-group col-sm-12">
-                      <h5>Homo sapiens, GRCh37/hg19</h5>
                       <label class="col-sm-12 col-md-1 col-lg-1" data-toggle="tooltip" title="Choose your chromosome">
                         {$form.Chromosome.label}
                       </label>

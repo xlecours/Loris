@@ -52,9 +52,9 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
     function _getDefaults()
     {
         $defaults = array(
-            'Chromosome' => '1',
-            'Start_loc'  => '5000000',
-            'End_loc'    => '100000000',
+            'Chromosome' => 'Y',
+            'Start_loc'  => '15000000',
+            'End_loc'    => '15040000',
         );
 
         return $defaults;
@@ -90,9 +90,9 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
         );
 
         // Set the default filter values
-        $this->filter['cpg.chromosome'] = '21';
-        $this->filter['cpg.start_loc']  = '48026000';
-        $this->filter['cpg.end_loc']    = '49026053';
+        $this->filter['cpg.chromosome'] = 'Y';
+        $this->filter['cpg.start_loc']  = '15000000';
+        $this->filter['cpg.end_loc']    = '15040000';
     }
 
     /**

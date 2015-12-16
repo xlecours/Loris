@@ -81,6 +81,7 @@
             </div>
           </div>
         </div>
+        <!--
         <div class="col-sm-12">
           <div class="row">
             <div id="chart-div-1">
@@ -97,6 +98,7 @@
             </div>
           </div>
         </div>
+        -->
       </div>
     </div>
   </div> <!-- end row containing all filters-->

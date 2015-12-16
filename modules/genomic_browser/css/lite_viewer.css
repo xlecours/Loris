@@ -37,6 +37,15 @@
     stroke-width: 1px;
     fill: white;
 }
+
+#legend-female {
+    fill: #ff7f0e;
+}
+
+#legend-male {
+    fill: #1f77b4;
+}
+
 /*
     Axis
 */
@@ -114,4 +123,26 @@
     border-style: solid;
     border-color: #666666;
     background-color: #ffffff;
+}
+
+.snp {
+    fill: white;
+    fill-opacity: 0%;
+    stroke: red;
+    stroke-width: 2px;
+    stroke-opacity: 40%;
+}
+
+.chip-peak {
+    fill: yellow;
+    fill-opacity: 20%;
+    stroke: grey;
+    stroke-opacity: 10%;
+}
+
+.genes {
+    fill: green;
+    fill-opacity: 50%;
+    stroke: grey;
+    stroke-opacity: 20%;
 }

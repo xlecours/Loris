@@ -28,9 +28,12 @@ var GenomicViewer = React.createClass({
     getInitialState: function () {
         return {
             data: {},
+            snpData: {},
             summaryItems: [],
             isLoaded: false,
-            loadedData: 0
+            isLoadedSNP: false,
+            loadedData: 0,
+            loadedDataSNP: 0
         };
     },
 
@@ -71,6 +74,33 @@ var GenomicViewer = React.createClass({
                 that.setState({
                     data: that.calculateGroupedValues(data, that.props.groupBy),
                     isLoaded: true
+                });
+            }).bind(that),
+            error: function (data) {
+                that.setState({ "error": "Unknown error loading data" });
+            }
+        });
+
+        $.ajax('AjaxHelper.php?Module=genomic_browser&script=getSNP.php', {
+            dataType: 'json',
+            data: {
+                chromosome: props.chromosome,
+                startLoc: props.startLoc,
+                endLoc: props.endLoc
+            },
+            xhr: function () {
+                var xhr = new window.XMLHttpRequest();
+                xhr.addEventListener("progress", function (evt) {
+                    that.setState({
+                        loadedDataSNP: evt.loaded
+                    });
+                });
+                return xhr;
+            },
+            success: (function (data) {
+                that.setState({
+                    dataSNP: that.formatSNP(data),
+                    isLoadedSNP: true
                 });
             }).bind(that),
             error: function (data) {
@@ -167,6 +197,23 @@ var GenomicViewer = React.createClass({
         return aggregatedValues;
     },
 
+    formatSNP: function (data) {
+        console.log('formatSNP');
+        console.log(data);
+
+        //{"rs001": {"genomic_location": 15000400, "alleles":["A","G"]}};
+        var snps = {};
+        data.forEach(function (snp) {
+            snps[snp.rsID] = {
+                rsID: snp.rsID,
+                genomic_location: snp.genomic_location,
+                alleles: [snp.a1, snp.a2]
+            };
+        });
+
+        this.setState({ snpData: snps });
+    },
+
     shouldComponentUpdate: function (nextProps, nextState) {
         return true;
     },
@@ -189,12 +236,8 @@ var GenomicViewer = React.createClass({
             that.state.data[key].grouped_values.forEach(function (g) {
                 groupColors[g.group_label] = colorScale(g.group_label);
             });
-            console.log('groupColors');
-            console.log(groupColors);
         });
 
-        console.log('groupColors fin');
-        console.log(groupColors);
         return groupColors;
     },
 
@@ -209,6 +252,7 @@ var GenomicViewer = React.createClass({
                 width: this.props.width,
                 height: this.props.height,
                 data: this.state.data,
+                snpData: this.state.snpData,
                 groupColors: groupColors,
                 chromosome: this.props.chromosome,
                 from: this.props.startLoc,
@@ -383,13 +427,14 @@ var Chart = React.createClass({
             chromosome: 0,
             from: 0,
             to: 0,
-            onClickHandler: null
+            onClickHandler: null,
+            data: [],
+            snpData: {}
         };
     },
 
     getInitialState: function () {
         return {
-            data: this.props.data,
             features: []
         };
     },
@@ -410,6 +455,8 @@ var Chart = React.createClass({
         var yScale = d3.scale.linear().domain([0, 1]).range([origin.y, this.props.margin.top + this.props.topTitleHeight]);
 
         var title = "Beta values of participants grouped by gender for CpGs located on Chr" + this.props.chromosome + ":" + this.props.from + "-" + this.props.to;
+
+        var snpsList = this.props.snpData;
 
         return React.createElement(
             "svg",
@@ -446,6 +493,11 @@ var Chart = React.createClass({
                     xScale: xScale,
                     height: this.props.xAxisHeight
                 }),
+                React.createElement(SNP_track, {
+                    snpsList: snpsList,
+                    xScale: xScale,
+                    y: yScale(0.1)
+                }),
                 React.createElement(Boxplot, {
                     width: this.props.width - this.props.margin.left - this.props.margin.right,
                     height: this.props.height - this.props.margin.top - this.props.margin.bottom,
@@ -454,6 +506,22 @@ var Chart = React.createClass({
                     yScale: yScale,
                     onClickHandler: this.props.onClickHandler,
                     groupColors: this.props.groupColors
+                }),
+                React.createElement(BrainMethyl_track, {
+                    xScale: xScale,
+                    yScale: yScale,
+                    origin: origin,
+                    chromosome: this.props.chromosome,
+                    from: this.props.from,
+                    to: this.props.to
+                }),
+                React.createElement(Genes_track, {
+                    xScale: xScale,
+                    yScale: yScale,
+                    origin: origin,
+                    chromosome: this.props.chromosome,
+                    from: this.props.from,
+                    to: this.props.to
                 })
             )
         );
@@ -550,9 +618,9 @@ var Boxplot = React.createClass({
                 "g",
                 {
                     className: "group-box",
-                    title: spreadBox[0].props.name
-                    //onClick={that.handleClick}
-                    , onClick: that.props.onClickHandler
+                    title: spreadBox[0].props.name,
+                    "data-toggle": "tooltip",
+                    onClick: that.props.onClickHandler
                 },
                 spreadBox.map(function (d) {
                     return d;
@@ -674,6 +742,7 @@ var Title = React.createClass({
                 className: "chart-title",
                 x: this.props.x,
                 y: this.props.y,
+                dy: "-.3em",
                 textAnchor: "middle"
             },
             this.props.text
@@ -685,13 +754,100 @@ var Legend = React.createClass({
     displayName: "Legend",
 
     render: function () {
-        return React.createElement("rect", {
-            className: "legend",
-            x: this.props.x,
-            y: this.props.y,
-            width: this.props.width,
-            height: this.props.height
-        });
+        return React.createElement(
+            "g",
+            { className: "legend" },
+            React.createElement("rect", {
+                x: this.props.x,
+                y: this.props.y,
+                width: this.props.width,
+                height: this.props.height
+            }),
+            React.createElement("rect", {
+                id: "legend-female",
+                x: this.props.x + 20,
+                y: this.props.y + 20,
+                width: 20,
+                height: 20
+            }),
+            React.createElement(
+                "text",
+                {
+                    x: this.props.x + 50,
+                    y: this.props.y + 35
+                },
+                "Female"
+            ),
+            React.createElement("rect", {
+                id: "legend-male",
+                x: this.props.x + 20,
+                y: this.props.y + 50,
+                width: 20,
+                height: 20
+            }),
+            React.createElement(
+                "text",
+                {
+                    x: this.props.x + 50,
+                    y: this.props.y + 65
+                },
+                "Male"
+            ),
+            React.createElement("rect", {
+                className: "genes",
+                x: this.props.x + 20,
+                y: this.props.y + 90,
+                width: 20,
+                height: 20
+            }),
+            React.createElement(
+                "text",
+                {
+                    x: this.props.x + 50,
+                    y: this.props.y + 105
+                },
+                "Genes"
+            ),
+            React.createElement("rect", {
+                className: "snp",
+                x: this.props.x + 20,
+                y: this.props.y + 130,
+                width: 20,
+                height: 20
+            }),
+            React.createElement(
+                "text",
+                {
+                    x: this.props.x + 50,
+                    y: this.props.y + 145
+                },
+                "SNPs"
+            ),
+            React.createElement("rect", {
+                className: "chip-peak",
+                x: this.props.x + 20,
+                y: this.props.y + 170,
+                width: 20,
+                height: 20
+            }),
+            React.createElement(
+                "text",
+                {
+                    x: this.props.x + 50,
+                    y: this.props.y + 180
+                },
+                "ENCODE ChIP-peak"
+            ),
+            React.createElement(
+                "text",
+                {
+                    className: "caption",
+                    x: this.props.x + 50,
+                    y: this.props.y + 195
+                },
+                "HSMM H3K4me1"
+            )
+        );
     }
 });
 
@@ -875,6 +1031,244 @@ var YTick = React.createClass({
                 y1: props.y,
                 y2: props.y
             })
+        );
+    }
+});
+
+var SNP_track = React.createClass({
+    displayName: "SNP_track",
+
+    getDefaultProps: function () {
+        return {
+            snpsList: {},
+            xscale: null,
+            y: 0
+        };
+    },
+
+    render: function () {
+        var that = this;
+        var xScale = this.props.xScale;
+        var snps = Object.keys(this.props.snpsList).map(function (key) {
+
+            var alleles = that.props.snpsList[key].alleles;
+            var x = xScale(that.props.snpsList[key].genomic_location);
+            var title = that.props.snpsList[key].rsID;
+
+            return(
+                /*
+                <text
+                    className="snp"
+                    x={x}
+                    y={that.props.y}
+                >
+                    <tspan>{alleles[0]}</tspan>
+                    <tspan>{alleles[1]}</tspan>
+                 </text>
+                 */
+                React.createElement(
+                    "rect",
+                    {
+                        className: "snp",
+                        "data-toggle": "tooltip",
+                        x: x,
+                        y: that.props.y,
+                        height: "20",
+                        width: "5"
+                    },
+                    React.createElement(
+                        "title",
+                        null,
+                        title
+                    )
+                )
+            );
+        });
+
+        return React.createElement(
+            "g",
+            { className: "snp-track" },
+            snps
+        );
+    }
+});
+
+var BrainMethyl_track = React.createClass({
+    displayName: "BrainMethyl_track",
+
+    getDefaultProps: function () {
+        return {
+            origin: {},
+            xscale: null,
+            yscale: null
+        };
+    },
+
+    getInitialState: function () {
+        return {
+            features: []
+        };
+    },
+
+    componentDidMount: function () {
+
+        var that = this;
+        $.ajax('http://genome.ucsc.edu/cgi-bin/das/hg19/features?segment=' + that.props.chromosome + ':' + that.props.from + ',' + that.props.to + ';type=wgEncodeBroadHistoneHsmmH3k4me1StdPk', {
+            dataType: 'xml',
+            data: null,
+            xhr: function () {
+                var xhr = new window.XMLHttpRequest();
+                xhr.addEventListener("progress", function (evt) {
+                    console.log(evt);
+                });
+                return xhr;
+            },
+            success: function (data) {
+                var items = data.getElementsByTagName('FEATURE');
+                var features = Object.keys(items).map(function (key) {
+                    return items[key];
+                });
+                that.setState({
+                    features: features
+                });
+            },
+            error: function (data) {
+                that.setState({ "error": "Unknown error loading data" });
+            }
+        });
+    },
+
+    render: function () {
+
+        console.log('BrainMethyl_track features');
+        console.log(this.state.features);
+        var that = this;
+
+        var features = this.state.features.map(function (f) {
+            console.log("---");
+            console.log(f.getElementsByTagName("START")[0].textContent);
+            console.log(f.getElementsByTagName("END")[0].textContent);
+            console.log(f.getElementsByTagName("END")[0].textContent - f.getElementsByTagName("START")[0].textContent);
+
+            var width = that.props.xScale(f.getElementsByTagName("END")[0].textContent) - that.props.xScale(f.getElementsByTagName("START")[0].textContent);
+            var y = that.props.yScale(f.getElementsByTagName("SCORE")[0].textContent / 1000);
+            var height = that.props.origin.y - that.props.yScale(f.getElementsByTagName("SCORE")[0].textContent / 1000);
+            var x = that.props.xScale(f.getElementsByTagName("START")[0].textContent);
+            if (that.props.origin.x <= x) {
+                return React.createElement("rect", {
+                    x: x,
+                    y: y,
+                    height: height,
+                    width: width
+                });
+            }
+        });
+
+        return React.createElement(
+            "g",
+            {
+                id: "wgEncodeBroadHistoneHsmmH3k4me1StdPk",
+                className: "chip-peak"
+            },
+            features
+        );
+    }
+});
+
+var Genes_track = React.createClass({
+    displayName: "Genes_track",
+
+    getDefaultProps: function () {
+        return {
+            y: 0,
+            xscale: null
+        };
+    },
+
+    getInitialState: function () {
+        return {
+            genes: []
+        };
+    },
+
+    componentDidMount: function () {
+
+        var that = this;
+        $.ajax('http://genome.ucsc.edu/cgi-bin/das/hg19/features?segment=' + that.props.chromosome + ':' + that.props.from + ',' + that.props.to + ';type=refGene', {
+            dataType: 'xml',
+            data: null,
+            xhr: function () {
+                var xhr = new window.XMLHttpRequest();
+                xhr.addEventListener("progress", function (evt) {
+                    console.log(evt);
+                });
+                return xhr;
+            },
+            success: function (data) {
+                var items = data.getElementsByTagName('FEATURE');
+                var genes = Object.keys(items).map(function (key) {
+                    return items[key];
+                });
+                console.log(genes);
+                that.setState({
+                    genes: genes
+                });
+            },
+            error: function (data) {
+                that.setState({ "error": "Unknown error loading data" });
+            }
+        });
+    },
+
+    onClickHandler: function (link) {
+        alert();
+    },
+
+    render: function () {
+
+        console.log('Genes');
+        console.log(this.state.genes);
+        var that = this;
+        var min = that.props.to;
+        var max = that.props.from;
+        var exons = this.state.genes.map(function (f) {
+
+            var width = that.props.xScale(f.getElementsByTagName("END")[0].textContent) - that.props.xScale(f.getElementsByTagName("START")[0].textContent);
+            var y = that.props.yScale(1);
+            var height = "20";
+            var x = that.props.xScale(f.getElementsByTagName("START")[0].textContent);
+            var link = "";
+
+            min = min < f.getElementsByTagName("START")[0].textContent ? min : f.getElementsByTagName("START")[0].textContent;
+            max = max > f.getElementsByTagName("END")[0].textContent ? min : f.getElementsByTagName("END")[0].textContent;
+
+            //if ( that.props.origin.x <= x) {
+            return React.createElement("rect", {
+                x: x,
+                y: y,
+                height: height,
+                width: width,
+                onClick: that.onClickHandler
+            });
+            //}
+        });
+
+        min = min < that.props.from ? that.props.from : min;
+        max = max > that.props.to ? that.props.to : max;
+
+        return React.createElement(
+            "g",
+            {
+                id: "refGene",
+                className: "genes"
+            },
+            React.createElement("line", {
+                x1: this.props.xScale(min),
+                x2: this.props.xScale(max),
+                y1: that.props.yScale(1) + 10,
+                y2: that.props.yScale(1) + 10
+            }),
+            exons
         );
     }
 });

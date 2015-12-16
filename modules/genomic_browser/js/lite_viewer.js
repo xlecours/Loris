@@ -7,6 +7,8 @@
             startLoc: document.getElementsByName('Start_loc')[0].value,
             endLoc: document.getElementsByName('End_loc')[0].value
         };
+
+        /*
         $.ajax({
           url: "AjaxHelper.php?Module=genomic_browser&script=getOldFormat.php",
           type: 'post',
@@ -52,6 +54,7 @@
               });              
           }   
         });
+        */
 
         $('#chart-placeholder-2 div').remove();
 

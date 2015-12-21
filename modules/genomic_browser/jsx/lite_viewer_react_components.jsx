@@ -74,7 +74,7 @@ var GenomicViewer = React.createClass({
                     data: that.calculateGroupedValues(data, that.props.groupBy),
                     isLoaded: true
                 });
-            }.bind(that),
+            },
             error: function(data) {
                 that.setState({ "error" : "Unknown error loading data" });
             }
@@ -1172,3 +1172,4 @@ var Genes_track = React.createClass({
         )
     }
 });
+

@@ -66,11 +66,12 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
      * @note   overloaded function
      * @return bool
     */
+
     function _setupVariables()
     {
         $this->columns = array('cpg');
 
-        $this->query = ' FROM genomic_cpg cpg WHERE 1=1 ';
+        $this->query = ' FROM genomic_cpg cpg WHERE 0=1 ';
 
         $this->validFilters = array(
             'cpg.chromosome',
@@ -88,11 +89,12 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
             'Strand'          => 'cpg.strand',
             'Target_location' => 'cpg.cpg_loc',
         );
-
+/*
         // Set the default filter values
         $this->filter['cpg.chromosome'] = '4';
         $this->filter['cpg.start_loc']  = '4650000';
         $this->filter['cpg.end_loc']    = '4750000';
+*/
     }
 
     /**
@@ -156,6 +158,7 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
      *
      * @return $query
     */
+
     function _addValidFilters($prepared_key, $field, $val)
     {
         $query = ''; //initialize

@@ -44,12 +44,26 @@ DynamicDataTable = React.createClass({
     },
     render: function () {
         if (!this.state.isLoaded) {
-            return React.createElement(
-                'button',
-                { className: 'btn-info has-spinner' },
-                'Loading ',
-                React.createElement('span', { className: 'glyphicon glyphicon-refresh glyphicon-refresh-animate' })
-            );
+            if (this.state.error != undefined)  {
+                return React.createElement(
+                    'div',
+                    {   
+                        className: 'alert alert-danger'
+                    },  
+                    React.createElement(
+                        'strong',
+                        null,
+                        this.state.error
+                    )   
+                );
+            } else {
+                return React.createElement(
+                    'button',
+                    { className: 'btn-info has-spinner' },
+                    'Loading ',
+                    React.createElement('span', { className: 'glyphicon glyphicon-refresh glyphicon-refresh-animate' })
+                );
+            }
         }
 
         return React.createElement(StaticDataTable, { Headers: this.state.Headers, Data: this.state.Data, getFormattedCell: this.props.getFormattedCell });

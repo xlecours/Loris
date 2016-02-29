@@ -57,13 +57,17 @@ StaticDataTable = React.createClass({displayName: "StaticDataTable",
            'PageNumber' : 1
        });
     },
-    render: function() {
-        if (this.props.Data == null) {
-            return (
-                React.createElement("div", {
-                    className: "alert alert-info no-result-found-panel"
-                }, 
-                    React.createElement("strong", null, "No result found.")
+    render: function () {
+        if (this.props.Data == null || this.props.Data.length == 0) {
+            return React.createElement(
+                'div',
+                {
+                    className: 'alert alert-info no-result-found-panel'
+                },
+                React.createElement(
+                    'strong',
+                    null,
+                    'No result found.'
                 )
             );
         }

@@ -102,8 +102,8 @@ class NDB_Menu_Filter_CPG_Browser extends NDB_Menu_Filter
      */
     function toArray()
     { 
-        //$helper = new CouchDB_Genomic_Helper();
-        $helper = new MySQL_Genomic_Helper();
+        $helper = new CouchDB_Genomic_Helper();
+        //$helper = new MySQL_Genomic_Helper();
         return $helper->getBetaValues($this->filter);
     }
 
@@ -193,7 +193,6 @@ class CouchDB_Genomic_Helper extends Genomic_Helper
         $this->CouchDB = CouchDB::singleton();
     }
 
-/*
     function getBetaValues( $params ) {
         $saved_filters = $params;
 
@@ -291,6 +290,5 @@ class CouchDB_Genomic_Helper extends Genomic_Helper
         //$this->CouchDB->setDatabaseName($old_db_name);
         return $formated_data;
     }
-*/
 }
 ?>

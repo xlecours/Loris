@@ -25,10 +25,10 @@
                 </div>
                 <div class="form-group col-sm-4">
                     <label class="col-sm-12 col-md-2">
-                        {$form.cpg_ids.label}
+                        {$form.cpg.label}
                     </label>
                     <div class="col-sm-12 col-md-10">
-                        {$form.cpg_ids.html}
+                        {$form.cpg.html}
                     </div>
                 </div>
                 <div class="form-group col-sm-4">
@@ -66,8 +66,18 @@
 </div>
 <div id="datatable"></div>
 <script>
+var filters = [].slice.call(document.getElementsByTagName('input'));
+filters = filters.concat([].slice.call(document.getElementsByTagName('select')));
+
+var params = filters.reduce(function(last,now,index,array) {
+    if(now.name == 'filter' || now.name == 'reset') {
+        return last;
+    } else {
+        return last + '&' + now.name + '=' + now.value;
+    }
+},'');
 var table = RDynamicDataTable({
-    "DataURL" : "{$baseurl}/genomic_browser/?submenu=cpg_browser&format=json",
+    "DataURL" : "{$baseurl}/genomic_browser/?submenu=cpg_browser&format=json" + params,
     "getFormattedCell" : formatColumn
 });
 

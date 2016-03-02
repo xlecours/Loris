@@ -6,7 +6,7 @@
     <div id="tabs">
       <ul class="nav nav-tabs">
         <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser">Profile</a></li>
-        <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=cnv_browser">Profile</a></li>
+        <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=cnv_browser">CNV</a></li>
         <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=snp_browser">SNP</a></li>
         <li class="statsTab"><a class="statsTabLink" href="main.php?test_name=genomic_browser&submenu=cpg_browser">CpG</a></li>
         <li class="statsTab active"><a class="statsTabLink" id="onLoad"><strong>Visual Explorer</strong></a></li>

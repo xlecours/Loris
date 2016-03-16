@@ -1967,10 +1967,8 @@ DROP TABLE IF EXISTS `genomic_cpg_annotation`;
 CREATE TABLE `genomic_cpg_annotation` (
   `cpg_name` varchar(100) NOT NULL,
   `location_id` bigint(20) NOT NULL,
-  `probe_id_a` varchar(45) NULL,
   `address_id_a` int unsigned NULL,
   `probe_seq_a` varchar(100) NULL, 
-  `probe_id_b` varchar(45) NULL,
   `address_id_b` int unsigned NULL,
   `probe_seq_b` varchar(100) NULL,
   `design_type` varchar(20) NULL,

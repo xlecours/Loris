@@ -31,8 +31,9 @@ require_once "../../../php/libraries/Database.class.inc";
             FROM 
               snp144Common
             WHERE 
-              chromEnd - chromStart = 1
-            LIMIT 12";
+              chrom = 'chr14' AND
+              chromEnd - chromStart = 1 
+            LIMIT 200";
 
     $genome_loc_values    = array();
     $SNP_values           = array();
@@ -100,6 +101,8 @@ require_once "../../../php/libraries/Database.class.inc";
     insert_SNP($SNP_values);
     insert_SNP_candidate_rel($SNP_candidate_values);
 
+    fillGWAS();
+
     $conn = null;
     exit;
 
@@ -155,5 +158,16 @@ function getListCandID()
     return array_map( function($row) {
         return $row['CandID'];
     }, $db->pselect("SELECT CandID FROM candidate where Active = 'Y' AND Entity_type = 'Human'", array()));
+}
+
+function fillGWAS()
+{
+    $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+
+    $stmt = "INSERT INTO GWAS (SNPID, MajorAllele, MinorAllele) select s.SNPID, s.ReferenceBase as MajorAllele, (select scr.ObservedBase FROM SNP_candidate_rel scr WHERE s.SNPID = scr.SNPID AND scr.ObservedBase <> s.ReferenceBase GROUP BY scr.ObservedBase LIMIT 1) as MinorAllele FROM SNP s";
+    $db->run($stmt);
+
+    $stmt = "UPDATE GWAS m SET m.MAF = (select (a.countMinor / b.countAll) FROM (SELECT scr.SNPID, COUNT(scr.CandID) as countMinor FROM SNP_candidate_rel scr WHERE scr.ObservedBase <> (SELECT s.ReferenceBase FROM SNP s WHERE s.SNPID = scr.SNPID) GROUP BY scr.SNPID) a JOIN (SELECT SNPID, COUNT(CandID) as countAll FROM SNP_candidate_rel GROUP BY SNPID) b USING (SNPID) WHERE a.SNPID = m.SNPID)";
+    $db->run($stmt);
 }
 ?>

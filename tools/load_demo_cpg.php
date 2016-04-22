@@ -1,10 +1,9 @@
 <?php
-require_once "../../../php/exceptions/LorisException.class.inc";
-require_once "../../../php/exceptions/DatabaseException.class.inc";
-require_once "../../../php/libraries/Database.class.inc";
+require_once __DIR__ . "/../vendor/autoload.php";
+require_once "generic_includes.php";
+require_once "Utility.class.inc";
 
-
-    $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+    $db =& Database::singleton();
     $stmt = "SET @prefix = UNIX_TIMESTAMP()";
     $db->run($stmt);
 

@@ -1,7 +1,7 @@
 <?php
-require_once "../../../php/exceptions/LorisException.class.inc";
-require_once "../../../php/exceptions/DatabaseException.class.inc";
-require_once "../../../php/libraries/Database.class.inc";
+require_once __DIR__ . "/../vendor/autoload.php";
+require_once "generic_includes.php";
+require_once "Utility.class.inc";
 
     $conn = new PDO(
         'mysql:host=genome-mysql.cse.ucsc.edu;dbname=hg19',
@@ -119,7 +119,7 @@ function create_CNV_platform()
 {
     $stmt = "INSERT IGNORE INTO genotyping_platform (Name, Description) VALUES ('Custom CNV array', 'A platform inserted for demo purposes')";
 
-    $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+    $db =& Database::singleton();
     $db->run($stmt);
 
     return $db->pselectOne("SELECT PlatformID FROM genotyping_platform WHERE Name = 'Custom CNV array'", array());
@@ -132,7 +132,7 @@ function insert_genome_loc(&$values)
         $stmt = 'INSERT IGNORE INTO genome_loc (Chromosome, StartLoc, EndLoc, Strand) VALUES ';
         $stmt .= join(',', $values);
 
-        $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost'); 
+        $db =& Database::singleton(); 
         $db->run($stmt); 
     }
 }
@@ -144,14 +144,14 @@ function insert_CNV(&$values)
         $stmt = 'INSERT IGNORE INTO CNV (CandID, Description, Type, EventName, Common_CNV, Characteristics, CopyNumChange, Inheritance, ArrayReport, PlatformID, GenomeLocID) VALUES ';
         $stmt .= join(',', $values);
 
-        $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+        $db =& Database::singleton();
         $db->run($stmt);
     }
 }
 
 function getListCandID()
 {
-    $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+    $db =& Database::singleton();
     return array_map( function($row) {
         return $row['CandID'];
     }, $db->pselect("SELECT CandID FROM candidate where Active = 'Y' AND Entity_type = 'Human'", array()));

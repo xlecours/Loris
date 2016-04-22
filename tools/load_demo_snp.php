@@ -1,7 +1,7 @@
 <?php
-require_once "../../../php/exceptions/LorisException.class.inc";
-require_once "../../../php/exceptions/DatabaseException.class.inc";
-require_once "../../../php/libraries/Database.class.inc";
+require_once __DIR__ . "/../vendor/autoload.php";
+require_once "generic_includes.php";
+require_once "Utility.class.inc";
 
     $conn = new PDO(
         'mysql:host=genome-mysql.cse.ucsc.edu;dbname=hg19',
@@ -77,7 +77,8 @@ require_once "../../../php/libraries/Database.class.inc";
         foreach ($candidate_list as $CandID) {
 
             $observed_base = (rand(0,10000)/10000 < $allele_frequencies[0]) ? $alleles[0] : $alleles[1] ;
-            
+            $observed_base = ($observed_base == '-') ? $alleles[0] : $observed_base;
+
             array_push(
                 $SNP_candidate_values,
                 "((SELECT SNPID FROM SNP WHERE rsID = '$name' LIMIT 1), $CandID, '$observed_base', '$validation_method', $validated, $plateform_id)"
@@ -110,7 +111,7 @@ function create_SNP_platform()
 {
     $stmt = "INSERT IGNORE INTO genotyping_platform (Name, Description) VALUES ('Custom SNP array', 'A platform inserted for demo purposes')";
 
-    $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+    $db =& Database::singleton();
     $db->run($stmt);
 
     return $db->pselectOne("SELECT PlatformID FROM genotyping_platform WHERE Name = 'Custom SNP array'", array());
@@ -123,7 +124,7 @@ function insert_genome_loc(&$values)
         $stmt = 'INSERT IGNORE INTO genome_loc (Chromosome, StartLoc, EndLoc, Strand) VALUES ';
         $stmt .= join(',', $values);
 
-        $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost'); 
+        $db =& Database::singleton(); 
         $db->run($stmt); 
     }
 }
@@ -135,7 +136,7 @@ function insert_SNP(&$values)
         $stmt = 'INSERT IGNORE INTO SNP (rsID, SNPExternalSource, ReferenceBase, GenomeLocID) VALUES ';
         $stmt .= join(',', $values);
 
-        $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+        $db =& Database::singleton();
         $db->run($stmt);
     }
 }
@@ -147,14 +148,14 @@ function insert_SNP_candidate_rel(&$values)
         $stmt = 'INSERT IGNORE INTO SNP_candidate_rel (SNPID, CandID, ObservedBase, ValidationMethod, Validated, PlatformID) VALUES ';
         $stmt .= join(',', $values);
 
-        $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+        $db =& Database::singleton();
         $db->run($stmt);
     }
 }
 
 function getListCandID()
 {
-    $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+    $db =& Database::singleton();
     return array_map( function($row) {
         return $row['CandID'];
     }, $db->pselect("SELECT CandID FROM candidate where Active = 'Y' AND Entity_type = 'Human'", array()));
@@ -162,12 +163,16 @@ function getListCandID()
 
 function fillGWAS()
 {
-    $db =& Database::singleton('LORIS', 'root', '$Demo4022', 'localhost');
+    $db =& Database::singleton();
 
-    $stmt = "INSERT INTO GWAS (SNPID, MajorAllele, MinorAllele) select s.SNPID, s.ReferenceBase as MajorAllele, (select scr.ObservedBase FROM SNP_candidate_rel scr WHERE s.SNPID = scr.SNPID AND scr.ObservedBase <> s.ReferenceBase GROUP BY scr.ObservedBase LIMIT 1) as MinorAllele FROM SNP s";
+    $stmt = "INSERT INTO GWAS (SNPID, MajorAllele) select s.SNPID, s.ReferenceBase as MajorAllele FROM SNP s";
+    $db->run($stmt);
+/*
+    $stmt = "DELETE FROM GWAS WHERE MinorAllele is NULL";
     $db->run($stmt);
 
-    $stmt = "UPDATE GWAS m SET m.MAF = (select (a.countMinor / b.countAll) FROM (SELECT scr.SNPID, COUNT(scr.CandID) as countMinor FROM SNP_candidate_rel scr WHERE scr.ObservedBase <> (SELECT s.ReferenceBase FROM SNP s WHERE s.SNPID = scr.SNPID) GROUP BY scr.SNPID) a JOIN (SELECT SNPID, COUNT(CandID) as countAll FROM SNP_candidate_rel GROUP BY SNPID) b USING (SNPID) WHERE a.SNPID = m.SNPID)";
+    $stmt = "UPDATE GWAS SET MAF = ROUND(RAND()/2,3)"; 
     $db->run($stmt);
+*/
 }
 ?>

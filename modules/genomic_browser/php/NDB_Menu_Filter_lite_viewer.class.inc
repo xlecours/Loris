@@ -29,6 +29,9 @@ require_once 'NDB_Menu_Filter.class.inc';
 */
 class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
 {
+
+    var $AjaxModule = true;
+
     /**
      * Overloading this method to allow access to site users (own site only)
      * and users w/ multisite privileges
@@ -92,30 +95,31 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
 
         // Chromosome
         $options_list = array(
-            '1'  => '1',
-            '2'  => '2',
-            '3'  => '3',
-            '4'  => '4',
-            '5'  => '5',
-            '6'  => '6',
-            '7'  => '7',
-            '8'  => '8',
-            '9'  => '9',
-            '10' => '10',
-            '11' => '11',
-            '12' => '12',
-            '13' => '13',
-            '14' => '14',
-            '15' => '15',
-            '16' => '16',
-            '17' => '17',
-            '18' => '18',
-            '19' => '19',
-            '20' => '20',
-            '21' => '21',
-            '22' => '22',
-            'X'  => 'X',
-            'Y'  => 'Y',
+            'chr1'  => 'chr1',
+            'chr2'  => 'chr2',
+            'chr3'  => 'chr3',
+            'chr4'  => 'chr4',
+            'chr5'  => 'chr5',
+            'chr6'  => 'chr6',
+            'chr7'  => 'chr7',
+            'chr8'  => 'chr8',
+            'chr9'  => 'chr9',
+            'chr10' => 'chr10',
+            'chr11' => 'chr11',
+            'chr12' => 'chr12',
+            'chr13' => 'chr13',
+            'chr14' => 'chr14',
+            'chr15' => 'chr15',
+            'chr16' => 'chr16',
+            'chr17' => 'chr17',
+            'chr18' => 'chr18',
+            'chr19' => 'chr19',
+            'chr20' => 'chr20',
+            'chr21' => 'chr21',
+            'chr22' => 'chr22',
+            'chrX'  => 'chrX',
+            'chrY'  => 'chrY',
+            'chrM'  => 'chrM',
         );
         $this->addSelect('Chromosome','Chromosome:', $options_list);
 
@@ -184,8 +188,6 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
 
         $www     = $config->getSetting('www');
         $baseurl = $www['url'];
-
-        $paths = $config->getSetting("paths");
 
         $baseDeps = parent::getJSDependencies();
 

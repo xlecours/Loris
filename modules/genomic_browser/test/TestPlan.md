@@ -1,4 +1,3 @@
-
 #Genomic Browser module - Test Plan
 <br>
 ###Table of Contents  
@@ -8,7 +7,7 @@
 ####[Features](#features)  
 ######[Filtering](#data_filtering)  
 ######[Datatable](#datatable)
-######[Download](#data_download)
+######[Download](#data_download)  
 ####[Help](#help)  
 ######[Help content](#help_content)
 ######[Tooltips](#tooltips)
@@ -70,7 +69,7 @@ The following permissions should be available in the database
 ####Data Filtering
 </a>
 
-######Profile Tab
+######Profile tab
 - Clicking on the *Candidate filters* block header should hide its content.
 - Clicking on the *Genomic filters* block header should hide its content.
 - Filters should filter data presented in the Datatable according to the selected values after clicking on the *Show Data* button.
@@ -100,7 +99,6 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 <br>
 ######GWAS tab
 
-************************
 - Clicking on the *GWAS filters* block header should hide its content.
 - Filters should filter data presented in the Datatable according to the selected values after clicking on the *Show Data* button.
     - GWAS filters
@@ -109,7 +107,6 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 
 - Clicking the *Clear Form* button should reset the filters.
 - Clicking on column headers should sort data in ascending order on the first click then descending order on the second click.
-************************
 
 <br>
 ######SNP tab
@@ -129,15 +126,15 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
         - All the filters are contains filters (Shows all records that contains this value)
 - The datatable should display the folowing columns (Summary fields)
 
-No.	PSCID	Gender	RsID	Observed Base	Reference Base	Function Prediction	Damaging	Exonic Function
-| ---| --- | ---| --- | ---| --- | ---| ---|
-| | | | | | | | |
+|No.|PSCID|Gender|RsID|Observed Base|Reference Base|Function Prediction|Damaging|Exonic Function|
+| ---| --- | ---| --- | ---| --- | ---| ---| ---|
+| | | | | | | | | | |
 
 - Setting the Display filter to All fields and click in the *Show Data* button should present the folowing columns in the Datatable
 
-No.	PSC	DCCID	PSCID	Gender	Subproject	DoB	ExternalID	Chromosome	Strand	StartLoc	EndLoc	Size	Gene Symbol	Gene Name	Platform	RsID	SNP Name	SNP Description	External Source	Observed Base	Reference Base	Array Report	Markers	Validation Method	Validated	Function Prediction	Damaging	Genotype Quality	Exonic Function
-| ---| --- | --- | ---| --- | ---| --- | ---| ---| --- | ---| ---|
-| | | | | | | | | | | |
+|No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Chromosome|Strand|StartLoc|EndLoc|Size|Gene Symbol|Gene Name|Platform|RsID|SNP|Name|SNP Description|External Source|Observed Base|Reference Base|Array Report|Markers|Validation Method|Validated|Function Prediction|Damaging|Genotype Quality|Exonic Function|
+| ---| --- | --- | ---| --- | ---| --- | ---| ---| --- | ---| ---| --- | --- | ---| --- | ---| --- | ---| ---| --- | ---| ---| --- | --- | ---| --- | ---| --- | ---|
+| | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |
 
 - Clicking the *Clear Form* button should reset the filters and the Datatable should prensent the Summary fields columns only.
 - Clicking on column headers should sort data in ascending order on the first click then descending order on the second click.

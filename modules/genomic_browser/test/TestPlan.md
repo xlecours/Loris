@@ -52,10 +52,10 @@ The following permissions should be available in the database
 - Clicking on the *Genomic filters* block header should hide its content.
 - Dropdown filters should filter data presented in the Datatable according to the selected values after clicking on the *Show Data* button.
     - Candidate filters
-        * Site dropdown should present all sites for a user with the genomic_browser_view_allsites permission
-        * Site dropdown should present only the user's own site for a user with the genomic_browser_view_site permission
-        * DCCID filter is an exact filter (Shows only the record with this exact value)
-        * *External ID* and *PSCID* are contains filters (Shows all records that contains this value)
+        - Site dropdown should present all sites for a user with the genomic_browser_view_allsites permission
+        - Site dropdown should present only the user's own site for a user with the genomic_browser_view_site permission
+        - DCCID filter is an exact filter (Shows only the record with this exact value)
+        - *External ID* and *PSCID* are contains filters (Shows all records that contains this value)
     - Genomic filters
         * For the four filters, selecting 'Any' should only present record that have at least one, and selecting 'None' should present only record that don't have Files, SNP, CNV or CPG accordingly.
 
@@ -75,7 +75,10 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 - Clicking on column headers should sort data in ascending order on the first click then descending order on the second click.
 
 ######GWAS tab
-
+######SNP tab
+######CNV tab
+######Methylation tab
+######Files tab
 
 
 ***
@@ -90,8 +93,14 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 ***
 ######CSV
 
+
+###Help 
 ***
-####Help 
+####Help section content
 ***
-######Help section content
-######Tooltips
+####Tooltips
+######GWAS tab
+######SNP tab
+######CNV tab
+######Methylation tab
+######Files tab

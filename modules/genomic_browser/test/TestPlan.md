@@ -1,4 +1,4 @@
-~~#Genomic Browser module - Test Plan
+#Genomic Browser module - Test Plan
 
 ####Permissions
 ***

@@ -1,6 +1,24 @@
 #Genomic Browser module - Test Plan
 
+##### Table of Contents  
+
+[Permissions](#permissions)   
+
+[Navigation](#navigation)  
+
+[Features](#features)  
+######[Filtering](#data_filtering)  
+######[Datatable](#datatable)
+######[Download](#data_download)
+
+[Help](#help)  
+######[Content](#help_content)
+######[Tooltips](#tooltips)
+
+
+<a name="permissions">
 ###Permissions
+</a>
 ***
 
 The following permissions should be available in the database
@@ -37,15 +55,21 @@ The following permissions should be available in the database
 
 - In the File tab of the genomic browser, there should be a *Upload File* button
 
+<a name="navigation">
 ###Page navigation and display
+</a>
+***
+
 - There should be 6 tabs unders the breadcrumb: Profile, GWAS, SNP, CNV, Methylation and Files
 - Clicking each tab should present it as active and the 5 other tabs should remain in te same order.
 
+<a name="features">
 ###Features
-
+</a>
 ***
+<a name="data_filtering">
 ####Data Filtering
-
+</a>
 
 ######Profile Tab
 - Clicking on the *Candidate filters* block header should hide its content.
@@ -82,23 +106,37 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 
 
 ***
+<a name="datatable">
 ####Datatable 
-***
-######Record count
-######Number of rows displayed
-######Pagination
+</a>
+#####Record count
+#####Number of rows displayed
+#####Pagination
+#####Special formated columns
+######Profile tab
+######GWAS tab
+######SNP tab
+######CNV tab
+######Methylation tab
+######Files tab
 
 ***
+<a name="data_download">
 ####Data download 
-***
+</a>
 ######CSV
+######View Genomic File
 
-
+<a name="help">
 ###Help 
+</a>
 ***
+<a name="help_content">
 ####Help section content
-***
+</a>
+<a name="tooltips">
 ####Tooltips
+</a>
 ######GWAS tab
 ######SNP tab
 ######CNV tab

@@ -2,14 +2,11 @@
 
 ####Permissions
 ***
-+--------+-------------------------------+--------------------------------------------+------------+
-| permID | code                          | description                                | categoryID |
-+--------+-------------------------------+--------------------------------------------+------------+
-|     35 | genomic_browser_view_site     | View Genomic Browser data from own site    |          2 |
-|     36 | genomic_browser_view_allsites | View Genomic Browser data across all sites |          2 |
-|     44 | genomic_data_manager          | Manage the genomic files                   |          2 |
-+--------+-------------------------------+--------------------------------------------+------------+
 
+| code                          | description                                |
+| genomic_browser_view_site     | View Genomic Browser data from own site    |
+| genomic_browser_view_allsites | View Genomic Browser data across all sites |
+| genomic_data_manager          | Manage the genomic files                   |
 
 #####For a user without neither genomic_browser_view_allsites nor genomic_browser_view_site :
 

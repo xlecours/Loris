@@ -35,25 +35,25 @@ The following permissions should be available in the database
 - Accessing the http://your-base-url/genomic_browser/ should present the following error message: 
 
 > **You do not have access to this page.**  
-<br>
+
 ***
 #####For a user with genomic_browser_view_allsites only
 
 - There should be a *Genomic Browser* item in the Loris Menu under tools.
-- Accessing the http://your-base-url/genomic_browser/ should load the Genomic Browser Profile tab.
-<br>
+- Accessing the http://your-base-url/genomic_browser/ should load the Genomic Browser Profile tab.  
+
 ***
 #####For a user with genomic_browser_view_site only
 
 - There should be a *Genomic Browser* item in the Loris Menu under tools.
 - Accessing the http://your-base-url/genomic_browser/ should load the Genomic Browser Profile tab.
-- The only candidate's data that should appear in the Datatable of the Profile, CNV,  SNP and Methylation tabs should be those of the same site then this user's site.
-<br>
+- The only candidate's data that should appear in the Datatable of the Profile, CNV,  SNP and Methylation tabs should be those of the same site then this user's site.  
+
 ***
 #####For a user with genomic_data_manager and one of genomic_data_manager or genomic_browser_view_allsites
 
-- In the File tab of the genomic browser, there should be a *Upload File* button
-<br>
+- In the File tab of the genomic browser, there should be a *Upload File* button  
+
 <a name="navigation">
 ###Page navigation and display
 </a>

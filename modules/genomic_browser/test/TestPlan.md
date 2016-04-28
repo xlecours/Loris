@@ -1,20 +1,19 @@
+
 #Genomic Browser module - Test Plan
+<br>
+###Table of Contents  
 
-##### Table of Contents  
-
-###[Permissions](#permissions)   
-
-###[Navigation](#navigation)  
-
-[Features](#features)  
+####[Permissions](#permissions)   
+####[Navigation](#navigation)  
+####[Features](#features)  
 ######[Filtering](#data_filtering)  
 ######[Datatable](#datatable)
 ######[Download](#data_download)
-
-[Help](#help)  
-######[Content](#help_content)
+####[Help](#help)  
+######[Help content](#help_content)
 ######[Tooltips](#tooltips)
 
+<br>
 
 <a name="permissions">
 ###Permissions
@@ -74,11 +73,11 @@ The following permissions should be available in the database
 ######Profile Tab
 - Clicking on the *Candidate filters* block header should hide its content.
 - Clicking on the *Genomic filters* block header should hide its content.
-- Dropdown filters should filter data presented in the Datatable according to the selected values after clicking on the *Show Data* button.
+- Filters should filter data presented in the Datatable according to the selected values after clicking on the *Show Data* button.
     - Candidate filters
-        - Site dropdown should present all sites for a user with the genomic_browser_view_allsites permission
-        - Site dropdown should present only the user's own site for a user with the genomic_browser_view_site permission
-        - DCCID filter is an exact filter (Shows only the record with this exact value)
+        - *Site* dropdown should present all sites for a user with the genomic_browser_view_allsites permission
+        - *Site* dropdown should present only the user's own site for a user with the genomic_browser_view_site permission
+        - *DCCID* filter is an exact filter (Shows only the record with this exact value)
         - *External ID* and *PSCID* are contains filters (Shows all records that contains this value)
     - Genomic filters
         * For the four filters, selecting 'Any' should only present record that have at least one, and selecting 'None' should present only record that don't have Files, SNP, CNV or CPG accordingly.
@@ -98,10 +97,57 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 - Clicking the *Clear Form* button should reset the filters and the Datatable should prensent the Summary fields columns only.
 - Clicking on column headers should sort data in ascending order on the first click then descending order on the second click.
 
+<br>
 ######GWAS tab
+
+************************
+- Clicking on the *GWAS filters* block header should hide its content.
+- Filters should filter data presented in the Datatable according to the selected values after clicking on the *Show Data* button.
+    - GWAS filters
+        - *Chromosome* filter is an exact filter (Shows only the record with this exact value)
+        - All other filters are contains filters (Shows all records that contains this value)
+
+- Clicking the *Clear Form* button should reset the filters.
+- Clicking on column headers should sort data in ascending order on the first click then descending order on the second click.
+************************
+
+<br>
 ######SNP tab
+- Clicking on the *Candidate filters* block header should hide its content.
+- Clicking on the *Genomic Range filters* block header should hide its content.
+- Clicking on the *SNP filters* block header should hide its content.
+- Filters should filter data presented in the Datatable according to the selected values after clicking on the *Show Data* button.
+    - Candidate filters
+        - *Site* dropdown should present all sites for a user with the genomic_browser_view_allsites permission
+        - *Site* dropdown should present only the user's own site for a user with the genomic_browser_view_site permission
+        - *DCCID* filter is an exact filter (Shows only the record with this exact value)
+        - *External ID* and *PSCID* are contains filters (Shows all records that contains this value)
+    - Genomic Range filters
+        - *Genomic Range* filter should filter SNP to prensent only SNP that *StartLoc* is contain withing the range (i.e. chr14:100000-200000 should prensent all the SNP on the chromosome 14 between position 1000000 and 2000000 inclusively.
+        - By entering only the chromosome name in the *Genomic Range*, all the SNP on that chromosome should appear.
+    - SNP filters
+        - All the filters are contains filters (Shows all records that contains this value)
+- The datatable should display the folowing columns (Summary fields)
+
+No.	PSCID	Gender	RsID	Observed Base	Reference Base	Function Prediction	Damaging	Exonic Function
+| ---| --- | ---| --- | ---| --- | ---| ---|
+| | | | | | | | |
+
+- Setting the Display filter to All fields and click in the *Show Data* button should present the folowing columns in the Datatable
+
+No.	PSC	DCCID	PSCID	Gender	Subproject	DoB	ExternalID	Chromosome	Strand	StartLoc	EndLoc	Size	Gene Symbol	Gene Name	Platform	RsID	SNP Name	SNP Description	External Source	Observed Base	Reference Base	Array Report	Markers	Validation Method	Validated	Function Prediction	Damaging	Genotype Quality	Exonic Function
+| ---| --- | --- | ---| --- | ---| --- | ---| ---| --- | ---| ---|
+| | | | | | | | | | | |
+
+- Clicking the *Clear Form* button should reset the filters and the Datatable should prensent the Summary fields columns only.
+- Clicking on column headers should sort data in ascending order on the first click then descending order on the second click.
+<br>
 ######CNV tab
+
+<br>
 ######Methylation tab
+
+<br>
 ######Files tab
 
 

@@ -232,7 +232,6 @@ The following columns should be presented
 
 #####Special formated columns
 ######Profile tab
-
  - The *PSCID* column should provide links to the timepoint_list module filtered to this candidate.
  - If there is at least one file for a candidate, the *Files* column should provide links to the **viewGenomicFile** submenu filtered for all files concerning this candidate. There can be multiple files displayed. 
  - If there is at least one SNP for this candidate, the SNPs column should provide links to the SNP tab filtered for this candidate.
@@ -240,14 +239,25 @@ The following columns should be presented
  - If there is at least one CPG for this candidate, the CPGs column should provide links to the Methylation tab filtered for this candidate.
 
 ######GWAS tab
-######SNP tab
-######CNV tab
-######Methylation tab
+ - None
 
+######SNP tab
+- The *PSCID* column should provide links to the timepoint_list module filtered to this candidate.
+- The *RsID* column should provide link to the [dbSNP](http://www.ncbi.nlm.nih.gov/SNP/) http://www.ncbi.nlm.nih.gov/SNP/
+
+######CNV tab
+- The *PSCID* column should provide links to the timepoint_list module filtered to this candidate.
+
+######Methylation tab
+- The *PSCID* column should provide links to the timepoint_list module filtered to this candidate.
+- The *Cpg Name* column should provide links to the [UCSC Genome Browser](https://genome.ucsc.edu/cgi-bin/hgTracks) https://genome.ucsc.edu/cgi-bin/hgTracks at the location centered on that cpg 1000bp wide. 
+- The *Gene* column should provide links to the [UCSC Genome Browser](https://genome.ucsc.edu/cgi-bin/hgTracks) https://genome.ucsc.edu/cgi-bin/hgTracks at the location centered on that gene. There can be many gene name. The links should open new window. 
+- The *Accession Number* column should provide links to the [UCSC Genome Browser](https://genome.ucsc.edu/cgi-bin/hgTracks) https://genome.ucsc.edu/cgi-bin/hgTracks at the location centered on that gene. There can be many gene name. The links should open new window. 
+- The *Island Loc* column should provide links to the [UCSC Genome Browser](https://genome.ucsc.edu/cgi-bin/hgTracks) https://genome.ucsc.edu/cgi-bin/hgTracks at the location centered on that cPG island.
 
 ######Files tab
 
-- The FileName column should provide links to the viewGenomicFile page showing this file only.
+- The FileName column should provide links to the **viewGenomicFile** page showing this file only.
 
 ***
 <a name="data_download">
@@ -262,14 +272,16 @@ The following columns should be presented
 - The view genomic file page should provide a *Download* button for each file.
 - Clicking on the *Download* button should trigger a file download.
 
+<a name="data_upload">
+####Data upload 
+</a>
+***
+> Under construction
+
 <a name="help">
 ###Help 
 </a>
 
-***
-<a name="data_upload">
-####Data upload 
-</a>
 ***
 
 <a name="help_content">
@@ -282,8 +294,4 @@ The following columns should be presented
 <a name="tooltips">
 ####Tooltips
 </a>
-######GWAS tab
-######SNP tab
-######CNV tab
-######Methylation tab
-######Files tab
+> Under construction

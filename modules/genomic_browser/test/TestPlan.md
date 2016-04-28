@@ -38,3 +38,9 @@
 | No. | PSCID | Gender | Subproject | Files | SNPs | CNVs | CPGs |
 | ---| --- | ---| --- | ---| --- | ---| ---|
 | | | | | | | | |
+
+- Setting the Display filter to All fields and click in the *Show Data* button should present the folowing columns in the Datatable
+
+No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
+| ---| --- | --- | ---| --- | ---| --- | ---| ---| --- | ---| ---|
+| | | | | | | | | | | |

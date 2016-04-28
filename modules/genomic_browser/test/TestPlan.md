@@ -11,3 +11,8 @@ For a user with genomic_browser_view_allsites only:
 
 - There should be a *Genomic Browser* item in the Loris Menu under tools.
 - Accessing the http://your-base-url/genomic_browser/ should load the Genomic Browser Profile tab.
+
+| First Header  | Second Header |
+| ------------- | ------------- |
+| Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  |

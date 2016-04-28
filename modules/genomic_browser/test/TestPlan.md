@@ -27,7 +27,7 @@ The following permissions should be available in the database
 | genomic_browser_view_site | View Genomic Browser data from own site |
 | genomic_browser_view_allsites | View Genomic Browser data across all sites |
 | genomic_data_manager | Manage the genomic files |
-
+<br>
 ***
 #####For a user without neither genomic_browser_view_allsites nor genomic_browser_view_site
 

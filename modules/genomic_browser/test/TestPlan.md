@@ -2,9 +2,9 @@
 
 ##### Table of Contents  
 
-[Permissions](#permissions)   
+###[Permissions](#permissions)   
 
-[Navigation](#navigation)  
+###[Navigation](#navigation)  
 
 [Features](#features)  
 ######[Filtering](#data_filtering)  

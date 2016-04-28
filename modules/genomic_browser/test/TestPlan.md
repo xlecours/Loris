@@ -1,8 +1,15 @@
-
-#Genomic Browser module - Test Plan
+~~#Genomic Browser module - Test Plan
 
 ####Permissions
 ***
++--------+-------------------------------+--------------------------------------------+------------+
+| permID | code                          | description                                | categoryID |
++--------+-------------------------------+--------------------------------------------+------------+
+|     35 | genomic_browser_view_site     | View Genomic Browser data from own site    |          2 |
+|     36 | genomic_browser_view_allsites | View Genomic Browser data across all sites |          2 |
+|     44 | genomic_data_manager          | Manage the genomic files                   |          2 |
++--------+-------------------------------+--------------------------------------------+------------+
+
 
 #####For a user without neither genomic_browser_view_allsites nor genomic_browser_view_site :
 
@@ -29,11 +36,19 @@
 
 
 ####Features
+
+***
 #####Filters 
+
+***
 ######Profile Tab
 - Clicking on the *Candidate filters* block header should hide its content.
 - Clicking on the *Genomic filters* block header should hide its content.
 - Dropdown filters should filter data presented in the Datatable according to the selected values after clicking on the *Show Data* button.
+    - Candidate filters
+        - Site dropdown should present all sites for a user with genomic_browser_view_allsites permission
+        - 
+
 - The datatable should display the folowing columns (Summary fields)
 
 | No. | PSCID | Gender | Subproject | Files | SNPs | CNVs | CPGs |
@@ -48,3 +63,6 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 
 - Clicking the *Clear Form* button should reset the filters and the Datatable should prensent the Summary fields columns only.
 - Clicking on column headers should sort data in ascending order on the first click then descending order on the second click.
+
+***
+######GWAS tab

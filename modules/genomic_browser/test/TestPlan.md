@@ -133,8 +133,8 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 - Setting the Display filter to All fields and click in the *Show Data* button should present the folowing columns in the Datatable
 
 |No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Chromosome|Strand|StartLoc|EndLoc|Size|Gene Symbol|Gene Name|Platform|RsID|SNP|Name|SNP Description|External Source|Observed Base|Reference Base|Array Report|Markers|Validation Method|Validated|Function Prediction|Damaging|Genotype Quality|Exonic Function|
-| ---| --- | --- | ---| --- | ---| --- | ---| ---| --- | ---| ---| --- | --- | ---| --- | ---| --- | ---| ---| --- | ---| ---| --- | --- | ---| --- | ---| --- | ---|
-| | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---| --- | --- | --- |
+| | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |
 
 - Clicking the *Clear Form* button should reset the filters and the Datatable should prensent the Summary fields columns only.
 - Clicking on column headers should sort data in ascending order on the first click then descending order on the second click.

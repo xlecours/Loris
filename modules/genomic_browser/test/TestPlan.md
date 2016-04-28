@@ -207,21 +207,47 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 
 ######Files tab
 
+- *Type* filter is an exact filter (Shows only the record with this exact value)
+- All other filters are contains filters (Shows all records that contains this value)
+
+The following columns should be presented
+
+|No.|GenomicFileID|FileName|Description|FileType|Date Inserted|InsertedByUserID|Caveat|Notes|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| | | | | | | | | |
+
+- Clicking the *Clear Form* button should reset the filters
+
+######Across tab filters
 
 ***
 <a name="datatable">
 ####Datatable 
 </a>
-#####Record count
-#####Number of rows displayed
-#####Pagination
+
+ - For each of the 6 tabs, the Datatable should present the total of records found.
+ - For each of the 6 tabs, the Datatable should present the number of row  displayed.
+ - For each of the 6 tabs, the Datatable should present a pagination if there is more records to display then the actual *row per page* value.
+ - Chnaging the *row per page* dropdown value should be reflected on the pagination and on the number of row displayed.
+
 #####Special formated columns
 ######Profile tab
+
+ - The *PSCID* column should provide links to the timepoint_list module filtered to this candidate.
+ - If there is at least one file for a candidate, the *Files* column should provide links to the **viewGenomicFile** submenu filtered for all files concerning this candidate. There can be multiple files displayed. 
+ - If there is at least one SNP for this candidate, the SNPs column should provide links to the SNP tab filtered for this candidate.
+ - If there is at least one CNV for this candidate, the CNVs column should provide links to the CNV tab filtered for this candidate.
+ - If there is at least one CPG for this candidate, the CPGs column should provide links to the Methylation tab filtered for this candidate.
+
 ######GWAS tab
 ######SNP tab
 ######CNV tab
 ######Methylation tab
+
+
 ######Files tab
+
+- The FileName column should provide links to the viewGenomicFile page showing this file only.
 
 ***
 <a name="data_download">
@@ -249,6 +275,7 @@ No.|PSC|DCCID|PSCID|Gender|Subproject|DoB|ExternalID|Files|SNPs|CNVs|CPGs|
 <a name="help_content">
 ####Help section content
 </a>
+
 - The help panel should appear when clicking on the question mark in the LORIS menu bar.  
 - The help text should be accurate at formatted properly.
 

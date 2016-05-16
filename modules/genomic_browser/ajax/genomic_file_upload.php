@@ -43,9 +43,9 @@ reportProgress(1, 'Validating...');
 $fileToUpload
     = (object) array(
                 'file_type'         => $_FILES["fileData"]["type"],
-                'file_name'         => $_FILES["fileData"]["name"],
-                'tmp_name'          => $_FILES["fileData"]["tmp_name"],
-                'size'              => $_FILES["fileData"]['size'],
+                'file_name'         => 'MAVAN.Methylation_FunNorm.csv',
+                'tmp_name'          => '/data/data-provider/MAVAN.Methylation_FunNorm.csv',
+                'size'              => 2893341988,
                 'inserted_by'       => $userSingleton->getData('UserID'),
                 'genomic_file_type' => empty($_POST['fileType']) ?
                     null : str_replace('_', ' ', $_POST['fileType']),
@@ -55,7 +55,7 @@ $fileToUpload
 switch ($fileToUpload->genomic_file_type) {
 case 'Methylation beta-values':
     validateRequest();
-    moveFileToFS($fileToUpload);
+    //moveFileToFS($fileToUpload);
     registerFile($fileToUpload);
     insertMethylationData($fileToUpload);
     break;
@@ -222,8 +222,7 @@ function createSampleCandidateRelations(&$fileToUpload)
     $rows = array();
 
     $f = fopen(
-        $base_dir . $genomic_data_dir . 'genomic_uploader/'
-            . $fileToUpload->file_name,
+        '/data/data-provider/MAVAN.Methylation_FunNorm.csv',
         'r'
     );
 
@@ -251,12 +250,12 @@ function createSampleCandidateRelations(&$fileToUpload)
         function ($pscid) {
             return "( '$pscid', 
            (SELECT CandID FROM candidate WHERE PSCID = '"
-            . explode('_', $pscid)[1]
+            . explode('_',$pscid)[1]
             . "'))";
         },
         $headers
     );
-
+    
     $stmt .= join(',', $rows);
     try {
         $prep   = $DB->prepare($stmt);
@@ -301,8 +300,7 @@ function insertBetaValues(&$fileToUpload)
     $DB =& Database::singleton();
 
     $f = fopen(
-        $base_dir . $genomic_data_dir . 'genomic_uploader/'
-            . $fileToUpload->file_name,
+        '/data/data-provider/MAVAN.Methylation_FunNorm.csv',
         "r"
     );
 
@@ -344,6 +342,26 @@ function insertBetaValues(&$fileToUpload)
             foreach ($values as $key => $value) {
                 $row = "('$headers[$key]', '$probe_id', $value)";
                 array_push($rows, $row);
+                if (count($rows) > 50) {
+                    $stmt .= join(',', $rows);
+                    try {
+                        $prep   = $DB->prepare($stmt_prefix . $stmt);
+                        $result = $DB->execute($prep, array(), array('nofetch' => true));
+                    } catch (Exception $e) {
+                        die(
+                            json_encode(
+                                array(
+                                    'message'  => 'Insertion failed',
+                                    'progress' => 100,
+                                    'error'    => true,
+                                )
+                            )
+                        );
+                    }
+                    $stmt = '';
+                    unset($rows);
+                    $rows = array();
+                }
             }
 
             $stmt .= join(',', $rows);
@@ -394,8 +412,7 @@ function createCandidateFileRelations(&$fileToUpload)
     $DB =& Database::singleton();
 
     $f = fopen(
-        $base_dir . $genomic_data_dir . 'genomic_uploader/'
-            . $fileToUpload->file_name,
+        '/data/data-provider/MAVAN.Methylation_FunNorm.csv',
         "r"
     );
 

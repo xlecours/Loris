@@ -182,5 +182,5 @@ var table = RDynamicDataTable({
     "getFormattedCell" : formatColumn,
     "freezeColumn" : "PSCID"
 });
-React.render(table, document.getElementById("datatable"));
+tableRefs = React.render(table, document.getElementById("datatable"));
 </script>

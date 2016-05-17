@@ -72,9 +72,9 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
                           'DATE_FORMAT(candidate.DoB,\'%Y-%m-%d\') AS DoB',
                           'candidate.ExternalID as externalID',
                           'F.FileCount as Files',
-                          'S.SNPCount as SNPs',
-                          'C.CNVCount as CNVs',
-                          'M.CPGCount as CPGs',
+                          '"-" as SNPs',
+                          '"-" as CNVs',
+                          '"-" as CPGs',
                          );
 
         // This variable will be used by the columnFormatter javascript
@@ -101,18 +101,6 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
             LEFT JOIN (SELECT gcfr.CandID, count(gcfr.GenomicFileID) as FileCount 
                 from genomic_candidate_files_rel gcfr group by gcfr.CandID) F 
                 ON candidate.CandID = F.CandID
-            LEFT JOIN (select scr.CandID, count(scr.CandID) as SNPCount
-                from SNP_candidate_rel as scr GROUP BY scr.CandID) as S
-                 ON (candidate.CandID = S.CandID)
-            LEFT JOIN (select CNV.CandID, count(CNV.CandID) as CNVCount
-                from CNV GROUP BY CNV.CandID) AS C
-                ON (C.CandID=candidate.CandID)
-            LEFT JOIN  (select gscr.CandID, COUNT(cpg_name) as CPGCount 
-                from genomic_cpg gc 
-                JOIN genomic_sample_candidate_rel gscr 
-                    USING (sample_label) 
-                group by gscr.CandID) as M
-                ON (M.CandID = candidate.CandID)
             WHERE
             candidate.Entity_type = 'Human' AND candidate.Active = 'Y' ";
 
@@ -124,7 +112,7 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
         }
 
         $this->group_by     = 'candidate.CandID';
-        $this->order_by     = 'psc.Name, candidate.CandID DESC';
+        $this->order_by     = 'candidate.CandID';
         $this->validFilters = array(
                                'candidate.CenterID',
                                'candidate.CandID',

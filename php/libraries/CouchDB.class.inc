@@ -164,6 +164,8 @@ class CouchDB
      */
     var $bulkDocuments = array();
 
+    var $database = null;
+
     /**
      * Returns one and only one CouchDB database wrapper object.
      * NOTE: You shouldn't call this directly, instead you should
@@ -183,6 +185,10 @@ class CouchDB
         return $db;
     }
 
+    function setDatabase( $db_name) {
+        $this->database = $db_name;
+    }
+
     /**
      * Helper function to construct an HTTP request relative to the CouchDB database
      *
@@ -193,10 +199,13 @@ class CouchDB
      */
     function _constructURL($op, $doc)
     {
-        $config = NDB_Config::singleton();
-        $db     = $config->getSetting("CouchDB");
+        if (empty($this->database)) {
+            $config = NDB_Config::singleton();
+            $db     = $config->getSetting("CouchDB");
+            $this->database = $db['database'];
+        }
 
-        return "$op /$db[database]/$doc";
+        return "$op /$this->database/$doc";
     }
 
     /**

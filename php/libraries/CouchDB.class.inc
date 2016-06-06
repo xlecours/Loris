@@ -595,6 +595,40 @@ class CouchDB
         return $data['rows'];
     }
 
+    function queryList($designdoc, $listname,  $viewname, $params, $full_json=false)
+    {
+        $keys = null;
+        if (isset($params['keys'])) {
+
+            $keys = $params['keys'];
+            unset($params['keys']);
+
+            $url = "_design/" . $designdoc . "/_view/" . $viewname
+                . "?" . http_build_query($params);
+
+            $query = $this->_postRelativeURL(
+                $url,
+                json_encode(array('keys' => $keys)),
+                'POST',
+                $full_json
+            );
+
+        } else {
+            $url   = "_design/$designdoc/_list/$listname/$viewname"
+                     . "?" . http_build_query($params);
+            $query = $this->_getRelativeUrl($url);
+        }
+
+        if ($full_json) {
+            return $query;
+        }
+        $data = json_decode($query, true);
+
+        if (isset($data['error']) && $data['error'] == 'not_found') {
+            return array();
+        }
+        return $data['rows'];
+    }
     /**
      * Signals that a large transaction is about to happen, and that the
      * CouchDB wrapper should send a single bulk request for all the

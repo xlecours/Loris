@@ -63,20 +63,103 @@ PhenotypesPanel = React.createClass({
         var queries = this.state.availableQueries.map(function (q) {return <option value={q.id} >{q.doc.Meta.name}</option>;});
         var options = [<option value="" ></option>, ...queries];
         return (
-            <select onChange={this.onQuerySelected}>
+            <select multi="true" onChange={this.onQuerySelected}>
                 {options}
             </select>
         );
     }
 });
 
-GenomicVariablesPanel = React.createClass({
+GenomicDatasetsPanel = React.createClass({
+    propTypes: {
+        onDatasetSelected : React.PropTypes.func.isRequired,
+        pscids : React.PropTypes.array.isRequired
+    },
+    getInitialState: function () {
+        return {
+            availableDatasets : [],
+        };
+    },
+    componentDidMount: function () {
+        var that = this;
+        $.ajax(
+            loris.BaseURL + "/AjaxHelper.php?Module=dataset_maker&script=getAvailableDatasets.php", {
+            dataType: 'json',
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                return xhr;
+            },
+            success: function(data) {
+                that.setState({availableDatasets : data.rows});
+            },
+            error: function(data,error_code,error_msg) {
+                console.error(error_code + ': ' + error_msg);
+                that.setState({ "error" : "Error loading data" });
+            }
+        });
+    },
+    handleChange: function (event) {
+        var selectedDataset = this.state.availableDatasets.filter(function(query) {
+            return query.id == event.target.value;
+        },this);
+        this.props.onDatasetSelected(selectedDataset);
+    },
     render: function() {
-        var pscids = JSON.stringify(this.props.pscids);
+
+        var intersection = function (a,b) {
+            if (a.length > b.length) {
+                var t = a;
+                a = b;
+                b = t;
+            }
+            return a.filter(function(value) { return b.indexOf(value) != -1});
+        };
+
+        var datasets = this.state.availableDatasets.map(function(dataset) {
+            var intersect = intersection(this.props.pscids, dataset.value);
+            var title = "Intersection : " + intersect.length + " samples";
+            return (
+                <option 
+                    value={dataset.id} 
+                    data-toggle="tooltip" title={title}
+                >
+                    {dataset.key}
+                </option>
+            );
+        }, this);
+ 
+        var options = [<option value="" ></option>, ...datasets];
         return (
-            <div>
-                {pscids}
-            </div>
+            <select onChange={this.handleChange}>
+                {options}
+            </select>
+        );
+    }
+});
+
+GenomicRangePanel = React.createClass({
+    propTypes: {
+        onRangeSelected : React.PropTypes.func.isRequired,
+        ready: React.PropTypes.bool.isRequired
+    },
+    getDefaultProps: function () {
+        return {ready : false};
+    },
+    render: function () {
+        var disabled = (this.props.ready) ? '' : 'disabled';
+        return (
+            <form onSubmit={this.props.onRangeSelected}>
+                <input id="genomic_range" type="text" defaultValue="chr1:9202321-9303121"/>
+                <button disabled={disabled}>get</button>
+            </form>
+        );
+    }
+});
+
+QueryPreviewPannel = React.createClass({
+    render: function () {
+        return (
+            <textarea disable value={this.props.data}></textarea>
         );
     }
 });
@@ -84,7 +167,9 @@ GenomicVariablesPanel = React.createClass({
 DatasetMakerApp = React.createClass({
     getInitialState: function () {
         return {
-            selectedPSCIDs: []
+            selectedPSCIDs: [],
+            selectedDataset : {},
+            queryPreview : " "
         };
     },
     onQueryDocumentLoaded : function (savedQueryDoc) {
@@ -102,7 +187,6 @@ DatasetMakerApp = React.createClass({
                 var pscidsFilters = {};
                 if(Array.isArray(data.result)) {
                     data.result.forEach(function(row) {
-                        console.log(row);
                         if(row.filteredOut != undefined) {
                             pscidsFilters[row.value[0]] = (row.filteredOut || pscidsFilters[row.value[0]] == 'out') ? 'out' : 'in';
                         }
@@ -116,11 +200,43 @@ DatasetMakerApp = React.createClass({
             }
         }); 
     },
+    onDatasetSelected: function (dataset) {
+        var dataset = dataset[0];
+        this.setState({ 
+            selectedDataset: dataset,
+        });
+    },
+    onRangeSelected: function (event) {
+        event.preventDefault();
+        var pscidMapping = {};
+        var genomic_range = event.target.getElementsByTagName('input')[0].value;
+        var that = this;
+
+        this.state.selectedPSCIDs.forEach(function(pscid) { pscidMapping[pscid] = this.state.selectedDataset.value.indexOf(pscid);}, this);
+        console.log(pscidMapping);
+        $.ajax(
+            loris.BaseURL + "/AjaxHelper.php?Module=dataset_maker&script=previewDatasetQuery.php&dataset_id=" + that.state.selectedDataset.id+ "&genomic_range=" + genomic_range + "&pscids=" + JSON.stringify(pscidMapping), {
+            dataType: 'text',
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                return xhr;
+            },
+            success: function(data) {
+                that.setState({queryPreview: data});
+            },
+            error: function(data,error_code,error_msg) {
+                console.error(error_code + ': ' + error_msg);
+                that.setState({ "error" : "Error loading data" });
+            }
+        });
+    },
     render: function () {
         return (
             <div>
                 <PhenotypesPanel onQueryDocumentLoaded={this.onQueryDocumentLoaded}/>
-                <GenomicVariablesPanel pscids={this.state.selectedPSCIDs}/>
+                <GenomicDatasetsPanel pscids={this.state.selectedPSCIDs} onDatasetSelected={this.onDatasetSelected}/>
+                <GenomicRangePanel onRangeSelected={this.onRangeSelected} ready={Object.keys(this.state.selectedDataset).length > 0}/>
+                <QueryPreviewPannel data={this.state.queryPreview}/>
             </div>
         );
     }

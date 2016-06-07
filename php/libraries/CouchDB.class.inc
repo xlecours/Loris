@@ -604,7 +604,7 @@ class CouchDB
             unset($params['keys']);
 
             $url = "_design/" . $designdoc . "/_view/" . $viewname
-                . "?" . http_build_query($params);
+                . "?" . $params;
 
             $query = $this->_postRelativeURL(
                 $url,

@@ -161,7 +161,7 @@ GenomicRangePanel = React.createClass({
         return React.createElement(
             'form',
             { onSubmit: this.props.onRangeSelected },
-            React.createElement('input', { id: 'genomic_range', type: 'text', defaultValue: 'chr1:9202321-9303121' }),
+            React.createElement('input', { id: 'genomic_range', type: 'text', defaultValue: 'chr1:15865-1266504' }),
             React.createElement(
                 'button',
                 { disabled: disabled },

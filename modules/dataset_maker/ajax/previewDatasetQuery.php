@@ -18,8 +18,8 @@ $cdb->setDatabase("epigenomics");
 $dataset = $_REQUEST['dataset_id'];
 $genomic_range = preg_split('/[:-]+/', $_REQUEST['genomic_range']);
 $chromosome = $genomic_range[0];
-$start_loc = $genomic_range[1];
-$end_loc = $genomic_range[2];
+$start_loc = intval($genomic_range[1]);
+$end_loc = intval($genomic_range[2]);
 
 $startkey = "[\"$dataset\",\"$chromosome\",$start_loc]";
 $endkey = "[\"$dataset\",\"$chromosome\",$end_loc]";

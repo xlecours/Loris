@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . "/../vendor/autoload.php";
 require_once 'generic_includes.php';
 require_once 'CouchDB.class.inc';
@@ -24,7 +25,8 @@ class CouchDBMethylation450kImporter
         // Read the column headers
         $result = array();
         $outputs = array();
-        exec('head -1 /home/xlecours/transit/headers', $outputs, $result);
+        // todo :: This should use the genomic_path config setting
+        exec('head -1 ../modules/genomic_browser/tools/headers', $outputs, $result);
         $pscids = explode(' ', $outputs[0]);
         //Remove the first element (the probe_id column headers)
         array_shift($pscids);
@@ -53,6 +55,7 @@ class CouchDBMethylation450kImporter
 
     function importData()
     {
+        // todo :: This should use the genomic_path config setting
         $handle = @fopen("/home/xlecours/transit/betavalue", "r");
         if ($handle) {
 
@@ -87,12 +90,12 @@ class CouchDBMethylation450kImporter
                     ),
                     'data' => $beta_values
                 );
-                $result = $this->CouchDB->putDoc($doc_id, $doc);
-                echo "$doc_id : $result\n";
+                $this->CouchDB->putDoc($doc_id, $doc);
                 $probe_count++;
 
                 if($probe_count % 200 == 0) {
                     $this->CouchDB->commitBulkTransaction();
+                    echo "+200 :: $doc_id\n";
                     $this->CouchDB->beginBulkTransaction();
                 }
             }

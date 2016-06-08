@@ -149,7 +149,7 @@ GenomicRangePanel = React.createClass({
         var disabled = (this.props.ready) ? '' : 'disabled';
         return (
             <form onSubmit={this.props.onRangeSelected}>
-                <input id="genomic_range" type="text" defaultValue="chr1:9202321-9303121"/>
+                <input id="genomic_range" type="text" defaultValue="chr1:15865-1266504"/>
                 <button disabled={disabled}>get</button>
             </form>
         );

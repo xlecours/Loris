@@ -26,7 +26,7 @@ $endkey = "[\"$dataset\",\"$chromosome\",$end_loc]";
 
 $first_five_lines = $cdb->queryList(
     'genomic_browser',
-    'first',
+    'betavalue_by_sample_name',
     'betavalue_by_genomic_location',
     array(
         'PSCIDs' => $_REQUEST['pscids'],
@@ -40,7 +40,7 @@ $first_five_lines = $cdb->queryList(
 // todo keep the last line and remove everything starting from that last line in the next query. (in case there is less than 10 results) 
 $last_five_lines = $cdb->queryList(
     'genomic_browser',
-    'first',
+    'betavalue_by_sample_name',
     'betavalue_by_genomic_location',
     array(
         'PSCIDs' => $_REQUEST['pscids'],

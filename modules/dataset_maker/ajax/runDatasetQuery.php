@@ -37,7 +37,7 @@ $results = $cdb->queryList(
 );
 
 $filename = $dataset . '_' . $_REQUEST['genomic_range'] . '_' .  crc32($_REQUEST['pscids']);
-$myfile = fopen("/data/loris/data/genomics/data-provider/$filename", "w");
+$myfile = fopen("/data/loris/data/genomics/custom_datasets/$filename", "w");
 fwrite($myfile, $results);
 fclose($myfile);
 

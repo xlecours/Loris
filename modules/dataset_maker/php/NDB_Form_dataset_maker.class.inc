@@ -81,7 +81,9 @@ class NDB_Form_dataset_maker extends NDB_Form
         $deps    = parent::getJSDependencies();
         return array_merge(
             $deps,
-            array( '/dataset_maker/js/dataset_maker_app.js' )
+            array( 
+                '/dataset_maker/js/dataset_maker_app.js'
+            )
         );
     }
 }

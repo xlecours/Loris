@@ -164,6 +164,8 @@ class CouchDB
      */
     var $bulkDocuments = array();
 
+    var $database = null;
+
     /**
      * Returns one and only one CouchDB database wrapper object.
      * NOTE: You shouldn't call this directly, instead you should
@@ -183,6 +185,10 @@ class CouchDB
         return $db;
     }
 
+    function setDatabase( $db_name) {
+        $this->database = $db_name;
+    }
+
     /**
      * Helper function to construct an HTTP request relative to the CouchDB database
      *
@@ -193,10 +199,13 @@ class CouchDB
      */
     function _constructURL($op, $doc)
     {
-        $config = NDB_Config::singleton();
-        $db     = $config->getSetting("CouchDB");
+        if (empty($this->database)) {
+            $config = NDB_Config::singleton();
+            $db     = $config->getSetting("CouchDB");
+            $this->database = $db['database'];
+        }
 
-        return "$op /$db[database]/$doc";
+        return "$op /$this->database/$doc";
     }
 
     /**
@@ -586,6 +595,40 @@ class CouchDB
         return $data['rows'];
     }
 
+    function queryList($designdoc, $listname,  $viewname, $params, $full_json=false)
+    {
+        $keys = null;
+        if (isset($params['keys'])) {
+
+            $keys = $params['keys'];
+            unset($params['keys']);
+
+            $url = "_design/" . $designdoc . "/_view/" . $viewname
+                . "?" . $params;
+
+            $query = $this->_postRelativeURL(
+                $url,
+                json_encode(array('keys' => $keys)),
+                'POST',
+                $full_json
+            );
+
+        } else {
+            $url   = "_design/$designdoc/_list/$listname/$viewname"
+                     . "?" . http_build_query($params);
+            $query = $this->_getRelativeUrl($url);
+        }
+
+        if ($full_json) {
+            return $query;
+        }
+        $data = json_decode($query, true);
+
+        if (isset($data['error']) && $data['error'] == 'not_found') {
+            return array();
+        }
+        return $data['rows'];
+    }
     /**
      * Signals that a large transaction is about to happen, and that the
      * CouchDB wrapper should send a single bulk request for all the

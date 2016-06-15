@@ -74,7 +74,7 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
                           'F.FileCount as Files',
                           'S.SNPCount as SNPs',
                           'C.CNVCount as CNVs',
-                          'M.CPGCount as CPGs',
+                          'null as CPGs',
                          );
 
         // This variable will be used by the columnFormatter javascript

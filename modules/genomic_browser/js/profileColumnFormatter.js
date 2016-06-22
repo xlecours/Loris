@@ -1,63 +1,65 @@
-
-function formatColumn(column, cell, rowData) {
+function formatColumn(column, cell, rowData, rowHeaders) {
     reactElement = null;
     if (-1 == loris.hiddenHeaders.indexOf(column)) {
-        var params = [];
+        var row = {};
+        rowHeaders.forEach(function (header, index) {
+            row[header] = rowData[index];
+        }, this);
         switch (column) {
-            case 'PSCID':
-                var url = loris.BaseURL + "/" + rowData[1] + "/";
+            case 'PSC':
+            case 'Gender':
+            case 'DoB':
+            case 'ExternalID':
                 reactElement = React.createElement(
-                    "td",
+                    'td',
+                    null,
+                    cell
+                );
+                break;
+            case 'PSCID':
+            case 'DCCID':
+                var url = loris.BaseURL + "/" + row.DCCID + "/";
+                reactElement = React.createElement(
+                    'td',
                     null,
                     React.createElement(
-                        "a",
+                        'a',
                         { href: url },
                         cell
                     )
                 );
                 break;
             case 'Subproject':
+                var cohort = loris.subprojectList[cell];
                 reactElement = React.createElement(
-                    "td",
+                    'td',
                     null,
-                    loris.subprojectList[cell]
+                    cohort
                 );
                 break;
-
-            // Links columns. They all use the loris.loadFilteredMenuClickHandler
-            // but with distinctive parameters.
             case 'Files':
-		if (0 == params.length) {
-                    params = ['genomic_browser&submenu=viewGenomicFile', {'candID': rowData[1]}];
-                }
-            case 'SNPs':
-		if (0 == params.length) {
-                    params = ['genomic_browser&submenu=snp_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
-                }
-            case 'CNVs':
-		if (0 == params.length) {
-                    params = ['genomic_browser&submenu=cnv_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
-                }
-            case 'CPGs':
-		if (0 == params.length) {
-                    params = ['genomic_browser&submenu=cpg_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
-                }
+                var url = loris.BaseURL + "/genomic_browser/?submenu=genomic_file_uploader&CandID=" + row.DCCID;
                 reactElement = React.createElement(
-                    "td",
+                    'td',
                     null,
                     React.createElement(
-                        "a",
-                        {onClick: loris.loadFilteredMenuClickHandler(params[0], params[1]) },
+                        'a',
+                        { href: url },
                         cell
                     )
                 );
                 break;
-            
             default:
+                // Everything else is a genomic variable and should have a matching tab name.
+                var url = loris.BaseURL + "/genomic_browser/?submenu=" + column + "&CandID=" + row.DCCID;
                 reactElement = React.createElement(
-                    "td",
+                    'td',
                     null,
-                    cell
+                    React.createElement(
+                        'a',
+                        { href: url },
+                        cell
+                    )
                 );
                 break;
         }

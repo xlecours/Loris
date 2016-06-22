@@ -31,7 +31,7 @@ require_once 'NDB_Menu_Filter.class.inc';
 */
 class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
 {
-    var $AjaxModule = false;
+    var $AjaxModule = true;
     /**
      * Variables to enable special filter behaviour -
      * Show brief results or show full results (all available fields)
@@ -55,6 +55,85 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
     }
 
     /**
+     * Converts this menu filter to an array of the form
+     *
+     * Headers => (string array)
+     * Data => (array of arrays of row data)
+     *
+     * Suitable for serializing to JSON, CSV, etc..
+     *
+     * @note   overloaded function
+     * @return associative array
+     */
+    function toArray()
+    {
+        // Get the first columns from MySQL
+        $data = $this->_getFullList();
+
+        $MappedData = array();
+        foreach ($data as $row) {
+            $MappedData[] = array_values($row);
+        }
+
+        $headers = array_map(
+            function ($header) {
+                return ucwords(str_replace('_', ' ', $header));
+            },
+            $this->headers
+        );
+
+        $candidate_list = array_map(function($candidate) {
+            return $candidate['PSCID'];
+        }, $data);
+
+        // Add genomic variables from CouchDB
+        $results = json_decode($this->getDataFromCouchDB());
+        $genomic_variable_headers = array_keys(
+            get_object_vars($results->column_totals)
+        );
+        $results_data = get_object_vars($results->data);
+
+        $pscid_header_index = array_search('PSCID', $headers);
+        foreach ($MappedData as $index => $row) {
+            foreach ($genomic_variable_headers as $header) {
+                $pscid = $row[$pscid_header_index];
+                $value = get_object_vars($results_data[$pscid])[$header];
+                array_push($MappedData[$index], $value);
+            }
+        }
+       
+        return array(
+                'Headers' => array_merge($headers, $genomic_variable_headers),
+                'Data'    => $MappedData,
+               );
+    }
+
+    /**
+     * Get CouchDB data from a specific list/view combination.
+     *
+     * ex: http://localhost:5984/test_epi/_design/datasets/_list/profile/betavalue_by_sample?reduce=false
+     *
+     * @return array
+     * @access private
+     */
+    function getDataFromCouchDB() 
+    {
+        $cdb = CouchDB::singleton();
+        $cdb->setDatabase("test_epi");
+        $results = $cdb->queryList(
+            "datasets",
+            'profile',
+            'betavalue_by_sample',
+            array(
+                'reduce' => 'true',
+                'group_level' => '2',
+            ),
+            true
+        );
+        return $results;
+    }
+
+    /**
      * Function _setupVariables
      *
      * @note   overloaded function
@@ -72,9 +151,6 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
                           'DATE_FORMAT(candidate.DoB,\'%Y-%m-%d\') AS DoB',
                           'candidate.ExternalID as externalID',
                           'F.FileCount as Files',
-                          'S.SNPCount as SNPs',
-                          'C.CNVCount as CNVs',
-                          'null as CPGs',
                          );
 
         // This variable will be used by the columnFormatter javascript
@@ -101,18 +177,6 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
             LEFT JOIN (SELECT gcfr.CandID, count(gcfr.GenomicFileID) as FileCount 
                 from genomic_candidate_files_rel gcfr group by gcfr.CandID) F 
                 ON candidate.CandID = F.CandID
-            LEFT JOIN (select scr.CandID, count(scr.CandID) as SNPCount
-                from SNP_candidate_rel as scr GROUP BY scr.CandID) as S
-                 ON (candidate.CandID = S.CandID)
-            LEFT JOIN (select CNV.CandID, count(CNV.CandID) as CNVCount
-                from CNV GROUP BY CNV.CandID) AS C
-                ON (C.CandID=candidate.CandID)
-            LEFT JOIN  (select gscr.CandID, COUNT(cpg_name) as CPGCount 
-                from genomic_cpg gc 
-                JOIN genomic_sample_candidate_rel gscr 
-                    USING (sample_label) 
-                group by gscr.CandID) as M
-                ON (M.CandID = candidate.CandID)
             WHERE
             candidate.Entity_type = 'Human' AND candidate.Active = 'Y' ";
 

@@ -36,14 +36,14 @@ class CouchDBMethylation450kImporter
         $data_rows = intval($outputs[0]);
 
         //Prepare the document definition
-        $file_name = "MAVAN.Methylation.450k";
-        $LORIS_file_id = "8231";
+        $file_name = "MAVAN.variants";
+        $LORIS_file_id = "6771";
         $doc = array(
             'meta' => array(
                 'doctype'       => 'dataset',
                 'file_format'   => 'matrix',
-                'variable_type' => 'methylation',
-                'variable_format' => 'betavalue',
+                'variable_type' => 'snp',
+                'variable_format' => 'allele',
                 'identifier'    => array(
                     'file_name'     => $file_name,
                     'LORIS_file_id' => $LORIS_file_id
@@ -67,8 +67,8 @@ class CouchDBMethylation450kImporter
 
             $probe_count = 0;
             $this->CouchDB->beginBulkTransaction();
-            $file_name = "MAVAN.Methylation.450k";
-            $LORIS_file_id = "8231";
+            $file_name = "MAVAN.variants";
+            $LORIS_file_id = "6771";
 
             while (($line = fgets($handle)) !== false) {
                 $beta_values = explode(',', $line);

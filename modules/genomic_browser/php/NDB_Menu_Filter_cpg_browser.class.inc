@@ -29,7 +29,7 @@ require_once 'NDB_Menu_Filter.class.inc';
 class NDB_Menu_Filter_CpG_Browser extends NDB_Menu_Filter
 {
 
-    var $AjaxModule = false;
+    var $AjaxModule = true;
 
     /**
      * Variables to enable special filter behaviour -

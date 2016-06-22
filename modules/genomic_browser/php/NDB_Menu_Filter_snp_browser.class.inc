@@ -31,6 +31,7 @@ require_once 'NDB_Menu_Filter.class.inc';
 */
 class NDB_Menu_Filter_SNP_Browser extends NDB_Menu_Filter
 {
+    var $AjaxModule = true;
     /**
      * Variables to enable special filter behaviour -
      * Show brief results or show full results (all available fields)

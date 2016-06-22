@@ -13,7 +13,6 @@
  *  @link     https://www.github.com/aces/Loris/
  */
 
-require_once 'NDB_Menu_Filter.class.inc';
 /**
  * NDB_Menu_Filter_CPG_Browser Class
  *
@@ -26,7 +25,7 @@ require_once 'NDB_Menu_Filter.class.inc';
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt @GPLv3
  * @link     https://github.com/aces/Loris
 */
-class NDB_Menu_Filter_CpG_Browser extends NDB_Menu_Filter
+class NDB_Menu_Filter_Methylation extends NDB_Menu_Filter
 {
 
     var $AjaxModule = true;
@@ -155,7 +154,6 @@ class NDB_Menu_Filter_CpG_Browser extends NDB_Menu_Filter
             LEFT JOIN genotyping_platform platform
                 ON (gca.platform_id = platform.PlatformID)
             WHERE 
-            cpg.beta_value IS NOT NULL AND 
             candidate.Entity_type = 'Human' AND candidate.Active = 'Y' ";
 
         $DB   = Database::singleton();
@@ -176,7 +174,7 @@ class NDB_Menu_Filter_CpG_Browser extends NDB_Menu_Filter
                                'cohort.SubprojectID',
                                'candidate.DoB',
                                'show_brief_results',
-                               'cpg.cpg_name',
+                               'gca.cpg_name',
                                'cpg.beta_value',
                                'genome_loc.Chromosome',
                                'genome_loc.Strand',

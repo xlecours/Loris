@@ -16,7 +16,6 @@
  *  Main tab: Genomic Profiles. Submenus: CNV,SNP,GWAS
  */
 
-require_once 'NDB_Menu_Filter.class.inc';
 /**
  * NDB_Menu_Filter_Genomic_Browser Class
  *
@@ -103,9 +102,9 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
         }
        
         return array(
-                'Headers' => array_merge($headers, $genomic_variable_headers),
-                'Data'    => $MappedData,
-               );
+            'Headers' => array_merge($headers, $genomic_variable_headers),
+            'Data'    => $MappedData,
+        );
     }
 
     /**
@@ -119,7 +118,7 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
     function getDataFromCouchDB() 
     {
         $cdb = CouchDB::singleton();
-        $cdb->setDatabase("test_epi");
+        $cdb->setDatabase("epigenomics");
         $results = $cdb->queryList(
             "datasets",
             'profile',
@@ -199,9 +198,6 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
                                'candidate.ExternalID',
                                'show_brief_results',
                                'F.FileCount',
-                               'C.CNVCount',
-                               'S.SNPCount',
-                               'M.CPGCount',
                               );
 
         $ftf = array(
@@ -301,7 +297,7 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
      *
      * @param string $prepared_key filter key
      * @param string $field        filter field
-     * @param string $val          filter value
+     * @param string $val          fil_er value
      *
      * @note overloaded function
      *
@@ -326,16 +322,6 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
                 && in_array($field, $this->EqualityFilters))
             ) {
                  $query .= " AND $field = :v_$prepared_key";
-            } elseif ($field == "F.FileCount"
-                || $field == "S.SNPCount"
-                || $field == "C.CNVCount"
-                || $field == "M.CPGCount"
-            ) {
-                if ($val == "1") {  // if ANY found i.e. >= 1
-                    $query .= " AND $field >= :v_$prepared_key";
-                } elseif ($val == "0") { // if NONE found i.e. = 0
-                    $query .= " AND ($field = :v_$prepared_key || $field IS NULL)";
-                }
             } elseif ($field == "candidate.CandID") {
                 $query .= " AND $field = CONVERT( :v_$prepared_key, DECIMAL) ";
             } else {

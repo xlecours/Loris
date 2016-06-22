@@ -45,6 +45,33 @@ $(document).ready(function() {
             // Filters will only get applied on a POST, so
             // on click we need to fake a form which posts
             // to the conflict_resolver in order to get filters
+             $(".tab_link").click(function(e) {
+                    e.preventDefault();
+                    var form = $('<form />', {
+                            "action" : "genomic_browser/?submenu=cnv_browser",
+                            "method" : "post"
+                        });
+
+                    form.attr('target', '_blank');
+                    var values = {
+                            "reset" : "true",
+                            "PSCID" : this.dataset.pscid,
+                            "test_name"  : "genomic_browser",
+                            "submenu"    : "cnv_browser",
+                            "filter" : "Show Data"
+                        };
+
+                       $.each(values, function(name, value) {
+                                $("<input />", {
+                                        type: 'hidden',
+                                        name: name,
+                                        value: value
+                                    }).appendTo(form);
+                                });
+
+                        form.appendTo('body').submit();
+                    });
+
             $(".cnv_link").click(function(e) {
                     e.preventDefault();
                     var form = $('<form />', {

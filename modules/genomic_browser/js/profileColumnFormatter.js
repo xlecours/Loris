@@ -51,13 +51,21 @@ function formatColumn(column, cell, rowData, rowHeaders) {
                 break;
             default:
                 // Everything else is a genomic variable and should have a matching tab name.
-                var url = loris.BaseURL + "/genomic_browser/?submenu=" + column + "&CandID=" + row.DCCID;
+                var loadTab = function (event) {
+                    var formElement = document.querySelector("form");
+                    var formData = new FormData(formElement);
+                    formData.append('PSCID', event.target.data_pscid);
+                    var request = new XMLHttpRequest();
+                    request.open("POST", event.target.href);
+                    request.send(formData);
+                };
+                var url = loris.BaseURL + "/genomic_browser/?submenu=" + column;
                 reactElement = React.createElement(
                     'td',
                     null,
                     React.createElement(
                         'a',
-                        { href: url },
+                        { data_pscid: row.PSCID, href: url, onClick: loadTab },
                         cell
                     )
                 );

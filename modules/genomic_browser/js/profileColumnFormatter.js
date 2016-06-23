@@ -52,22 +52,38 @@ function formatColumn(column, cell, rowData, rowHeaders) {
             default:
                 // Everything else is a genomic variable and should have a matching tab name.
                 var loadTab = function (event) {
-                    var formElement = document.querySelector("form");
-                    var formData = new FormData(formElement);
-                    formData.append('PSCID', event.target.data_pscid);
-                    var request = new XMLHttpRequest();
-                    request.open("POST", event.target.href);
-                    request.send(formData);
+                    event.preventDefault();
+                    var url = loris.BaseURL + '/genomic_browser/';
+                    var pscid_attribute = Object.keys(event.target).filter(function (key) {
+                        return (/pscid/.test(key)
+                        );
+                    });
+                    var form = document.createElement('form');
+                    form.setAttribute('action', url);
+                    form.setAttribute('method', "post");
+                    form.setAttribute('target', "_self");
+
+                    var values = {
+                        'PSCID': row.PSCID,
+                        'submenu': column,
+                        'filter': 'Show data'
+                    };
+
+                    Object.keys(values).forEach(function (key) {
+                        var i = document.createElement('input');
+                        i.setAttribute('type', 'hidden');
+                        i.setAttribute('name', key);
+                        i.setAttribute('value', values[key]);
+                        form.appendChild(i);
+                    }, this);
+
+                    document.getElementsByTagName('body')[0].appendChild(form);
+                    form.submit();
                 };
-                var url = loris.BaseURL + "/genomic_browser/?submenu=" + column;
                 reactElement = React.createElement(
                     'td',
-                    null,
-                    React.createElement(
-                        'a',
-                        { data_pscid: row.PSCID, href: url, onClick: loadTab },
-                        cell
-                    )
+                    { 'data-pscid': row.PSCID, onClick: loadTab },
+                    cell
                 );
                 break;
         }

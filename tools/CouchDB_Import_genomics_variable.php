@@ -22,6 +22,16 @@ class CouchDBMethylation450kImporter
     {
         //$this->CouchDB->beginBulkTransaction();
 
+        $genomic_files = $this->SQLDB->pselect("SELECT GenomicFileID, FileName, AnalysisModality FROM genomic_files WHERE FileType IS NOT NULL",array());
+        foreach ($genomic_files as $row) {
+            // Read the column headers
+            $result = array();
+            $outputs = array();
+            // todo :: This should use the genomic_path config setting
+            exec("head -1 ./$row['FileName']", $outputs, $result);
+            
+        }
+
         // Read the column headers
         $result = array();
         $outputs = array();
@@ -36,8 +46,8 @@ class CouchDBMethylation450kImporter
         $data_rows = intval($outputs[0]);
 
         //Prepare the document definition
-        $file_name = "MAVAN.variants";
-        $LORIS_file_id = "6771";
+        $file_name = "MAVAN.methylation_2";
+        $LORIS_file_id = "1723";
         $doc = array(
             'meta' => array(
                 'doctype'       => 'dataset',
@@ -67,15 +77,15 @@ class CouchDBMethylation450kImporter
 
             $probe_count = 0;
             $this->CouchDB->beginBulkTransaction();
-            $file_name = "MAVAN.variants";
-            $LORIS_file_id = "6771";
+            $file_name = "MAVAN.methylation_2";
+            $LORIS_file_id = "1723";
 
             while (($line = fgets($handle)) !== false) {
                 $beta_values = explode(',', $line);
                 $probe_name = array_shift($beta_values);
                 $beta_values = array_map( function($v) {return trim($v);}, $beta_values);
 
-                $mysqlQueryString  = "SELECT Chromosome, StartLoc FROM genome_loc WHERE GenomeLocID = (SELECT location_id from genomic_cpg_annotation where cpg_name = '$probe_name')";
+                $mysqlQueryString  = "SELECT * FROM genome_loc gl JOIN genomic_cpg_annotation gca ON gl.GenomeLocID = gca.location_id where gca.cpg_name = '$probe_name'";
                 $preparedStatement = $this->SQLDB->prepare($mysqlQueryString, array());
                 $preparedStatement->execute();
 
@@ -94,7 +104,8 @@ class CouchDBMethylation450kImporter
                             'location' => $row['StartLoc']
                         ),
                     ),
-                    'data' => $beta_values
+                    'data' => $beta_values,
+                    'annotation' => $row
                 );
                 $this->CouchDB->putDoc($doc_id, $doc);
                 $probe_count++;
@@ -107,6 +118,10 @@ class CouchDBMethylation450kImporter
             }
             $this->CouchDB->commitBulkTransaction();
 
+if ($probe_count >= 2000) {
+    fclose($handle);
+    return;
+}
             if (!feof($handle)) {
                 echo "Error: unexpected fgets() fail\n";
             }
@@ -118,7 +133,7 @@ class CouchDBMethylation450kImporter
     function run()
     {
         $this->createDataset();
-//        $this->importData();
+        $this->importData();
     }
 }
 

@@ -110,7 +110,6 @@ class NDB_Menu_Filter_Methylation extends NDB_Menu_Filter
                  'DCCID',
                  'Subproject',
                  'DoB',
-                 'Sample',
                  'StartLoc',
                  'Probe_Loc_A',
                  'Probe_Seq_A',

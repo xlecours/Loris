@@ -5,7 +5,7 @@ require_once 'generic_includes.php';
 require_once 'CouchDB.class.inc';
 require_once 'Database.class.inc';
 require_once 'Utility.class.inc';
-class CouchDBMethylation450kImporter
+class CouchDBGenomicVariableImporter
 {
     var $SQLDB; // reference to the database handler, store here instead
                 // of using Database::singleton in case it's a mock.
@@ -18,10 +18,18 @@ class CouchDBMethylation450kImporter
         $this->CouchDB->setDatabase('test_epi');
     }
 
-    function createDataset()
+    function createDataset($genomic_file_id)
     {
         //$this->CouchDB->beginBulkTransaction();
-
+        $genomic_files = $this->SQLDB->pselect("SELECT FileName, AnalysisModality FROM genomic_files WHERE GenomicFileID = :v_file_id",array('v_file_id' => $genomic_file_id));
+        foreach ($genomic_files as $row) {
+            // Read the column headers
+            $result = array();
+            $outputs = array();
+            // todo :: This should use the genomic_path config setting
+            exec("head -1 ./$row['FileName']", $outputs, $result);
+            
+        }
         // Read the column headers
         $result = array();
         $outputs = array();
@@ -30,14 +38,12 @@ class CouchDBMethylation450kImporter
         $pscids = explode(' ', $outputs[0]);
         //Remove the first element (the probe_id column headers)
         array_shift($pscids);
-
         $outputs = array();
         exec('wc -l ../modules/genomic_browser/tools/probes | cut -f1 -d \' \'', $outputs, $result);
         $data_rows = intval($outputs[0]);
-
         //Prepare the document definition
-        $file_name = "MAVAN.variants";
-        $LORIS_file_id = "6771";
+        $file_name = "MAVAN.methylation_3";
+        $LORIS_file_id = "1724";
         $doc = array(
             'meta' => array(
                 'doctype'       => 'dataset',
@@ -54,12 +60,11 @@ class CouchDBMethylation450kImporter
                 'probe_count' => $data_rows,
             )
         );
-
         $this->CouchDB->replaceDoc($LORIS_file_id, $doc);
        // $this->CouchDB->commitBulkTransaction();
     }
 
-    function importData()
+    function importData($genomic_file_id)
     {
         // todo :: This should use the genomic_path config setting
         $handle = @fopen("../modules/genomic_browser/tools/betavalue", "r");
@@ -118,13 +123,14 @@ class CouchDBMethylation450kImporter
     function run()
     {
         $this->createDataset();
-//        $this->importData();
+        $this->importData();
     }
 }
 
 // Don't run if we're doing the unit tests, the unit test will call run..
 if (!class_exists('UnitTestCase')) {
-    $Runner = new CouchDBMethylation450kImporter();
+    $Runner = new CouchDBGenomicVariableImporter();
+// TODO Add logic arrond GenomicFileId validation. Could be a list..?..
     $Runner->run();
 }
 ?>

@@ -17,7 +17,7 @@ The uploading functionnality require a genomic_uploader directory under the Geno
 
 The Methylation file parser is expecting a csv file where the first column value is the cpg_name (probe_id) and each next column header is the PSCID of that sample.
 
-Ex: 
+Ex:
 Cpg Name,MTL001,MTL002,MTL003,OTT001,OTT002,OTT003
 cg00004192,0.801189261,0.0301716141,0.8076612619,0.9952436145,0.8506495436,0.7583490037
 cg00021762,0.747602724,0.4233800573,0.1582679939,0.5039519868,0.2587142177,0.2294365754

@@ -73,7 +73,7 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
                           'candidate.ExternalID as externalID',
                           'F.FileCount as Files',
                           'S.SNPCount as SNPs',
-                          'C.CNVCount as CNVs',
+                          'COUNT(CNV.CandID) as CNVs',
                           'M.CPGCount as CPGs',
                          );
 
@@ -103,16 +103,14 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
                 ON candidate.CandID = F.CandID
             LEFT JOIN (select scr.CandID, count(scr.CandID) as SNPCount
                 from SNP_candidate_rel as scr GROUP BY scr.CandID) as S
-                 ON (candidate.CandID = S.CandID)
-            LEFT JOIN (select CNV.CandID, count(CNV.CandID) as CNVCount
-                from CNV GROUP BY CNV.CandID) AS C
-                ON (C.CandID=candidate.CandID)
+                 ON candidate.CandID = S.CandID
+            LEFT JOIN CNV ON CNV.CandID = candidate.CandID
             LEFT JOIN  (select gscr.CandID, COUNT(cpg_name) as CPGCount 
                 from genomic_cpg gc 
                 JOIN genomic_sample_candidate_rel gscr 
                     USING (sample_label) 
                 group by gscr.CandID) as M
-                ON (M.CandID = candidate.CandID)
+                ON M.CandID = candidate.CandID
             WHERE
             candidate.Entity_type = 'Human' AND candidate.Active = 'Y' ";
 

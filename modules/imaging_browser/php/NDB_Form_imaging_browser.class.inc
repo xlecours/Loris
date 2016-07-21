@@ -13,9 +13,7 @@
  * @link       https://github.com/aces/Loris-Trunk
 */
 
-require_once 'Imaging_Session_ControlPanel.class.inc';
-require_once 'Notify.class.inc';
-
+require_once __DIR__ . '/Imaging_Session_ControlPanel.class.inc';
 /**
  * NDB_Form_Imaging_Browser Class
  *
@@ -69,10 +67,10 @@ class NDB_Form_Imaging_Browser extends NDB_Form
     }
 
     /**
-    * Sets up main parameters 
-    *
-    * @return NULL
-    */
+     * Sets up main parameters 
+     *
+     * @return NULL
+     */
     function viewSession() 
     {
         $this->DB = Database::singleton();
@@ -93,9 +91,9 @@ class NDB_Form_Imaging_Browser extends NDB_Form
 
             $file = $this->DB->pselectOne(
                 "SELECT File FROM files f 
-	         JOIN session s 
-	         ON (s.ID=f.SessionID) 
-	         WHERE s.ID=:sid AND FileType='obj'", 
+                JOIN session s 
+                ON (s.ID=f.SessionID) 
+                WHERE s.ID=:sid AND FileType='obj'", 
                 array('sid' =>$this->sessionID)
             );
             if (!empty($file)) {
@@ -111,13 +109,17 @@ class NDB_Form_Imaging_Browser extends NDB_Form
                 $types[$type] = $type;
             }
             $this->tpl_data['selected_options'] = $types;
- 
+
             $this->tpl_data['status_options'] 
                 = array (''=>'&nbsp;', 'Pass'=>'Pass', 'Fail'=>'Fail');
             $this->tpl_data['caveat_options'] 
                 = array ('' => '&nbsp;', true => 'True', false => 'False');
             $this->tpl_data['has_permission'] = ($this->_hasAccess()) ? true : false;
             $this->tpl_data['has_qc_permission'] = ($this->_hasQCPerm()) ? true : false;
+            if ($this->_hasQCPerm()) {
+                $this->FormAction = "/imaging_browser/viewSession/?sessionID=" . $this->sessionID;
+            }
+
         }
     }
     /**
@@ -129,7 +131,7 @@ class NDB_Form_Imaging_Browser extends NDB_Form
     {
         $extra_where_string = "";
         if (!empty($_REQUEST['selectedOnly'])) {
-            $extra_where_string .= " AND COALESCE(sel.Value,'') <> ''";
+            $extra_where_string .= " AND COALESCE(sel.Selected,'') <> ''";
         }
         // To better support QC for CIVET output a couple of 
         // additional conditions have been put in...
@@ -148,19 +150,14 @@ class NDB_Form_Imaging_Browser extends NDB_Form
             }
         }
         $files = $this->DB->pselect(
-            "SELECT files.FileID FROM files LEFT JOIN parameter_file as sel on (
-            files.FileID=sel.FileID AND sel.ParameterTypeID=:selectedTypeID) 
+            "SELECT files.FileID FROM files LEFT JOIN files_qcstatus as sel on (
+            files.FileID=sel.FileID) 
             WHERE SessionID=:SID AND (AcquisitionProtocolID IS NULL 
             OR AcquisitionProtocolID not in (1, 2, 3, 52)) 
             AND PendingStaging=0 $extra_where_string 
             ORDER BY files.OutputType, files.File",
             array(
                'SID' => $this->sessionID,
-               'selectedTypeID' => $this->DB->selectOne(
-                   "SELECT ParameterTypeID 
-                   FROM parameter_type 
-                   WHERE Name='Selected' LIMIT 1"
-               )
            )
         );
         $this->tpl_data['files'] = array();
@@ -242,7 +239,9 @@ class NDB_Form_Imaging_Browser extends NDB_Form
                 'SeriesUID' => $FileObj->getParameter('SeriesUID'),
                 'XMLreport' => $FileObj->getParameter('processing:DTIPrepXmlReport'),
                 'XMLprotocol' => $FileObj->getParameter('ProtocolFile'),
-                'NrrdFile' => $FileObj->getParameter('processing:nrrd_file')
+                'NrrdFile' => $FileObj->getParameter('processing:nrrd_file'),
+                'OtherTimepoints' => $this->_getFilesAcrossTimepoints((int)$FileObj->getParameter('SessionID'),
+                (int)$FileObj->getParameter('AcquisitionProtocolID'))
             );
             $this->tpl_data['files'][] = $file;
         }
@@ -385,47 +384,41 @@ class NDB_Form_Imaging_Browser extends NDB_Form
     */
     function _updateSelected() 
     {
-        $selectedTypeID = $this->DB->selectOne(
-            "SELECT ParameterTypeID 
-            FROM parameter_type 
-            WHERE Name='selected' LIMIT 1"
-        );
         // update selected's
         if (is_array($_POST['selectedvol'])) {
             foreach ($_POST['selectedvol'] AS $curFileID => $curSelected) {
-                $params = array('FID' => $curFileID, 'STID' => $selectedTypeID);
+                $params = array('FID' => $curFileID);
                 $updateWhere = array(
-                    'FileID' => $curFileID, 'ParameterTypeID'=>$selectedTypeID
+                    'FileID' => $curFileID
                 );
 
                 if ($curSelected == 'Unselected') {
                     if ($this->DB->pselectOne(
                         "SELECT COUNT(*) 
-                        FROM parameter_file 
-                        WHERE FileID=:FID AND ParameterTypeID=:STID", $params
+                        FROM files_qcstatus 
+                        WHERE FileID=:FID ", $params
                     ) > 0) {
-                        $success = $this->DB->delete('parameter_file', $updateWhere);
+                        $success = $this->DB->delete('files_qcstatus', $updateWhere);
                     }
                 } else {
                     if ($this->DB->pselectOne(
                         "SELECT COUNT(*) 
-                        FROM parameter_file 
-                        WHERE FileID=:FID AND ParameterTypeID=:STID", $params
+                        FROM files_qcstatus
+                        WHERE FileID=:FID ", $params
                     ) > 0) {
                         $updateSet = array(
-                            'Value'=>$curSelected, 'InsertTime'=>time()
+                            'Selected'=>$curSelected, 'QCLastChangeTime'=>time()
                         );
                         $success = $this->DB->update(
-                            'parameter_file', $updateSet, $updateWhere
+                            'files_qcstatus', $updateSet, $updateWhere
                         );
                     } else {
                         $insertSet = array(
                             'FileID' => $curFileID, 
-                            'ParameterTypeID'=> $selectedTypeID, 
-                            'Value'=> $curSelected, 
-                            'InsertTime'=>time()
+                            'Selected'=> $curSelected, 
+                            'QCFirstChangeTime'=>time()
                         );
-                        $success = $this->DB->insert('parameter_file', $insertSet);
+                        $success = $this->DB->insert('files_qcstatus', $insertSet);
                     }
                 }
             }
@@ -492,6 +485,31 @@ class NDB_Form_Imaging_Browser extends NDB_Form
                 );
             }
         }
+    }
+
+    /**
+     * Gets candidate's scans with the same acquisitionID.
+     *
+     * @return string of FileIDs, comma separated
+     */
+    function _getFilesAcrossTimepoints($initialFileID, $initialFileAcquisitionID){
+
+        $selectResults = $this->DB->pselect("SELECT FileID FROM files ".
+            "WHERE AcquisitionProtocolID =:initialFileAcquisitionID ".
+            "AND SessionID in (SELECT s2.ID FROM session s1 RIGHT JOIN session s2 ".
+            "ON s1.CandID = s2.CandID WHERE s1.ID =:initialFileID)",
+            array(
+                'initialFileAcquisitionID' => $initialFileAcquisitionID,
+                'initialFileID' => $initialFileID
+            )
+        );
+
+        $fileIDS = array();
+        foreach($selectResults as $selectResult) {
+            $fileIDS[] = $selectResult['FileID'];
+        }
+        $fileIDString = implode(",", $fileIDS);
+        return $fileIDString;
     }
 
     /**
@@ -587,10 +605,11 @@ class NDB_Form_Imaging_Browser extends NDB_Form
         $depends = parent::getJSDependencies();
         if($this->page === 'viewSession') {
             $factory = NDB_Factory::singleton();
-            $baseURL = $factory->settings()->getBaseURL();
+            $baseurl = $factory->settings()->getBaseURL();
             $depends = array_merge($depends,
                 array(
-                    $baseURL . "/imaging_browser/js/imagingbrowser.js"
+                    $baseurl . "/imaging_browser/js/jiv_and_imaging_browser.js",
+                    $baseurl . "/imaging_browser/js/ImagePanel.js"
                 ));
 
         }

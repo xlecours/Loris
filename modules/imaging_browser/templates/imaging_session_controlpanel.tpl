@@ -1,4 +1,3 @@
-<!-- Control Panel -->
     {if $subject.backURL!=""}<h3>Navigation</h3>{/if}
     <ul>
        {if $subject.backURL != ""}
@@ -9,8 +8,8 @@
                 </a>
              </li>
         {/if}
-        <li>
-            {if $subject.prevTimepoint.URL != ''}
+        {if $subject.prevTimepoint.URL != ''}
+            <li>
                 <a href="{$subject.prevTimepoint.URL}">
                    <span class="text-default">
                        <span class="glyphicon glyphicon-step-backward"></span>&nbsp;Previous
@@ -23,8 +22,8 @@
                       &nbsp;&nbsp;Next&nbsp;<span class="glyphicon glyphicon-step-forward"></span>
                   </span>
                 </a>
-            {/if}
-       </li>
+           </li>
+        {/if}
     </ul>
     {if $prevTimepoint.URL!="" && $nextTimepoint.URL!=""}<br><br>{/if}
     <h3>Volume Viewer</h3>
@@ -53,7 +52,6 @@
         </a>
      </div>
 
-    {if $subject.has_permission}<form action='' method='post'>{/if}
     <div class='div-controlpanel-bottom'>
         <div class="form-group">
             <label>QC Status</label>

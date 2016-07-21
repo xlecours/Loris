@@ -17,8 +17,6 @@
  * @link     https://www.github.com/aces/Loris-Trunk/
  */
 
-require_once 'NDB_Menu_Filter.class.inc';
-
 /**
  * Implements the menu filter for mri_violations_log table
  *
@@ -165,5 +163,17 @@ class NDB_Menu_Filter_mri_protocol_check_violations extends NDB_Menu_Filter
             }
             $x++;
         }
+    }
+
+    function getJSDependencies() {
+        $factory = NDB_Factory::singleton();
+        $baseurl = $factory->settings()->getBaseURL();
+        $depends = parent::getJSDependencies();
+        return array_merge(
+            $depends,
+            array(
+             $baseurl . "/mri_violations/js/mri_protocol_check_violations.js",
+            )
+        );
     }
 }

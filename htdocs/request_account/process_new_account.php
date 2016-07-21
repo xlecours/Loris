@@ -16,6 +16,7 @@ set_include_path(get_include_path().":../../project/libraries:../../php/librarie
 ini_set('default_charset', 'utf-8');
 /**
  * Request LORIS account form
+ *
  * @package main
  */
 //session_start();
@@ -149,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
  * Check that the user input for a field meets minimum length requirements
  *
  * @param string  $str The request parameter to check
- * @param integer $len The minimum length for the parameter
+ * @param integer $len The minimum length - 1 for the parameter
  *
  * @return True if the parameter was sent and meets minimum length, false
  *         otherwise

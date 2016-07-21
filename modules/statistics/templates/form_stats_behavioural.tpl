@@ -48,7 +48,7 @@
                       <!-- <td class="total">{$behaviour[$center.ID].all.complete|default:"0"}</td>
                       <td class="total">{$behaviour[$center.ID].all.total|default:"0"}</td>
                       <td class="total">{$behaviour[$center.ID].all.percent|default:"0"}%</td>
-                      <td> <a href='main.php?test_name=statistics_site&CenterID={$center.NumericID}&ProjectID={$CurrentProject.ID}'>Please Click Here</a></td> -->
+                      <td> <a href='{$baseurl}/statistics_site&CenterID={$center.NumericID}&ProjectID={$CurrentProject.ID}'>Please Click Here</a></td> -->
                    </tr>
               {/foreach}
               <tr>
@@ -63,7 +63,7 @@
                   <td class="static-col headcol pis">Per Instrument Stats</td>
                   {foreach from=$Centers item=center key=centername}
                       <td id='{$center.LongName}PIS' class="pis" colspan="3">
-                          <a href='main.php?test_name=statistics&submenu=statistics_site&CenterID={$center.NumericID}&ProjectID={$CurrentProject.ID}'>Please Click Here</a>
+                          <a href='{$baseurl}/statistics/?submenu=statistics_site&CenterID={$center.NumericID}&ProjectID={$CurrentProject.ID}'>Please Click Here</a>
                       </td>
                   {/foreach}
               </tr>
@@ -80,7 +80,7 @@
   </div>
 </div>
 
-<b><a href='main.php?test_name=statistics&submenu=statistics_site&CenterID={$CurrentSite.ID}&ProjectID={$CurrentProject.ID}'>Click here for breakdown per participant {if $CurrentSite} for {$CurrentSite.Name} {/if} {if $CurrentProject} {$CurrentProject.Name} {/if}</a></b>
+<b><a href='{$baseurl}/statistics/?submenu=statistics_site&CenterID={$CurrentSite.ID}&ProjectID={$CurrentProject.ID}'>Click here for breakdown per participant {if $CurrentSite} for {$CurrentSite.Name} {/if} {if $CurrentProject} {$CurrentProject.Name} {/if}</a></b>
 
 <h2 class="statsH2">Double Data Entry Statistics:</h2>
 <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
@@ -123,7 +123,7 @@
                       <!-- <td class="total">{$behaviour[$center.ID].all.complete|default:"0"}</td>
                       <td class="total">{$behaviour[$center.ID].all.total|default:"0"}</td>
                       <td class="total">{$behaviour[$center.ID].all.percent|default:"0"}%</td>
-                      <td> <a href='main.php?test_name=statistics_site&CenterID={$center.NumericID}&ProjectID={$CurrentProject.ID}'>Please Click Here</a></td> -->
+                      <td> <a href='{$baseurl}/statistics_site/?CenterID={$center.NumericID}&ProjectID={$CurrentProject.ID}'>Please Click Here</a></td> -->
                    </tr>
               {/foreach}
               <tr>

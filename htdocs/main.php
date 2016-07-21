@@ -26,7 +26,9 @@ ob_start();
 
 // load the client
 $client = new NDB_Client;
-$client->initialize();
+if ($client->initialize() == false) {
+    return false;
+}
 
 // require additional libraries
 
@@ -121,11 +123,13 @@ $paths = $config->getSetting('paths');
 if (!empty($TestName)) {
     // Get CSS for a module
     $base = $paths['base'];
-    if (file_exists($base . "modules/$TestName/css/$TestName.css")) {
+    if (file_exists($base . "modules/$TestName/css/$TestName.css")
+        || file_exists($base . "project/modules/$TestName/css/$TestName.css")
+    ) {
         if (strpos($_SERVER['REQUEST_URI'], "main.php") === false
             && strcmp($_SERVER['REQUEST_URI'], '/') != 0
         ) {
-              $tpl_data['test_name_css'] = "$baseURL/$TestName/css/$TestName.css";
+              $tpl_data['test_name_css'] = "/$TestName/css/$TestName.css";
         } else {
               $tpl_data['test_name_css'] = "GetCSS.php?Module=$TestName";
         }
@@ -174,6 +178,9 @@ if (!empty($_REQUEST['sessionID'])) {
 try {
     $caller    =& NDB_Caller::singleton();
     $workspace = $caller->load($TestName, $subtest);
+    if (isset($caller->page->FormAction)) {
+        $tpl_data['FormAction'] = $caller->page->FormAction;
+    }
     if (isset($caller->controlPanel)) {
         $tpl_data['control_panel'] = $caller->controlPanel;
     }
@@ -186,7 +193,8 @@ try {
     }
 
     if (isset($caller->page)) {
-        $tpl_data['jsfiles'] = $caller->page->getJSDependencies();
+        $tpl_data['jsfiles']  = $caller->page->getJSDependencies();
+        $tpl_data['cssfiles'] = $caller->page->getCSSDependencies();
     }
 
     $tpl_data['workspace'] = $workspace;

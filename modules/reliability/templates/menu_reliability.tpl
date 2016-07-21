@@ -99,7 +99,7 @@
                 <span class="glyphicon glyphicon-chevron-up pull-right" style="display:none" id="swapUp"></span>
             </div>
             <div class="panel-body" style="display:none" id="swap-body">
-                <form method="post" action="main.php?test_name=reliability">
+                <form method="post" action="{$baseurl}/reliability/">
                     <input type="hidden" name="swap" value="swap"/>
                     <h5>Original Candidate</h5>
                     <div class="row">
@@ -262,7 +262,7 @@ var pageLinks = RPaginationLinks(
     RowsPerPage : {$rowsPerPage},
     Total: {$TotalItems},
     onChangePage: function(pageNum) {
-        location.href="{$baseurl}/reliability/?pageID=" + pageNum
+        location.href="{$baseurl}/reliability/?filter[order][field]={$filterfield}&filter[order][fieldOrder]={$filterfieldOrder}&pageID=" + pageNum
     },
     Active: {$pageID}
 });

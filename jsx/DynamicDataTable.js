@@ -37,18 +37,36 @@ DynamicDataTable = React.createClass({
                     'isLoaded' : true
                 });
             },
-            error: function(data) {
-                that.setState({ "error" : "Unknown error loading data" });
+            error: function(data,error_code,error_msg) {
+                console.error(error_code + ': ' + error_msg);
+                that.setState({ "error" : "Error loading data" });
             }
         });
     },
     render: function() {
         if (!this.state.isLoaded) {
-            return <button className="btn-info has-spinner">Loading <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span></button>;
+
+            if (this.state.error != undefined) {
+                return <div className="alert alert-danger">
+                         <strong>
+                           {this.state.error}
+                         </strong>
+                       </div>;
+            } 
+
+            return <button className="btn-info has-spinner">
+                     Loading
+                     <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate">
+                     </span>
+                   </button>;
         }
 
         return (
-                <StaticDataTable Headers={this.state.Headers} Data={this.state.Data} getFormattedCell={this.props.getFormattedCell} />
+                <StaticDataTable Headers={this.state.Headers}
+                                 Data={this.state.Data}
+                                 getFormattedCell={this.props.getFormattedCell}
+                                 freezeColumn={this.props.freezeColumn}
+                />
             );
     }
 });

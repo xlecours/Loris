@@ -30,7 +30,7 @@ require_once 'Utility.class.inc';
  *  @link     https://www.github.com/aces/Loris-Trunk/
  */
 
-class Dataframe_Parser 
+class DataframeImporter
 {
 
     var $SQLDB; // reference to the database handler, store here instead
@@ -71,7 +71,7 @@ class Dataframe
         'file_format'     => 'data.frame',
         'variable_type'   => null,
         'variable_format' => null,
-        'variable_count'  => null,
+        'sample_count'    => null,
         'ad_libitum'      => array()
     );
 
@@ -105,6 +105,7 @@ class Dataframe
        $this->_skipComments($handle);
        $this->_loadInformations($handle);
        $this->_loadHeaders($handle);
+       $this->_loadDataRows($handle);
        fclose($handle);
 
     }
@@ -123,13 +124,68 @@ class Dataframe
 
     private function _loadInformations(&$handle)
     {
-        $bob = fgets($handle);
+        $pattern = '/^## (\w+),(.*)/';
+        $offset = ftell($handle);        
+
+        while (preg_match($pattern,fgets($handle), $matches)) {
+            $offset = ftell($handle);
+
+            switch ($matches[1]) {
+                case 'variable_type':
+                    if ($matches[2] != $this->meta['variable_type']) {
+                        throw new Exception("variable_type does not match between file content ($matches[2]) and database record ($this->meta[variable_type])");
+                    }
+                    break;
+                case 'variable_format':
+                    if (1 != preg_match('/float|integer|string/', $matches[2])) {
+                        throw new Exception("variable_format must be one of float, integer or string");
+                    }
+                    $this->meta['variable_format'] = $matches[2];
+                    break;
+                case 'sample_count':
+                    $sample_count = intval($matches[2]);
+                    if ($sample_count != $matches[2] || $sample_count == 0) {
+                        throw new Exception("sample_count must be an integer greater than 0");
+                    }
+                    $this->meta['sample_count'] = $sample_count;
+                    break;
+                default:
+                    $this->meta['ad_libitum'][$matches[1]] = $matches[2];
+                    break;
+            }
+        }
+        fseek($handle, $offset, SEEK_SET);
     } 
 
     private function _loadHeaders(&$handle)
     {
-        $bob = fgets($handle);       
+        $offset = ftell($handle);
+        $line = fgets($handle);
+        if ($line[0] != '#') {
+            throw new Exception("Expecting headers line instead of \n$line");
+        }
+        $line = ltrim($line, '#');
+        $headers = str_getcsv($line);
+        $annotation_labels = array_slice($headers, 0 , count($headers) - $this->meta['sample_count']);
+        $sample_labels = array_splice($headers, -($this->meta['sample_count']));
+
+        array_walk($annotation_labels, function(&$label) {
+            $label = trim($label);
+            $label = strtolower($label);
+            $label = str_replace(array(' ', '-'), '_', $label); 
+        });
+
+        if (!in_array('variable_name',$annotation_labels) || !in_array('chromosome',$annotation_labels) || !in_array('start_loc',$annotation_labels) || !in_array('size',$annotation_labels)) {
+            throw new Exception("Required headers missing");
+        }
+
+        $this->headers = array_merge($annotation_labels,$sample_labels);
     } 
+
+    private function _loadDataRows(&$handle)
+    {
+        var_dump(fgets($handle));
+    }
 }
 
 if(!class_exists('UnitTestCase')) {
@@ -145,7 +201,7 @@ if(!class_exists('UnitTestCase')) {
         show_usage();
     }
     
-    $Runner = new Dataframe_Parser();
+    $Runner = new DataframeImporter();
     $Runner->run($argv[1]);
 }
 

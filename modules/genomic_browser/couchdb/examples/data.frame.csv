@@ -28,11 +28,11 @@
 ###
 ### The parser script will stop at the first invaliud line.
 ###
-## description, Example data.frame file type describing the format expected by the LORIS CouchDB import script. 
+## description,Example data.frame file type describing the format expected by the LORIS CouchDB import script. 
 ## author,xlecours
 ## project,LORIS demo data
 ## normalisation_method,Python random() function
-## variable_type,Methylation Beta value
+## variable_type,Methylation beta-values
 ## variable_format,float
 ## sample_count,6
 # variable_name,chromosome,start_loc,size,gene_name,gene_acc_num,gene_group,12341234_R01C01,12341234_R01C02,12341234_R02C01,12341234_R02C02,12341234_R03C01,12341234_R03C02 

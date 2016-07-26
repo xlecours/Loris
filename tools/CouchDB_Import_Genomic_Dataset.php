@@ -33,38 +33,54 @@ require_once 'Utility.class.inc';
 class DataframeImporter
 {
 
-    var $SQLDB; // reference to the database handler, store here instead
-                // of using Database::singleton in case it's a mock.
-
     var $CouchDB; // reference to the CouchDB database handler
-
 
     function __construct()
     {
-        $this->SQLDB   = Database::singleton();
         $this->CouchDB = CouchDB::singleton();
     }
 
     function run($GenomicFileID) 
     {
+        $start_time = microtime(true);
         try {
 
             $dataframe = new Dataframe($GenomicFileID);
-            $dataframe->loadFile();
-            var_dump($dataframe);
+            $this->logit("Dataset successfuly initialised");
+
+// TODO remove the print_r
+            print_r($dataframe->getDatasetDocument() . "\n");
+            $this->logit("Dataset document created");
+
+// TODO insert docuement in CouchDB
+
+
+            while($doc = $dataframe->getDataVariableDocument()) {
+                print_r($doc);
+// TODO Insert document in couchDB
+            }
 
         } catch (Exception $e) {
             echo 'Caught exception: ',  $e->getMessage(), "\n";
         }
-        echo "Finish\n";
-        return true;
+
+        echo "Execution time : " . (microtime(true) - $start_time) . " seconds\n";
+        exit;
+    }
+
+    function logit($message)
+    {
+        $prefix = '[' . date('Y/m/d h:i:s') . '] ';
+        echo $prefix . $message . "\n";
     }
 }
 
 class Dataframe 
 {
-    var $file_id;
+    var $loris_file_id;
     var $file_name;
+
+    var $handle;
 
     var $meta = array(
         'doctype'         => 'dataset',
@@ -79,10 +95,10 @@ class Dataframe
 
     function __construct( $GenomicFileID )
     {
-        $this->file_id = $GenomicFileID;
+        $this->loris_file_id = $GenomicFileID;
         $mysql_db = Database::singleton();
         $query = 'SELECT FileName, AnalysisModality from genomic_files WHERE GenomicFileID = :v_file_id';
-        $record = $mysql_db->pselectRow($query, array('v_file_id' => $this->file_id));
+        $record = $mysql_db->pselectRow($query, array('v_file_id' => $this->loris_file_id));
 
         if (0 == count($record)) {
             throw new Exception('No genomic_files for that GenomicFileID');
@@ -92,7 +108,7 @@ class Dataframe
         $this->meta['variable_type'] = $record['AnalysisModality'];
     }
 
-    function loadFile()
+    function getDatasetDocument()
     {
        if (!file_exists($this->file_name)) {
            throw new Exception("File not found\n$this->file_name");
@@ -101,34 +117,64 @@ class Dataframe
            throw new Exception("File is not readable\n$this->file_name");
        } 
 
-       $handle = fopen($this->file_name, "r");
-       $this->_skipComments($handle);
-       $this->_loadInformations($handle);
-       $this->_loadHeaders($handle);
-       $this->_loadDataRows($handle);
-       fclose($handle);
+       $this->handle = fopen($this->file_name, "r");
+       $this->_skipComments();
+       $this->_loadInformations();
+       $this->_loadHeaders();
+
+       $this->handle = null;
+       return json_encode($this);
 
     }
 
-    private function _skipComments(&$handle)
+    function getDataVariableDocument()
+    {
+       if (0 == count($this->headers)) {
+           throw new Exception("Dataset docuement headers not initialized");
+       }
+
+       if (empty($this->handle)) {
+           $this->handle = fopen($this->file_name, "r");
+           $this->_moveToFirstDataRow();
+       } 
+
+       $annotation_labels = array_slice($this->headers, 0, -intval($this->meta['sample_count']) );
+       $data = fgetcsv($this->handle);
+
+       if (empty($data) || !$data) {
+           return false;
+       } else {
+           switch ($this->meta['variable_type']) {
+               case 'Methylation beta-values':
+                   $variable = new MethylationBetaValue($this->loris_file_id, $data[0]);
+                   break;
+               default:
+                   $variable = new DataVariable($this->loris_file_id, $data[0]);
+                   break;
+           }
+           return json_encode($variable);
+       }
+    }
+
+    private function _skipComments()
     {
         $pattern = '/^###.*/';
-        $offset = ftell($handle);
+        $offset = ftell($this->handle);
 
-        while (preg_match($pattern,fgets($handle))) {
-            $offset = ftell($handle);
+        while (preg_match($pattern,fgets($this->handle))) {
+            $offset = ftell($this->handle);
         } 
 
-        fseek($handle, $offset, SEEK_SET);
+        fseek($this->handle, $offset, SEEK_SET);
     } 
 
-    private function _loadInformations(&$handle)
+    private function _loadInformations()
     {
         $pattern = '/^## (\w+),(.*)/';
-        $offset = ftell($handle);        
+        $offset = ftell($this->handle);        
 
-        while (preg_match($pattern,fgets($handle), $matches)) {
-            $offset = ftell($handle);
+        while (preg_match($pattern,fgets($this->handle), $matches)) {
+            $offset = ftell($this->handle);
 
             switch ($matches[1]) {
                 case 'variable_type':
@@ -154,38 +200,99 @@ class Dataframe
                     break;
             }
         }
-        fseek($handle, $offset, SEEK_SET);
+        fseek($this->handle, $offset, SEEK_SET);
     } 
 
-    private function _loadHeaders(&$handle)
+    private function _loadHeaders()
     {
-        $offset = ftell($handle);
-        $line = fgets($handle);
+        $line = fgets($this->handle);
         if ($line[0] != '#') {
             throw new Exception("Expecting headers line instead of \n$line");
         }
+
+        // Parse the headers line
         $line = ltrim($line, '#');
         $headers = str_getcsv($line);
         $annotation_labels = array_slice($headers, 0 , count($headers) - $this->meta['sample_count']);
         $sample_labels = array_splice($headers, -($this->meta['sample_count']));
 
+        // Annotation label formating
         array_walk($annotation_labels, function(&$label) {
             $label = trim($label);
             $label = strtolower($label);
             $label = str_replace(array(' ', '-'), '_', $label); 
         });
 
-        if (!in_array('variable_name',$annotation_labels) || !in_array('chromosome',$annotation_labels) || !in_array('start_loc',$annotation_labels) || !in_array('size',$annotation_labels)) {
+        // Check for required fields
+        if (!in_array('variable_name',$annotation_labels) ||
+            !in_array('chromosome',$annotation_labels) || 
+            !in_array('start_loc',$annotation_labels) || 
+            !in_array('size',$annotation_labels)) {
             throw new Exception("Required headers missing");
         }
+
+        // Sample label formating
+        array_walk($sample_labels, function(&$label) {
+            $label = trim($label);
+        });
 
         $this->headers = array_merge($annotation_labels,$sample_labels);
     } 
 
-    private function _loadDataRows(&$handle)
+    private function _moveToFirstDataRow()
     {
-        var_dump(fgets($handle));
+        $pattern = '/^#.*/';
+        $offset = ftell($this->handle);
+
+        while (preg_match($pattern,fgets($this->handle))) {
+            $offset = ftell($this->handle);
+        }
+
+        fseek($this->handle, $offset, SEEK_SET);
     }
+
+    private function _get()
+    {
+        $line = fgets($this->handle);
+    }
+
+    function toJSON()
+    {
+        return json_encode($this);
+    }
+}
+
+class DataVariable
+{
+    $data_variable_id;
+    
+    function __construct($file_id, $variable_name)
+    {
+        if(empty($file_id) || empty($variable_name)) {
+            throw new Exception('Missing required field');
+        }
+        $this->data_variable_id = "$file_id-$variable_name";
+    }
+
+    function initialize($annotation_labels, $data)
+    {
+        if ($annotation_labels[0] != 'variable_name') {
+            throw new Exception("Invalid annotation_labels");
+        }
+        if (preg_match( $data[0], $this->_variable_id)) {
+
+        }
+    }
+
+}
+
+class MethylationBetaValue extends DataVariable
+{
+    $chromosome;
+    $start_loc;
+    $size;
+    $strand;
+
 }
 
 if(!class_exists('UnitTestCase')) {

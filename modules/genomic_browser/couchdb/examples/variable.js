@@ -1,5 +1,5 @@
 {
-   "_id": "1234-cg0042544", /* variable document's id composed of the LORIS file id and the variable_name */
+   "data_variable_id": "1234-cg0042544", /* variable document's id composed of the LORIS file id and the variable_name */
    "meta": {
        "doctype": "variable",
        "identifier": {

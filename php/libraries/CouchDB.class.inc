@@ -165,6 +165,13 @@ class CouchDB
     var $bulkDocuments = array();
 
     /**
+     * The current database name
+     * The default value is taken from the config.xml file
+     * It can be set using setDatabase($db_name)
+     */
+    var $database = null;
+
+    /**
      * Returns one and only one CouchDB database wrapper object.
      * NOTE: You shouldn't call this directly, instead you should
      *       probably use the NDB_Factory->couchDB() factory method
@@ -184,6 +191,18 @@ class CouchDB
     }
 
     /**
+     * Helper function to change the CouchDB database name
+     *
+     * @param string $db_name The new database name
+     *
+     * @return none
+     */
+    function setDatabase($db_name)
+    {
+        $this->database = $db_name;
+    }
+
+    /**
      * Helper function to construct an HTTP request relative to the CouchDB database
      *
      * @param string $op  The HTTP verb to use
@@ -193,10 +212,13 @@ class CouchDB
      */
     function _constructURL($op, $doc)
     {
-        $config = NDB_Config::singleton();
-        $db     = $config->getSetting("CouchDB");
+        if (empty($this->database)) {
+            $config = NDB_Config::singleton();
+            $db     = $config->getSetting("CouchDB");
+            $this->database = $db['database'];
+        }
 
-        return "$op /$db[database]/$doc";
+        return "$op /$this->database/$doc";
     }
 
     /**
@@ -580,6 +602,49 @@ class CouchDB
         }
         $data = json_decode($query, true);
 
+        if (isset($data['error']) && $data['error'] == 'not_found') {
+            return array();
+        }
+        return $data['rows'];
+    }
+
+    /**
+     * Function to query a CouchDB list and return an array of
+     * the results parsed into a PHP array.
+     *
+     * @param string  $designdoc Design Doc containing the view
+     * @param string  $listname  List to be queried
+     * @param string  $viewname  View to be queried
+     * @param array   $params    Any additional parameters to be passed to the
+     *                           CouchDB view
+     * @param boolean $full_json If true will include the full json returned,
+     *                           and not just the parsed rows.
+     *
+     * @return array An array of the rows returned by the list
+     */
+    function queryList($designdoc, $listname,  $viewname, $params, $full_json=false)
+    {
+        $keys = null;
+        if (isset($params['keys'])) {
+            $keys = $params['keys'];
+            unset($params['keys']);
+            $url   = "_design/" . $designdoc . "/_view/" . $viewname
+                . "?" . $params;
+            $query = $this->_postRelativeURL(
+                $url,
+                json_encode(array('keys' => $keys)),
+                'POST',
+                $full_json
+            );
+        } else {
+            $url   = "_design/$designdoc/_list/$listname/$viewname"
+                     . "?" . http_build_query($params);
+            $query = $this->_getRelativeUrl($url);
+        }
+        if ($full_json) {
+            return $query;
+        }
+        $data = json_decode($query, true);
         if (isset($data['error']) && $data['error'] == 'not_found') {
             return array();
         }

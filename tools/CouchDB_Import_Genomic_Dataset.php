@@ -30,7 +30,7 @@ require_once 'Utility.class.inc';
  *  @link     https://www.github.com/aces/Loris-Trunk/
  */
 
-class DataframeImporter
+class GenomicDatasetImporter
 {
 
     var $CouchDB; // reference to the CouchDB database handler
@@ -43,17 +43,36 @@ class DataframeImporter
     function run($GenomicFileID) 
     {
         $start_time = microtime(true);
+
+        $mysql_db = Database::singleton();
+        $query = 'SELECT FileName, FileType, AnalysisModality from genomic_files WHERE GenomicFileID = :v_file_id';
+        $record = $mysql_db->pselectRow($query, array('v_file_id' => $GenomicFileID));
+
+        if (0 == count($record)) {
+            die('No genomic_files for that GenomicFileID');
+        }
+
+        if (!class_exists($record['FileType'])) {
+            die("The class $record[FileType] does not exists");
+        }
+
         try {
 
-            $dataframe = new Dataframe($GenomicFileID);
-            $this->logit("Dataset successfuly initialised");
+            switch ($record['FileType']) {
+                case 'Dataframe' :
+                    $dataset = new Dataframe($GenomicFileID, $record['FileName'], $record['AnalysisModality']);
+                    $this->logit("Dataset successfuly initialised");
+            }
 
-            $ds_doc = $dataframe->getDatasetDocument();
+            $doc = $dataset->getDatasetDocument();
             $this->logit("Dataset document created");
 
-// TODO insert docuement in CouchDB
-
-            while($doc = $dataframe->getDataVariableDocument()) {
+            $this->CouchDB->setDatabase('test_epi');
+var_dump($doc->loris_file_id);
+var_dump($doc);
+            $this->CouchDB->replaceDoc($doc->loris_file_id, $doc);
+exit;
+            while($doc = $dataset->getNextDataVariableDocument()) {
                 var_dump($doc);
 // TODO Insert document in couchDB
             }
@@ -91,19 +110,11 @@ class Dataframe
 
     var $headers = [];
 
-    function __construct( $GenomicFileID )
+    function __construct( $GenomicFileID, $filename, $analysis_modality )
     {
         $this->loris_file_id = $GenomicFileID;
-        $mysql_db = Database::singleton();
-        $query = 'SELECT FileName, AnalysisModality from genomic_files WHERE GenomicFileID = :v_file_id';
-        $record = $mysql_db->pselectRow($query, array('v_file_id' => $this->loris_file_id));
-
-        if (0 == count($record)) {
-            throw new Exception('No genomic_files for that GenomicFileID');
-        }
-
-        $this->file_name = $record['FileName'];
-        $this->meta['variable_type'] = $record['AnalysisModality'];
+        $this->file_name = $filename;
+        $this->meta['variable_type'] = $analysis_modality;
     }
 
     function getDatasetDocument()
@@ -121,11 +132,11 @@ class Dataframe
        $this->_loadHeaders();
 
        $this->handle = null;
-       return json_encode($this);
+       return $this;
 
     }
 
-    function getDataVariableDocument()
+    function getNextDataVariableDocument()
     {
        if (0 == count($this->headers)) {
            throw new Exception("Dataset document headers not initialized");
@@ -151,7 +162,7 @@ class Dataframe
                    $variable = new DataVariable($this->loris_file_id, $data[0]);
                    break;
            }
-           return json_encode($variable);
+           return $variable;
        }
     }
 
@@ -330,7 +341,7 @@ if(!class_exists('UnitTestCase')) {
         show_usage();
     }
     
-    $Runner = new DataframeImporter();
+    $Runner = new GenomicDatasetImporter();
     $Runner->run($argv[1]);
 }
 

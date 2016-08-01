@@ -48,15 +48,13 @@ class DataframeImporter
             $dataframe = new Dataframe($GenomicFileID);
             $this->logit("Dataset successfuly initialised");
 
-// TODO remove the print_r
-            print_r($dataframe->getDatasetDocument() . "\n");
+            $ds_doc = $dataframe->getDatasetDocument();
             $this->logit("Dataset document created");
 
 // TODO insert docuement in CouchDB
 
-
             while($doc = $dataframe->getDataVariableDocument()) {
-                print_r($doc);
+                var_dump($doc);
 // TODO Insert document in couchDB
             }
 
@@ -130,7 +128,7 @@ class Dataframe
     function getDataVariableDocument()
     {
        if (0 == count($this->headers)) {
-           throw new Exception("Dataset docuement headers not initialized");
+           throw new Exception("Dataset document headers not initialized");
        }
 
        if (empty($this->handle)) {
@@ -147,6 +145,7 @@ class Dataframe
            switch ($this->meta['variable_type']) {
                case 'Methylation beta-values':
                    $variable = new MethylationBetaValue($this->loris_file_id, $data[0]);
+                   $variable->initialize($annotation_labels, $data);
                    break;
                default:
                    $variable = new DataVariable($this->loris_file_id, $data[0]);
@@ -251,11 +250,6 @@ class Dataframe
         fseek($this->handle, $offset, SEEK_SET);
     }
 
-    private function _get()
-    {
-        $line = fgets($this->handle);
-    }
-
     function toJSON()
     {
         return json_encode($this);
@@ -264,7 +258,15 @@ class Dataframe
 
 class DataVariable
 {
-    $data_variable_id;
+    var $data_variable_id;
+    var $meta = array(
+        'doctype' => 'variable',
+        'identifier' => array(
+            'variable_name' => null
+        )
+    );
+    var $values = array();
+    var $properties = array();
     
     function __construct($file_id, $variable_name)
     {
@@ -274,25 +276,45 @@ class DataVariable
         $this->data_variable_id = "$file_id-$variable_name";
     }
 
-    function initialize($annotation_labels, $data)
+    function initialize(&$annotation_labels, &$data)
     {
         if ($annotation_labels[0] != 'variable_name') {
             throw new Exception("Invalid annotation_labels");
         }
-        if (preg_match( $data[0], $this->_variable_id)) {
+        
+        $annotation_count =  count($annotation_labels);
+        $this->properties = array_combine(
+            $annotation_labels,
+            array_slice($data, 0, $annotation_count)
+        );
+        $this->meta['identifier']['variable_name'] = $this->properties['variable_name'];
+        unset($this->properties['variable_name']);
 
-        }
+        $this->values = array_slice($data, $annotation_count);
     }
 
 }
 
 class MethylationBetaValue extends DataVariable
 {
-    $chromosome;
-    $start_loc;
-    $size;
-    $strand;
 
+    function initialize(&$annotation_labels, &$data)
+    {
+        Parent::initialize($annotation_labels, $data);
+
+        if (empty($this->properties['chromosome']) ||
+            empty($this->properties['start_loc']))
+        {
+            throw new Exception("Invalid annotation_labels");
+        }
+
+        $this->meta['identifier']['chromosome'] = $this->properties['chromosome'];
+        unset($this->properties['chromosome']);
+        $this->meta['identifier']['start_loc'] = $this->properties['start_loc'];
+        unset($this->properties['start_loc']);
+        $this->meta['identifier']['size'] = 1;
+        unset($this->properties['size']);
+    }
 }
 
 if(!class_exists('UnitTestCase')) {

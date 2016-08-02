@@ -34,9 +34,10 @@ require_once 'Utility.class.inc';
 
 class GenomicDatasetImporter
 {
+    // reference to the CouchDB database handler
+    var $CouchDB; 
 
-    var $CouchDB; // reference to the CouchDB database handler
-
+    // Placeholder for genomic variable importation
     var $report = array(
         'count' => 0,
         'ok'    => 0,
@@ -66,7 +67,9 @@ class GenomicDatasetImporter
 
         try {
 
-            switch ($genomic_file['FileType']) {
+            $class_name = $genomic_file['FileType'];
+
+            switch ($class_name) {
                 case 'Dataframe' :
                     $dataset = new Dataframe($GenomicFileID, $genomic_file['FileName'], $genomic_file['AnalysisModality']);
                     $this->logit("Dataset successfuly initialised");
@@ -78,6 +81,9 @@ class GenomicDatasetImporter
 // TODO
                     break;
             }
+
+            // Make sur that the class extends the Dataset abstract class
+            is_a($dataset, 'Dataset') || die("The FileType ($class_name) does not extends the Dataset abstract class");
 
             $doc = $dataset->getDatasetDocument();
 
@@ -123,7 +129,7 @@ class GenomicDatasetImporter
             while($doc = $dataset->getNextDataVariableDocument()) {
                 $this->CouchDB->replaceDoc($doc->_id, (Array) $doc);
 
-                if (++$this->report['count'] % 2 == 0) {
+                if (++$this->report['count'] % 200 == 0) {
                     $response = $this->CouchDB->commitBulkTransaction();
                    
                     array_walk(json_decode($response, true),function ($v, $i) {
@@ -169,7 +175,51 @@ class GenomicDatasetImporter
     }
 }
 
-class Dataframe 
+abstract class Dataset
+{
+    // Abstract methods
+    abstract public function getDatasetDocument();
+    abstract public function getNextDataVariableDocument();
+
+    protected function _skipComments(&$handle)
+    {
+        $pattern = '/^###.*/';
+        $offset = ftell($handle);
+
+        while (preg_match($pattern,fgets($handle))) {
+            $offset = ftell($handle);
+        }
+
+        fseek($handle, $offset, SEEK_SET);
+    }
+
+    protected function _moveToFirstDataRow(&$handle)
+    {
+        $pattern = '/^#.*/';
+        $offset = ftell($handle);
+
+        while (preg_match($pattern,fgets($handle))) {
+            $offset = ftell($handle);
+        }
+
+        fseek($handle, $offset, SEEK_SET);
+    }
+}
+
+class Datamatrix extends Dataset
+{
+    function getDatasetDocument()
+    {
+// TODO
+    }
+
+    function getNextDataVariableDocument()
+    {
+// TODO
+    }
+}
+
+class Dataframe extends Dataset 
 {
     var $loris_file_id;
     var $file_name;
@@ -204,7 +254,7 @@ class Dataframe
        } 
 
        $this->handle = fopen($this->file_name, "r");
-       $this->_skipComments();
+       $this->_skipComments($this->handle);
        $this->_loadInformations();
        $this->_loadHeaders();
 
@@ -221,7 +271,7 @@ class Dataframe
 
        if (empty($this->handle)) {
            $this->handle = fopen($this->file_name, "r");
-           $this->_moveToFirstDataRow();
+           $this->_moveToFirstDataRow($this->handle);
        } 
 
        $annotation_labels = array_slice($this->headers, 0, -intval($this->meta['sample_count']) );
@@ -242,18 +292,6 @@ class Dataframe
            return $variable;
        }
     }
-
-    private function _skipComments()
-    {
-        $pattern = '/^###.*/';
-        $offset = ftell($this->handle);
-
-        while (preg_match($pattern,fgets($this->handle))) {
-            $offset = ftell($this->handle);
-        } 
-
-        fseek($this->handle, $offset, SEEK_SET);
-    } 
 
     private function _loadInformations()
     {
@@ -325,23 +363,6 @@ class Dataframe
 
         $this->headers = array_merge($annotation_labels,$sample_labels);
     } 
-
-    private function _moveToFirstDataRow()
-    {
-        $pattern = '/^#.*/';
-        $offset = ftell($this->handle);
-
-        while (preg_match($pattern,fgets($this->handle))) {
-            $offset = ftell($this->handle);
-        }
-
-        fseek($this->handle, $offset, SEEK_SET);
-    }
-
-    function toJSON()
-    {
-        return json_encode($this);
-    }
 }
 
 class DataVariable

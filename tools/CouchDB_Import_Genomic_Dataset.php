@@ -37,6 +37,12 @@ class GenomicDatasetImporter
 
     var $CouchDB; // reference to the CouchDB database handler
 
+    var $report = array(
+        'count' => 0,
+        'ok'    => 0,
+        'error' => 0
+    );
+
     function __construct()
     {
         $this->CouchDB = CouchDB::singleton();
@@ -66,9 +72,10 @@ class GenomicDatasetImporter
                     $this->logit("Dataset successfuly initialised");
                     break;
                 case 'Datamatrix' :
+// TODO
                     break;
                 default:
-
+// TODO
                     break;
             }
 
@@ -110,19 +117,42 @@ class GenomicDatasetImporter
         }
 
         try {
-            $report = array(
-                'count'     => 0,
-                'new'       => 0,
-                'modified'  => 0,
-                'unchanged' => 0
-            );
             $this->logit('Importing genomic variables');
+
+            $this->CouchDB->beginBulkTransaction();
             while($doc = $dataset->getNextDataVariableDocument()) {
-                var_dump($doc);
-                $report['count']++;
+                $this->CouchDB->replaceDoc($doc->_id, (Array) $doc);
+
+                if (++$this->report['count'] % 2 == 0) {
+                    $response = $this->CouchDB->commitBulkTransaction();
+                   
+                    array_walk(json_decode($response, true),function ($v, $i) {
+                        if (empty($v['ok'])) { 
+                            $this->logit(print_r($v,true));   
+                            $this->report['error']++;
+                        } else {
+                            $this->report['ok']++;
+                        }
+                    }); 
+
+                    $this->CouchDB->beginBulkTransaction();
+                    $this->logit('Advancement report:');
+                    print_r($this->report);
+                }
             }
+            $response = $this->CouchDB->commitBulkTransaction();
+
+            array_walk(json_decode($response, true),function ($v, $i) {
+                if (empty($v['ok'])) {
+                    $this->logit(print_r($v,true));
+                    $this->report['error']++;
+                } else {
+                    $this->report['ok']++;
+                }
+            });
+
             $this->logit('Genomic variables importation completed');
-            print_r($report);
+            print_r($this->report);
 
         } catch (Exception $e) {
             echo 'Caught exception: ',  $e->getMessage(), "\n";
@@ -148,7 +178,7 @@ class Dataframe
 
     var $meta = array(
         'doctype'         => 'dataset',
-        'file_format'     => 'data.frame',
+        'file_format'     => 'dataframe',
         'variable_type'   => null,
         'variable_format' => null,
         'sample_count'    => null,
@@ -316,11 +346,12 @@ class Dataframe
 
 class DataVariable
 {
-    var $data_variable_id;
+    var $_id;
     var $meta = array(
         'doctype' => 'variable',
         'identifier' => array(
-            'variable_name' => null
+            'variable_name' => null,
+            'genomic_file_id' => null
         )
     );
     var $values = array();
@@ -331,7 +362,8 @@ class DataVariable
         if(empty($file_id) || empty($variable_name)) {
             throw new Exception('Missing required field');
         }
-        $this->data_variable_id = "$file_id-$variable_name";
+        $this->_id = "$file_id-$variable_name";
+        $this->meta['identifier']['genomic_file_id'] = $file_id;
     }
 
     function initialize(&$annotation_labels, &$data)

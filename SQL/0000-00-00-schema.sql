@@ -1991,6 +1991,7 @@ CREATE TABLE `genomic_files` (
   `Caveat` tinyint(1) DEFAULT NULL,
   `Notes` text,
   `AnalysisModality` varchar(100),
+  `couchdb_doc_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`GenomicFileID`),
   KEY `AnalysisModality` (`AnalysisModality`),
   CONSTRAINT `genomic_files_ibfk_1` FOREIGN KEY (`AnalysisModality`) REFERENCES `genomic_analysis_modality_enum` (`analysis_modality`)

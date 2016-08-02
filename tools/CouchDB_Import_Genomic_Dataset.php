@@ -20,8 +20,10 @@ require_once 'Database.class.inc';
 require_once 'Utility.class.inc';
 
 /**
- * The Dataframe_parser follow the specifications described in the 
- * modules/genomic_browser/couchdb/examples/data.frame.csv file.
+ *  The GenomicDatasetImporter follow the specifications described in the 
+ *  modules/genomic_browser/couchdb/examples/data.frame.csv file.
+ *
+ *  It will import any dataset following those rules into CouchDB.
  *
  *  @category Genomics
  *  @package  Main
@@ -45,37 +47,82 @@ class GenomicDatasetImporter
         $start_time = microtime(true);
 
         $mysql_db = Database::singleton();
-        $query = 'SELECT FileName, FileType, AnalysisModality from genomic_files WHERE GenomicFileID = :v_file_id';
-        $record = $mysql_db->pselectRow($query, array('v_file_id' => $GenomicFileID));
+        $query = 'SELECT FileName, FileType, AnalysisModality, couchdb_doc_id from genomic_files WHERE GenomicFileID = :v_file_id';
+        $genomic_file = $mysql_db->pselectRow($query, array('v_file_id' => $GenomicFileID));
 
-        if (0 == count($record)) {
+        if (0 == count($genomic_file)) {
             die('No genomic_files for that GenomicFileID');
         }
 
-        if (!class_exists($record['FileType'])) {
-            die("The class $record[FileType] does not exists");
+        if (!class_exists($genomic_file['FileType'])) {
+            die("The class $genomic_file[FileType] does not exists");
         }
 
         try {
 
-            switch ($record['FileType']) {
+            switch ($genomic_file['FileType']) {
                 case 'Dataframe' :
-                    $dataset = new Dataframe($GenomicFileID, $record['FileName'], $record['AnalysisModality']);
+                    $dataset = new Dataframe($GenomicFileID, $genomic_file['FileName'], $genomic_file['AnalysisModality']);
                     $this->logit("Dataset successfuly initialised");
+                    break;
+                case 'Datamatrix' :
+                    break;
+                default:
+
+                    break;
             }
 
             $doc = $dataset->getDatasetDocument();
-            $this->logit("Dataset document created");
 
+            $_id = 'genomic_dataset-' . $doc->loris_file_id; 
+
+// TODO remove the set database or use a config value
             $this->CouchDB->setDatabase('test_epi');
-var_dump($doc->loris_file_id);
-var_dump($doc);
-            $this->CouchDB->replaceDoc($doc->loris_file_id, $doc);
-exit;
+
+            if (empty($genomic_file['couchdb_doc_id'])) {
+                $response = $this->CouchDB->postDoc((Array) $doc);
+            } else {
+                $response = $this->CouchDB->replaceDoc($genomic_file['couchdb_doc_id'], (Array) $doc);
+            }
+
+            switch ($response) {
+                case 'unchanged contents':
+                    $this->logit("Dataset document has not changed");
+                    break;
+                case 'modified':
+                case 'new':
+                    $this->logit($response);
+                    $this->logit("Dataset document imported sucessfully");
+                    break;
+                default:
+                    $this->logit($response);
+ 
+                    $id = json_decode($response)->id;
+                    $mysql_db->update(
+                        'genomic_files',
+                        array('couchdb_doc_id' => $id),
+                        array('GenomicFileID' => $GenomicFileID)
+                    );
+            }
+
+        } catch (Exception $e) {
+            echo 'Caught exception: ',  $e->getMessage(), "\n";
+        }
+
+        try {
+            $report = array(
+                'count'     => 0,
+                'new'       => 0,
+                'modified'  => 0,
+                'unchanged' => 0
+            );
+            $this->logit('Importing genomic variables');
             while($doc = $dataset->getNextDataVariableDocument()) {
                 var_dump($doc);
-// TODO Insert document in couchDB
+                $report['count']++;
             }
+            $this->logit('Genomic variables importation completed');
+            print_r($report);
 
         } catch (Exception $e) {
             echo 'Caught exception: ',  $e->getMessage(), "\n";
@@ -131,7 +178,7 @@ class Dataframe
        $this->_loadInformations();
        $this->_loadHeaders();
 
-       $this->handle = null;
+       unset($this->handle);
        return $this;
 
     }
@@ -189,7 +236,7 @@ class Dataframe
             switch ($matches[1]) {
                 case 'variable_type':
                     if ($matches[2] != $this->meta['variable_type']) {
-                        throw new Exception("variable_type does not match between file content ($matches[2]) and database record ($this->meta[variable_type])");
+                        throw new Exception('variable_type does not match');
                     }
                     break;
                 case 'variable_format':

@@ -58,13 +58,15 @@ class GenomicDatasetImporter
         $genomic_file = $mysql_db->pselectRow($query, array('v_file_id' => $GenomicFileID));
 
         if (0 == count($genomic_file)) {
-            die('No genomic_files for that GenomicFileID');
+            die("Error: No genomic_files for that GenomicFileID\n");
         }
 
         if (!class_exists($genomic_file['FileType'])) {
-            die("The class $genomic_file[FileType] does not exists");
+            die("Error: The class $genomic_file[FileType] does not exists\n");
         }
 
+
+        // Create dataset document en insert it in CouchDB 
         try {
 
             $class_name = $genomic_file['FileType'];
@@ -76,6 +78,9 @@ class GenomicDatasetImporter
                     break;
                 case 'Datamatrix' :
 // TODO
+                    // find the annotation filename
+                    $dataset = new Datamatrix($GenomicFileID, $genomic_file['FileName'], $genomic_file['AnalysisModality']);
+                    $this->logit("Dataset successfuly initialised");
                     break;
                 default:
 // TODO
@@ -122,6 +127,8 @@ class GenomicDatasetImporter
             echo 'Caught exception: ',  $e->getMessage(), "\n";
         }
 
+        // Insert a variable document in CouchDB for each row, adding the annotations
+        // of that row in the document.
         try {
             $this->logit('Importing genomic variables');
 
@@ -158,6 +165,7 @@ class GenomicDatasetImporter
             });
 
             $this->logit('Genomic variables importation completed');
+            $this->logit('Advancement report:');
             print_r($this->report);
 
         } catch (Exception $e) {
@@ -204,13 +212,127 @@ abstract class Dataset
 
         fseek($handle, $offset, SEEK_SET);
     }
+
+    // Will read all lines starting with ## until a line does not start with ##. Then move back to the start of that line.
+    protected function _loadInformations(&$handle)
+    {
+        $pattern = '/^## (\w+),(.*)/';
+        $offset = ftell($handle);
+
+        while (preg_match($pattern,fgets($handle), $matches)) {
+            $offset = ftell($handle);
+
+            switch ($matches[1]) {
+                case 'variable_type':
+                    if ($matches[2] != $this->meta['variable_type']) {
+                        throw new Exception('variable_type does not match');
+                    }
+                    break;
+                case 'variable_format':
+                    if (1 != preg_match('/float|integer|string/', $matches[2])) {
+                        throw new Exception("variable_format must be one of float, integer or string");
+                    }
+                    $this->meta['variable_format'] = $matches[2];
+                    break;
+                case 'sample_count':
+                    $sample_count = intval($matches[2]);
+                    if ($sample_count != $matches[2] || $sample_count == 0) {
+                        throw new Exception("sample_count must be an integer greater than 0");
+                    }
+                    $this->meta['sample_count'] = $sample_count;
+                    break;
+                default:
+                    $this->meta['ad_libitum'][$matches[1]] = $matches[2];
+                    break;
+            }
+        }
+        fseek($handle, $offset, SEEK_SET);
+    }
+
+    protected function _loadHeaders(&$handle)
+    {
+        $line = fgets($handle);
+        if ($line[0] != '#') {
+            throw new Exception("Expecting headers line instead of \n$line");
+        }
+
+        // Parse the headers line
+        $line = ltrim($line, '#');
+        $headers = str_getcsv($line);
+        $annotation_labels = array_slice($headers, 0 , count($headers) - $this->meta['sample_count']);
+        $sample_labels = array_splice($headers, -($this->meta['sample_count']));
+
+        // Annotation label formating
+        array_walk($annotation_labels, function(&$label) {
+            $label = trim($label);
+            $label = strtolower($label);
+            $label = str_replace(array(' ', '-'), '_', $label);
+        });
+
+        // Check for required fields
+        if (!in_array('variable_name',$annotation_labels)) { 
+            throw new Exception("Required headers missing");
+        }
+
+        // Sample label formating
+        array_walk($sample_labels, function(&$label) {
+            $label = trim($label);
+        });
+
+        $this->headers = array_merge($annotation_labels,$sample_labels);
+    }
 }
 
 class Datamatrix extends Dataset
 {
+    var $loris_file_id;
+    var $file_name;
+
+    var $handle;
+
+    var $meta = array(
+        'doctype'         => 'dataset',
+        'file_format'     => 'dataframe',
+        'variable_type'   => null,
+        'variable_format' => null,
+        'sample_count'    => null,
+        'ad_libitum'      => array()
+    );
+
+    var $headers = [];
+
+    function __construct( $GenomicFileID, $filename, $analysis_modality )
+    {
+        $this->loris_file_id = $GenomicFileID;
+        $this->file_name = $filename;
+        $this->meta['variable_type'] = $analysis_modality;
+    }
+
     function getDatasetDocument()
     {
-// TODO
+        if (!file_exists($this->file_name)) {
+            throw new Exception("File not found\n$this->file_name");
+        }
+        if (!is_readable($this->file_name)) {
+            throw new Exception("File is not readable\n$this->file_name");
+        }
+
+        $this->handle = fopen($this->file_name, "r");
+        $this->_skipComments($this->handle);
+
+        $this->_loadInformations($this->handle);
+        $this->_loadHeaders($this->handle);
+
+        // Check for required fields
+        if (!in_array('variable_name',$annotation_labels) ||
+            !in_array('chromosome',$annotation_labels) ||
+            !in_array('start_loc',$annotation_labels) ||
+            !in_array('size',$annotation_labels)) {
+            throw new Exception("Required headers missing");
+        }
+
+        unset($this->handle);
+        return $this;
     }
 
     function getNextDataVariableDocument()
@@ -246,21 +368,28 @@ class Dataframe extends Dataset
 
     function getDatasetDocument()
     {
-       if (!file_exists($this->file_name)) {
-           throw new Exception("File not found\n$this->file_name");
-       } 
-       if (!is_readable($this->file_name)) {
-           throw new Exception("File is not readable\n$this->file_name");
-       } 
+        if (!file_exists($this->file_name)) {
+            throw new Exception("File not found\n$this->file_name");
+        } 
+        if (!is_readable($this->file_name)) {
+            throw new Exception("File is not readable\n$this->file_name");
+        } 
 
-       $this->handle = fopen($this->file_name, "r");
-       $this->_skipComments($this->handle);
-       $this->_loadInformations();
-       $this->_loadHeaders();
+        $this->handle = fopen($this->file_name, "r");
+        $this->_skipComments($this->handle);
+        $this->_loadInformations($this->handle);
+        $this->_loadHeaders($this->handle);
 
-       unset($this->handle);
-       return $this;
+        // Check for required fields
+        if (!in_array('variable_name',$this->headers) ||
+            !in_array('chromosome',$this->headers) ||
+            !in_array('start_loc',$this->headers) ||
+            !in_array('size',$this->headers)) {
+            throw new Exception("Required headers missing");
+        }
 
+        unset($this->handle);
+        return $this;
     }
 
     function getNextDataVariableDocument()
@@ -292,77 +421,6 @@ class Dataframe extends Dataset
            return $variable;
        }
     }
-
-    private function _loadInformations()
-    {
-        $pattern = '/^## (\w+),(.*)/';
-        $offset = ftell($this->handle);        
-
-        while (preg_match($pattern,fgets($this->handle), $matches)) {
-            $offset = ftell($this->handle);
-
-            switch ($matches[1]) {
-                case 'variable_type':
-                    if ($matches[2] != $this->meta['variable_type']) {
-                        throw new Exception('variable_type does not match');
-                    }
-                    break;
-                case 'variable_format':
-                    if (1 != preg_match('/float|integer|string/', $matches[2])) {
-                        throw new Exception("variable_format must be one of float, integer or string");
-                    }
-                    $this->meta['variable_format'] = $matches[2];
-                    break;
-                case 'sample_count':
-                    $sample_count = intval($matches[2]);
-                    if ($sample_count != $matches[2] || $sample_count == 0) {
-                        throw new Exception("sample_count must be an integer greater than 0");
-                    }
-                    $this->meta['sample_count'] = $sample_count;
-                    break;
-                default:
-                    $this->meta['ad_libitum'][$matches[1]] = $matches[2];
-                    break;
-            }
-        }
-        fseek($this->handle, $offset, SEEK_SET);
-    } 
-
-    private function _loadHeaders()
-    {
-        $line = fgets($this->handle);
-        if ($line[0] != '#') {
-            throw new Exception("Expecting headers line instead of \n$line");
-        }
-
-        // Parse the headers line
-        $line = ltrim($line, '#');
-        $headers = str_getcsv($line);
-        $annotation_labels = array_slice($headers, 0 , count($headers) - $this->meta['sample_count']);
-        $sample_labels = array_splice($headers, -($this->meta['sample_count']));
-
-        // Annotation label formating
-        array_walk($annotation_labels, function(&$label) {
-            $label = trim($label);
-            $label = strtolower($label);
-            $label = str_replace(array(' ', '-'), '_', $label); 
-        });
-
-        // Check for required fields
-        if (!in_array('variable_name',$annotation_labels) ||
-            !in_array('chromosome',$annotation_labels) || 
-            !in_array('start_loc',$annotation_labels) || 
-            !in_array('size',$annotation_labels)) {
-            throw new Exception("Required headers missing");
-        }
-
-        // Sample label formating
-        array_walk($sample_labels, function(&$label) {
-            $label = trim($label);
-        });
-
-        $this->headers = array_merge($annotation_labels,$sample_labels);
-    } 
 }
 
 class DataVariable

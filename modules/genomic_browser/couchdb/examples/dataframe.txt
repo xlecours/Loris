@@ -26,7 +26,7 @@
 ### --REQUIRED--> start_loc, The loci of that variable.
 ### --REQUIRED--> size, The number of base paires covered by that variable.
 ###
-### The parser script will stop at the first invaliud line.
+### The parser script will stop at the first invalid line.
 ###
 ## description,Example data.frame file type describing the format expected by the LORIS CouchDB import script. 
 ## author,xlecours

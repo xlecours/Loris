@@ -1,0 +1,41 @@
+### This file is a example of a datamatrix file expected by the CouchDB importer of LORIS. 
+### File following this format will be transformed into a dataset.json file and N variable.json files. (Where N is the number of data lines)
+### An additionnal file must be provided to add annotations to each variable (row). This additionnal file must be part of the same fileset_id in mysql.
+###
+### Comment line start with (###).
+### Those lines will be ignored.
+###
+### Any informations about history or provenance should be on a line stating with (##). 
+### Those informations should be represented as key, value pairs and will be kept as string.
+### The key needs to be a single word at the start of the line.
+### The actual separator is single comma.
+### Invalid lines will be ommited.
+### The following information are required :
+### --REQUIRED--> variable_type: This is used to create the tabs in the genomic browser. 
+### --REQUIRED--> variable_format: One of float, integer, string. variable values will always be stored as string be this specify of to display them.
+### --REQUIRED--> sample_count: How many column to treat as samples starting from the right of the matrix
+###
+### The headers line should start with a single (#).
+### There should be only one headers line.
+### The first column will always be considered as the variable_ids and the following column should be the n sample_labels where n = sample_count.
+### Sample label will not be modified.
+### The lines following the headers will be considered as data line.
+###
+### Data lines should contain 1 column before the samples columns :
+### --REQUIRED--> variable_name, the unique identifier of the variable.
+###
+### The parser script will stop at the first invalid line.
+### 
+### See ./datamatrix.annotations for detail about the annotations format specifications.
+###
+## description,Example matrix file type describing the format expected by the LORIS CouchDB import script. 
+## author,xlecours
+## project,LORIS demo data
+## normalisation_method,Python random() function
+## variable_type,Methylation beta-values
+## variable_format,float
+## sample_count,6
+# variable_name,12341234_R01C01,12341234_R01C02,12341234_R02C01,12341234_R02C02,12341234_R03C01,12341234_R03C02 
+cg17866181,0.03771442,0.70914765,0.19532871,0.04765696,0.78155105,0.46059274
+cg14253035,0.91822067,0.38131484,0.75674614,0.36899578,0.99989939,0.71954035
+cg16526047,0.35591484,0.72613193,0.58488640,0.43822592,0.69308487,0.84194751

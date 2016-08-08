@@ -54,7 +54,7 @@ class GenomicDatasetImporter
         $start_time = microtime(true);
 
         $mysql_db = Database::singleton();
-        $query = 'SELECT FileName, FileType, AnalysisModality, couchdb_doc_id from genomic_files WHERE GenomicFileID = :v_file_id';
+        $query = 'SELECT FileName, FileType, AnalysisModality, couchdb_doc_id, fileset_id from genomic_files WHERE GenomicFileID = :v_file_id';
         $genomic_file = $mysql_db->pselectRow($query, array('v_file_id' => $GenomicFileID));
 
         if (0 == count($genomic_file)) {
@@ -72,18 +72,23 @@ class GenomicDatasetImporter
             $class_name = $genomic_file['FileType'];
 
             switch ($class_name) {
-                case 'Dataframe' :
-                    $dataset = new Dataframe($GenomicFileID, $genomic_file['FileName'], $genomic_file['AnalysisModality']);
-                    $this->logit("Dataset successfuly initialised");
-                    break;
+
                 case 'Datamatrix' :
-// TODO
-                    // find the annotation filename
-                    $dataset = new Datamatrix($GenomicFileID, $genomic_file['FileName'], $genomic_file['AnalysisModality']);
+                    // find the annotation file name
+                    $query = "SELECT FileName from genomic_files WHERE fileset_id = :v_fileset_id AND FileType = 'Variable Annotations'";
+                    $annotation_file = $mysql_db->pselectRow($query, array('v_fileset_id' => $genomic_file['fileset_id'] ));
+
+                    if (0 == count($annotation_file)) {
+                        die("Error: No annotation file for that GenomicFileID\n");
+                    }
+
+                    $dataset = new Datamatrix($GenomicFileID, $genomic_file['FileName'], $genomic_file['AnalysisModality'], $annotation_file['FileName']);
                     $this->logit("Dataset successfuly initialised");
                     break;
-                default:
-// TODO
+                case 'Dataframe' :
+                default: 
+                    $dataset = new $class_name($GenomicFileID, $genomic_file['FileName'], $genomic_file['AnalysisModality']);
+                    $this->logit("Dataset successfuly initialised");
                     break;
             }
 
@@ -125,9 +130,10 @@ class GenomicDatasetImporter
 
         } catch (Exception $e) {
             echo 'Caught exception: ',  $e->getMessage(), "\n";
+            exit;
         }
 
-        // Insert a variable document in CouchDB for each row, adding the annotations
+        // Insert a variable document in CouchDB for each row, adding the annotation
         // of that row in the document.
         try {
             $this->logit('Importing genomic variables');
@@ -173,7 +179,6 @@ class GenomicDatasetImporter
         }
 
         echo "Execution time : " . (microtime(true) - $start_time) . " seconds\n";
-        exit;
     }
 
     function logit($message)
@@ -249,6 +254,10 @@ abstract class Dataset
         fseek($handle, $offset, SEEK_SET);
     }
 
+    // read the current line in the file and fill the headers.
+    // the current line must start with a #
+    // this function expect the field separator to be a comma
+    // $this->meta['sample_count'] must already be set
     protected function _loadHeaders(&$handle)
     {
         $line = fgets($handle);
@@ -287,12 +296,13 @@ class Datamatrix extends Dataset
 {
     var $loris_file_id;
     var $file_name;
+    var $annotation_file_name;
 
     var $handle;
 
     var $meta = array(
         'doctype'         => 'dataset',
-        'file_format'     => 'dataframe',
+        'file_format'     => 'datamatrix',
         'variable_type'   => null,
         'variable_format' => null,
         'sample_count'    => null,
@@ -301,10 +311,11 @@ class Datamatrix extends Dataset
 
     var $headers = [];
 
-    function __construct( $GenomicFileID, $filename, $analysis_modality )
+    function __construct( $GenomicFileID, $filename, $analysis_modality, $annotation_filename )
     {
         $this->loris_file_id = $GenomicFileID;
         $this->file_name = $filename;
+        $this->annotation_file_name = $annotation_filename;
         $this->meta['variable_type'] = $analysis_modality;
     }
 
@@ -316,6 +327,12 @@ class Datamatrix extends Dataset
         if (!is_readable($this->file_name)) {
             throw new Exception("File is not readable\n$this->file_name");
         }
+        if (!file_exists($this->annotation_file_name)) {
+            throw new Exception("Annotation file not found\n$this->annotation_file_name");
+        }
+        if (!is_readable($this->annotation_file_name)) {
+            throw new Exception("Annotation file is not readable\n$this->annotation_file_name");
+        }
 
         $this->handle = fopen($this->file_name, "r");
         $this->_skipComments($this->handle);
@@ -323,11 +340,14 @@ class Datamatrix extends Dataset
         $this->_loadInformations($this->handle);
         $this->_loadHeaders($this->handle);
 
+        unset($this->headers[0]);
+
+        $this->_addAnnotationHeaders();
+
         // Check for required fields
-        if (!in_array('variable_name',$annotation_labels) ||
-            !in_array('chromosome',$annotation_labels) ||
-            !in_array('start_loc',$annotation_labels) ||
-            !in_array('size',$annotation_labels)) {
+        if (!in_array('variable_name',$this->headers) ||
+            !in_array('chromosome',$this->headers) ||
+            !in_array('start_loc',$this->headers)) {
             throw new Exception("Required headers missing");
         }
 
@@ -337,7 +357,84 @@ class Datamatrix extends Dataset
 
     function getNextDataVariableDocument()
     {
-// TODO
+       if (0 == count($this->headers)) {
+           throw new Exception("Dataset document headers not initialized");
+       }
+
+       if (empty($this->handle)) {
+           $this->handle = fopen($this->file_name, "r");
+           $this->_moveToFirstDataRow($this->handle);
+       }
+
+       $annotation_labels = array_slice($this->headers, 0, -intval($this->meta['sample_count']) );
+       $data = fgetcsv($this->handle);
+
+       if (empty($data) || !$data) {
+           return false;
+       } else {
+
+           $annotation_data = $this->_getVariableAnnotation($data[0]);                   
+           unset($data[0]);
+           $data = array_merge($annotation_data, $data);
+
+           switch ($this->meta['variable_type']) {
+               case 'Methylation beta-values':
+                   $variable = new MethylationBetaValue($this->loris_file_id, $data[0]);
+                   $variable->initialize($annotation_labels, $data);
+                   break;
+               default:
+                   $variable = new DataVariable($this->loris_file_id, $data[0]);
+                   break;
+           }
+           return $variable;
+       }
+    }
+
+    private function _addAnnotationHeaders()
+    {
+        $handle = fopen($this->annotation_file_name, 'r');
+
+        $pattern = '/^#.*/';
+        $offset = ftell($handle);
+
+        while (preg_match($pattern,fgets($handle))) {
+            $offset = ftell($handle);
+        }
+
+        fseek($handle, $offset, SEEK_SET);
+
+        $annotation = fgetcsv($handle); 
+        $annotation[0] = 'variable_name';
+
+        // Annotation label formating
+        array_walk($annotation, function(&$label) {
+            $label = trim($label);
+            $label = strtolower($label);
+            $label = str_replace(array(' ', '-'), '_', $label);
+        });
+        
+        $this->headers = array_merge($annotation, $this->headers);
+    }
+
+    private function _getVariableAnnotation($variable_name)
+    {
+        $annotation = array();
+        $handle = fopen($this->annotation_file_name, 'r');
+
+        $pattern = '/^#.*/';
+
+        while (preg_match($pattern,fgets($handle))) {}
+
+        $pattern = "/$variable_name/";
+        
+        while (!feof($handle)) {
+            $line = fgetcsv($handle, 4096);
+            if (preg_match($pattern, $line[0])) { 
+                $annotation = $line; 
+            }
+        }
+        fclose($handle);
+        return $annotation;
     }
 }
 
@@ -376,6 +473,7 @@ class Dataframe extends Dataset
         } 
 
         $this->handle = fopen($this->file_name, "r");
+
         $this->_skipComments($this->handle);
         $this->_loadInformations($this->handle);
         $this->_loadHeaders($this->handle);
@@ -483,6 +581,20 @@ class MethylationBetaValue extends DataVariable
         unset($this->properties['start_loc']);
         $this->meta['identifier']['size'] = 1;
         unset($this->properties['size']);
+    }
+}
+
+class AnnotationFile
+{
+// TODO
+    var $filename;
+    var $handle;
+    
+    public function getVariableAnnotation($variable_name)
+    {
+        $annotation = array();
+
+        return $annotation;
     }
 }
 

@@ -1,0 +1,69 @@
+{
+    "_id": "_design/datasets",
+    "_rev": "19-196a31d01a4b00161be1741077d12bf7",
+    "language": "javascript",
+    "views": {
+        "betavalue_by_sample": {
+            "map": "function(doc) {   
+                if( doc.meta && doc.meta.doctype == 'dataset' ) {       
+                    var probe_count = doc.data.probe_count;
+                    var file_id = doc.meta.identifier.LORIS_file_id;
+                    var variable_type = doc.meta.variable_type;
+        
+                    doc.data.samples.forEach(function (sample_label) {
+                        var key = [sample_label, variable_type, file_id];
+                        emit(key, probe_count);
+                    });
+                }
+            }",
+            "reduce": "_sum"
+        }
+    },
+    "lists": {
+        "profile": "function(head, req) {
+            start({'headers': {'Content-Type': 'application/json'}});
+
+            var data_table = {};
+            var row_count = 0;
+            var column_totals = {};
+
+            while (row = getRow()) {
+                var obj = data_table[row.key[0]] || {};
+                obj[row.key[1]] = row.value;
+                data_table[row.key[0]] = obj;
+                row_count++;
+                column_totals[row.key[1]] = column_totals[row.key[1]] || 0;
+                column_totals[row.key[1]]++;
+            } 
+
+            send('{ \"data\" :');
+            send(JSON.stringify(data_table));
+            send(', \"row_count\": ');
+            send(JSON.stringify(row_count));
+            send(', \"column_totals\": ');
+            send(JSON.stringify(column_totals));
+            send('}');
+
+        }",
+        "methylation": "function(head, req) {
+            start({'headers': {'Content-Type': 'application/json'}});
+
+            var data_table = {};
+            var row_count = 0;
+            var column_totals = {};
+
+            while (row = getRow()) {var obj = data_table[row.key[0]] || {};
+                obj[row.key[1]] = row.value;
+                data_table[row.key[0]] = obj;
+                row_count++;
+                column_totals[row.key[1]] = column_totals[row.key[1]] || 0;
+                column_totals[row.key[1]]++ } send('{ \"data\" :');
+                send(JSON.stringify(data_table));
+                send(', \"row_count\": ');
+                send(JSON.stringify(row_count));
+                send(', \"column_totals\": ');
+                send(JSON.stringify(column_totals));
+                send('}');
+        }"
+    }
+}

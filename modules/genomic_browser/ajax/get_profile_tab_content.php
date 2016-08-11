@@ -24,30 +24,26 @@ if (!$userSingleton->hasPermission('genomic_browser_view_site')
 $couch = CouchDB::singleton();
 $couch->setDatabase('test_epi');
 $params = array(
-    'reduce' => 'false'
+    'reduce'      => 'true',
+    'group_level' => '2',
 );
-$result = $couch->queryView('genomic_browser', 'sample_label_by_dataset', $params, false);
+$result = $couch->queryView('genomic_browser', 'variable_type_by_sample', $params, false);
+
 $pscid_dataset_map = array();
-
 foreach ($result as $row) {
-    $dataset = array(
-        'doc_id' => $row['id'],
-        'AnalysisModality' => $row['key'][0],
-        'GenomicFileID' => $row['key'][1]
-    );
-    foreach ($row['value'] as $sample_label) {
-        $pscid = get_pscid_by_sample_label($sample_label);
+    $pscid = get_pscid_by_sample_label($row['key'][0]);
+    $variable_type = $row['key'][1];
+    $dataset_count = $row['value'];    
 
-        if (empty($pscid)) {
-            $pscid = 'unknown';
-        }
-        
-        if(empty($pscid_dataset_map[$pscid])) {        
-            $pscid_dataset_map[$pscid] = array();
-        }
-
-        array_push($pscid_dataset_map[$pscid], array('sample_lable' => $sample_label, 'dataset' => $dataset));
+    if (empty($pscid)) {
+        $pscid = 'unknown';
     }
+        
+    if(empty($pscid_dataset_map[$pscid])) {        
+        $pscid_dataset_map[$pscid] = array();
+    }
+    
+    // increment the candidate's variable_type-datasets count.
 }
 
 header('Content-Type: application/json; charset=UTF-8');

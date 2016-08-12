@@ -42,8 +42,12 @@ foreach ($result as $row) {
     if(empty($pscid_dataset_map[$pscid])) {        
         $pscid_dataset_map[$pscid] = array();
     }
-    
-    // increment the candidate's variable_type-datasets count.
+
+    if(empty($pscid_dataset_map[$pscid][$variable_type])) {
+        $pscid_dataset_map[$pscid][$variable_type] = 0;
+    }
+
+    $pscid_dataset_map[$pscid][$variable_type] += $dataset_count;
 }
 
 header('Content-Type: application/json; charset=UTF-8');

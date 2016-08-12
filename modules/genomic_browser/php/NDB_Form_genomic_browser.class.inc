@@ -61,8 +61,10 @@ class NDB_Form_Genomic_Browser extends NDB_Form
         return array_merge(
             $deps,
             array(
+                $baseURL . '/js/components/PaginationLinks.js',
+                $baseURL . '/js/components/FilterTable.js',
+                $baseURL . '/js/components/StaticDataTable.js',
                 $baseURL . "/genomic_browser/js/genomic_browser_app.js",
-                $baseURL . "/genomic_browser/js/columnFormater.js",
             )
         );
     }

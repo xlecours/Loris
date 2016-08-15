@@ -68,5 +68,27 @@ class NDB_Form_Genomic_Browser extends NDB_Form
             )
         );
     }
+
+    /**
+     * Returns an ordered list of CSS dependencies that this page depends
+     * on.  These will get loaded into the template in order, so that
+     * interdependent files can be included in the correct order.
+     *
+     * @return array of strings with URLs to retrieve CSS resources
+     */
+    function getCSSDependencies()
+    {
+        $deps    = parent::getCSSDependencies();
+
+        $factory = NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
+
+        return array_merge(
+            $deps,
+            array(
+                $baseURL . "/genomic_browser/css/genomic_browser_custom.css",
+            )
+        );
+    }
 }
 ?>

@@ -3,12 +3,83 @@ GenomicBrowserApp = React.createClass({
 
     getInitialState: function () {
         return {
-            'activetab': 'profile',
-            'headers': [],
-            'data': {}
+            'activeTab': 'profile',
+            'candidateList': [],
+            'datasets': [],
+            'genomicRanges': []
+        };
+    },
+    updateCandidateList: function (newList) {
+        this.setState({ candidateList: newList });
+    },
+    render: function () {
+        var activeTab = {};
+        var tabsNav = [];
+        var message = React.createElement('div', null);
+
+        switch (this.state.activeTab) {
+            case 'profile':
+                activeTab = React.createElement(ProfileTab, { candidateList: this.state.candidateList });
+                break;
+        }
+
+        return React.createElement(
+            'div',
+            { className: 'row' },
+            message,
+            React.createElement(
+                'div',
+                { className: 'col-md-12' },
+                React.createElement(
+                    'nav',
+                    { className: 'nav nav-tabs' },
+                    React.createElement(
+                        'ul',
+                        { className: 'nav nav-tabs navbar-left', 'data-tabs': 'tabs' },
+                        React.createElement(
+                            'li',
+                            { role: 'presentation', className: 'active' },
+                            React.createElement(
+                                'a',
+                                { href: '#profile', 'data-toggle': 'tab' },
+                                'Profile'
+                            )
+                        ),
+                        React.createElement(
+                            'li',
+                            { role: 'presentation' },
+                            React.createElement(
+                                'a',
+                                { href: '#snp', 'data-toggle': 'tab' },
+                                'SNP'
+                            )
+                        )
+                    )
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'tab-content' },
+                    activeTab
+                )
+            )
+        );
+    }
+});
+RGenomicBrowserApp = React.createFactory(GenomicBrowserApp);
+
+ProfileTab = React.createClass({
+    displayName: 'ProfileTab',
+
+    getInitialState: function () {
+        return {
+            'filters': null,
+            'headers': null,
+            'data': null,
+            'isLoaded': false
         };
     },
     componentDidMount: function () {
+        console.log(this.props.candidateList);
         this.loadCurrentTabContent();
     },
     loadCurrentTabContent: function () {
@@ -16,10 +87,15 @@ GenomicBrowserApp = React.createClass({
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (xhttp.readyState == 4 && xhttp.status == 200) {
-                that.setState({ data: JSON.parse(xhttp.responseText) });
+                response = JSON.parse(xhttp.responseText);
+                that.setState({ data: response.Data, headers: response.Headers, isLoaded: true });
+            }
+            if (xhttp.readyState == 4 && xhttp.status == 500) {
+                console.log(xhttp.responseText);
+                that.setState({ error: true });
             }
         };
-        var url = loris.BaseURL.concat('/genomic_browser/ajax/get_', this.state.activetab, '_tab_content.php');
+        var url = loris.BaseURL.concat('/genomic_browser/?submenu=genomic_profile&format=json');
         xhttp.open("GET", url, true);
         xhttp.send();
     },
@@ -31,15 +107,85 @@ GenomicBrowserApp = React.createClass({
         );
     },
     render: function () {
-        var headers = ['PSCID', 'Site', 'Visit Label', 'Subproject', 'Sex', 'Date of Birth'];
-        var data = [['0', '0', '0', '0', '0', '0'], ['0', '0', '0', '0', '0', '0']];
-        return React.createElement(StaticDataTable
-        //Headers={this.state.headers}
-        , { Headers: headers
-            //Data={this.state.data}
-            , Data: data,
-            getFormattedCell: this.formatCell
-        });
+        var dataTable;
+        if (this.state.isLoaded) {
+            dataTable = React.createElement(StaticDataTable, {
+                Headers: this.state.headers,
+                Data: this.state.data,
+                getFormattedCell: this.formatCell
+            });
+        } else {
+            if (this.state.error) {
+                dataTable = React.createElement(
+                    'div',
+                    { className: 'alert alert-danger' },
+                    React.createElement(
+                        'strong',
+                        null,
+                        'Error'
+                    )
+                );
+            } else {
+                dataTable = React.createElement(
+                    'button',
+                    { className: 'btn-info has-spinner' },
+                    'Loading',
+                    React.createElement('span', { className: 'glyphicon glyphicon-refresh glyphicon-refresh-animate' })
+                );
+            }
+        }
+        return React.createElement(
+            'div',
+            null,
+            React.createElement(
+                'div',
+                { className: 'row' },
+                React.createElement(
+                    FilterTable,
+                    null,
+                    this.state.filters
+                ),
+                React.createElement(
+                    ActiveFilter,
+                    null,
+                    this.state.filters
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'row' },
+                React.createElement(
+                    'div',
+                    { className: 'col-sm-12' },
+                    dataTable
+                )
+            )
+        );
     }
 });
-RGenomicBrowserApp = React.createFactory(GenomicBrowserApp);
+
+ActiveFilter = React.createClass({
+    displayName: 'ActiveFilter',
+
+    render: function () {
+        var filterTree = [];
+        return React.createElement(
+            'div',
+            { className: 'col-sm-3' },
+            React.createElement(
+                'div',
+                { className: 'panel panel-primary' },
+                React.createElement(
+                    'div',
+                    { className: 'panel-heading', onClick: this.toggleCollapsed },
+                    'Active Filter'
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'panel-body' },
+                    filterTree
+                )
+            )
+        );
+    }
+});

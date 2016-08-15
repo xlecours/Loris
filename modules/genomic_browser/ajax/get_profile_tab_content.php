@@ -21,6 +21,17 @@ if (!$userSingleton->hasPermission('genomic_browser_view_site')
     exit;
 }
 
+$headers = array(
+    'PSCID',
+    'Site',
+    'Visit Label',
+    'Subproject',
+    'Sex',
+    'Date of Birth'
+);
+$filters = array_fill_keys($headers, null);
+var_dump($filters);
+exit;
 $couch = CouchDB::singleton();
 $couch->setDatabase('test_epi');
 $params = array(
@@ -31,7 +42,8 @@ $result = $couch->queryView('genomic_browser', 'variable_type_by_sample', $param
 
 $pscid_dataset_map = array();
 foreach ($result as $row) {
-    $pscid = get_pscid_by_sample_label($row['key'][0]);
+    $candidate_infos = get_candidate_infos($row['key'][0]);
+    $pscid = $candidate_infos['PSCID'];
     $variable_type = $row['key'][1];
     $dataset_count = $row['value'];    
 
@@ -54,12 +66,12 @@ header('Content-Type: application/json; charset=UTF-8');
 echo json_encode($pscid_dataset_map);
 exit;
 
-function get_pscid_by_sample_label($sample_label)
+function get_candidate_infos($sample_label)
 {
     $mysql = Database::singleton();
     return $mysql->pselectOne(
         'SELECT 
-             c.PSCID 
+             c.PSCID, c.DoB, c.Gender, c.Site 
          FROM 
              genomic_sample_candidate_rel gscr 
          LEFT JOIN candidate c 

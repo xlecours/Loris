@@ -24,7 +24,8 @@ if (!$userSingleton->hasPermission('genomic_browser_view_site')
 $couch = CouchDB::singleton();
 $couch->setDatabase('test_epi');
 $params = array(
-    'reduce' => 'false'
+    'reduce' => 'true',
+    'group_level' => 1,
 );
 $result = $couch->queryView('genomic_browser', 'sample_label_by_dataset', $params, false);
 

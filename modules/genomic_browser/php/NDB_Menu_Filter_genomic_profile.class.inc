@@ -139,61 +139,7 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
                 'show_brief_results' => 'show_brief_results',
                 'file_count'         => 'COUNT(gcfr.GenomicFileID)',
                );
-
-// TODO ADD the Dataset variable_types in column, validFilters and formToFilter
-
         return true;
-    }
-
-    /**
-     * Adds filters
-     * This function overrides filters to enable display of brief/full results
-     *
-     * @param string $prepared_key filter key
-     * @param string $field        filter field
-     * @param string $val          filter value
-     *
-     * @note overloaded function
-     *
-     * @return $query
-     */
-    function _addValidFilters($prepared_key, $field, $val)
-    {
-error_log('here');
-        $query = ''; //initialize
-        if ($field == "show_brief_results") {
-            if ($val == "full") {
-                $this->_displayBrief = false;
-            }
-            return $query;
-        }
-        if ((!empty($val) || $val === '0') && $field != 'order') {
-            if (in_array($field, $this->CheckboxFilters) && $val) {
-                $query .= " AND $field";
-            } elseif (strtolower(substr($field, -8)) == 'centerid'
-                || strtolower(substr($field, -10)) == 'categoryid'
-                || strtolower(substr($field, -6)) == 'gender'
-                || (isset($this->EqualityFilters)
-                && in_array($field, $this->EqualityFilters))
-            ) {
-                 $query .= " AND $field = :v_$prepared_key";
-            } elseif ($field == "F.FileCount"
-                || $field == "S.SNPCount"
-                || $field == "C.CNVCount"
-                || $field == "M.CPGCount"
-            ) {
-                if ($val == "1") {  // if ANY found i.e. >= 1
-                    $query .= " AND $field >= :v_$prepared_key";
-                } elseif ($val == "0") { // if NONE found i.e. = 0
-                    $query .= " AND ($field = :v_$prepared_key || $field IS NULL)";
-                }
-            } elseif ($field == "c.CandID") {
-                $query .= " AND $field = CONVERT( :v_$prepared_key, DECIMAL) ";
-            } else {
-                $query .= " AND $field LIKE CONCAT('%', :v_$prepared_key, '%') ";
-            }
-        }
-        return $query;
     }
 
     /**

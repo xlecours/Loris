@@ -64,7 +64,6 @@ class NDB_Form_Genomic_Browser extends NDB_Form
                 $baseURL . '/js/components/PaginationLinks.js',
                 $baseURL . '/js/components/FilterTable.js',
                 $baseURL . '/js/components/StaticDataTable.js',
-                $baseURL . "/genomic_browser/js/profileColumnFormatter.js",
                 $baseURL . "/genomic_browser/js/genomic_browser_app.js",
             )
         );

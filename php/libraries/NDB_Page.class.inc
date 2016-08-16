@@ -370,6 +370,23 @@ class NDB_Page
     }
 
     /**
+     * Create a QuickForm label element but does not add it to the form
+     *
+     * @param string $labelString The label to attach to the element
+     *
+     * @return HTML_QuickForm Label element
+     */
+    function createLabel(
+        $labelString
+    ) {
+        return $this->form->createElement(
+            "static",
+            null,
+            null,
+            $labelString
+        );
+    }
+    /**
      * Creates a QuickForm text element but does not add it to the form
      *
      * @param string $field The field name for this text element
@@ -552,16 +569,13 @@ class NDB_Page
 
         $www     = $config->getSetting('www');
         $baseurl = $www['url'];
-
-        $paths = $config->getSetting("paths");
-
-        $TestName = $this->name;
+        $min     = ($config->getSetting("sandbox") === '1') ? '' : '.min';
 
         $files = array(
                   $baseurl . '/js/jquery/jquery-1.11.0.min.js',
                   $baseurl . '/js/helpHandler.js',
                   $baseurl . '/js/modernizr.min.js',
-                  $baseurl . '/js/react-with-addons-0.13.3.min.js',
+                  $baseurl . "/js/react-with-addons-0.13.3$min.js",
                   $baseurl . '/js/jquery/jquery-ui-1.10.4.custom.min.js',
                   $baseurl . '/js/jquery.dynamictable.js',
                   $baseurl . '/js/jquery.fileupload.js',

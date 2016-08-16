@@ -63,18 +63,18 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
     {
         // set the class variables
         $this->columns = array(
-                          'psc.Name AS PSC',
-                          'LPAD(candidate.CandID, 6, "0") AS DCCID',
-                          'candidate.PSCID',
-                          'candidate.Gender',
-                          'cohort.SubprojectID as Subproject',
-                          'DATE_FORMAT(candidate.DoB,\'%Y-%m-%d\') AS DoB',
-                          'candidate.ExternalID as externalID',
-                          'F.FileCount as Files',
-                          'S.SNPCount as SNPs',
-                          'C.CNVCount as CNVs',
-                          'M.CPGCount as CPGs',
+                          'p.Name AS Site',
+                          'LPAD(c.CandID, 6, "0") AS dccid',
+                          'c.PSCID AS pscid',
+                          'c.Gender AS sex',
+                          'GROUP_CONCAT(DISTINCT u.title) AS subproject',
+                          'DATE_FORMAT(c.DoB,\'%Y-%m-%d\') AS date_of_birth',
+                          'c.ExternalID AS external_id',
+                          'COUNT(gcfr.GenomicFileID) AS file_count',
+                          'GROUP_CONCAT(gscr.sample_label) as sample_labels'
                          );
+
+// TODO :: Column formater should consider subproject and sample_labels as possible arrays
 
         // This variable will be used by the columnFormatter javascript
         // to set the default hidden columns in the data table.
@@ -84,148 +84,63 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
                         return ucwords(str_replace('_', ' ', $header));
                 },
                 array(
-                 'PSC',
-                 'DCCID',
-                 'externalID',
-                 'DoB',
+                 'Site',
+                 'dccid',
+                 'external_id',
+                 'date_of_birth',
                 )
             )
         );
 
-        $this->query = " FROM candidate
-            LEFT JOIN (select s.CandID, min(s.subprojectID) as SubprojectID
-                from session s GROUP BY s.CandID) AS cohort
-                ON (cohort.CandID=candidate.CandID)
-            LEFT JOIN psc ON (psc.CenterID= candidate.CenterID)
-            LEFT JOIN (SELECT gcfr.CandID, count(gcfr.GenomicFileID) as FileCount 
-                from genomic_candidate_files_rel gcfr group by gcfr.CandID) F 
-                ON candidate.CandID = F.CandID
-            LEFT JOIN (select scr.CandID, count(scr.CandID) as SNPCount
-                from SNP_candidate_rel as scr GROUP BY scr.CandID) as S
-                 ON (candidate.CandID = S.CandID)
-            LEFT JOIN (select CNV.CandID, count(CNV.CandID) as CNVCount
-                from CNV GROUP BY CNV.CandID) AS C
-                ON (C.CandID=candidate.CandID)
-            LEFT JOIN  (select gscr.CandID, COUNT(cpg_name) as CPGCount 
-                from genomic_cpg gc 
-                JOIN genomic_sample_candidate_rel gscr 
-                    USING (sample_label) 
-                group by gscr.CandID) as M
-                ON (M.CandID = candidate.CandID)
-            WHERE
-            candidate.Entity_type = 'Human' AND candidate.Active = 'Y' ";
+        $this->query = " FROM candidate c 
+            LEFT JOIN session s 
+                USING (CandID)
+            LEFT JOIN subproject u
+                USING (SubprojectID)
+            LEFT JOIN psc p
+                ON (p.CenterID = c.CenterID)
+            LEFT JOIN genomic_candidate_files_rel gcfr
+                USING (CandID)
+            LEFT JOIN genomic_sample_candidate_rel gscr
+                USING (CandID) 
+            WHERE 
+                c.Entity_type = 'Human' AND 
+                c.Active = 'Y'";
 
         $DB   = Database::singleton();
         $user = User::singleton();
         if (!$user->hasPermission('genomic_browser_view_allsites')) {
-            $this->query .= " AND candidate.CenterID=";
+            $this->query .= " AND c.CenterID = ";
             $this->query .= $DB->quote($user->getCenterID());
         }
 
-        $this->group_by     = '';
-        $this->order_by     = 'psc.Name, candidate.CandID DESC';
+        $this->group_by     = 'c.CandID, p.Name';
+        $this->order_by     = 'p.Name, c.PSCID';
+
         $this->validFilters = array(
-                               'candidate.CenterID',
-                               'candidate.CandID',
-                               'candidate.PSCID',
-                               'candidate.Gender',
-                               'cohort.SubprojectID',
-                               'candidate.DoB',
-                               'candidate.ExternalID',
+                               'p.Site',
+                               'c.CandID',
+                               'c.PSCID',
+                               'c.Gender',
+                               's.SubprojectID',
+                               'c.DoB',
+                               'c.ExternalID',
                                'show_brief_results',
-                               'F.FileCount',
-                               'C.CNVCount',
-                               'S.SNPCount',
-                               'M.CPGCount',
+                               'file_count',
                               );
 
-        $ftf = array(
-                'centerID'           => 'candidate.CenterID',
-                'DCCID'              => 'candidate.CandID',
-                'PSCID'              => 'candidate.PSCID',
-                'gender'             => 'candidate.Gender',
-                'SubprojectID'       => 'cohort.SubprojectID',
-                'External_ID'        => 'candidate.ExternalID',
-                'Show_Brief_Results' => 'show_brief_results',
-                'Files'              => 'F.FileCount',
-                'SNPs'               => 'S.SNPCount',
-                'CNVs'               => 'C.CNVCount',
-                'CPGs'               => 'M.CPGCount',
+        $this->formToFilter = array(
+                'site'               => 'candidate.CenterID',
+                'dccid'              => 'candidate.CandID',
+                'pscid'              => 'candidate.PSCID',
+                'sex'                => 'candidate.Gender',
+                'subproject_id'      => 'cohort.SubprojectID',
+                'external_id'        => 'candidate.ExternalID',
+                'show_brief_results' => 'show_brief_results',
+                'file_count'         => 'COUNT(gcfr.GenomicFileID)',
                );
 
-        $this->formToFilter = $ftf;
-
-        return true;
-    }
-
-    /**
-     * Sets the template data for the filter form
-     *
-     * @note   overloaded function
-     * @return bool
-     */
-    function _setFilterForm()
-    {
-        // create user object
-        $user = User::singleton();
-
-        // PSC
-        if ($user->hasPermission('genomic_browser_view_allsites')) {
-            // has access to all sites genomic data
-            // get the list of study sites - to be replaced by the Site object
-            $list_of_sites = Utility::getSiteList();
-            if (is_array($list_of_sites)) {
-                $list_of_sites = array('' => 'Any') + $list_of_sites;
-            }
-        } else {
-            // allow only to view own site data
-            $site = Site::singleton($user->getData('CenterID'));
-            if ($site->isStudySite()) {
-                $centerIDdata  = $user->getData('CenterID');
-                $siteData      = $user->getData('Site');
-                $list_of_sites = array($centerIDdata => $siteData);
-            }
-        }
-
-        // SubprojectID
-        $list_of_subprojects = Utility::getSubprojectList();
-
-        // add form elements
-        $this->addSelect('centerID', 'Site:', $list_of_sites);
-        $this->addBasicText('DCCID', 'DCCID:');
-        $this->addBasicText('PSCID', 'PSCID:');
-        $this->addBasicText('External_ID', 'External ID:');
-        $this->addSelect(
-            'gender',
-            'Gender:',
-            array(
-             ''       => 'All',
-             'Male'   => 'Male',
-             'Female' => 'Female',
-            )
-        );
-        $this->addSelect(
-            'SubprojectID',
-            'Subproject:',
-            array('' => 'Any') + $list_of_subprojects
-        );
-        $this->addBasicText('dob', 'Date of Birth:', array('maxlength' => 10));
-
-        $any_options = array(
-                        ''  => null,
-                        '1' => 'Any',
-                        '0' => 'None',
-                       );
-        $this->addSelect('Files', 'Files:', $any_options);
-        $this->addSelect('SNPs', 'SNPs found:', $any_options);
-        $this->addSelect('CNVs', 'CNVs found:', $any_options);
-        $this->addSelect('CPGs', 'CPGs found:', $any_options);
-
-        $show_results_options = array(
-                                 'brief' => 'Summary fields',
-                                 'full'  => 'All fields',
-                                );
-        $this->addSelect('Show_Brief_Results', 'Display:', $show_results_options);
+// TODO ADD the Dataset variable_types in column, validFilters and formToFilter
 
         return true;
     }
@@ -244,6 +159,7 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
      */
     function _addValidFilters($prepared_key, $field, $val)
     {
+error_log('here');
         $query = ''; //initialize
         if ($field == "show_brief_results") {
             if ($val == "full") {
@@ -271,7 +187,7 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
                 } elseif ($val == "0") { // if NONE found i.e. = 0
                     $query .= " AND ($field = :v_$prepared_key || $field IS NULL)";
                 }
-            } elseif ($field == "candidate.CandID") {
+            } elseif ($field == "c.CandID") {
                 $query .= " AND $field = CONVERT( :v_$prepared_key, DECIMAL) ";
             } else {
                 $query .= " AND $field LIKE CONCAT('%', :v_$prepared_key, '%') ";

@@ -17,7 +17,7 @@ GenomicBrowserApp = React.createClass({
 
         switch (this.state.activeTab) {
             case 'profile':
-                activeTab = <ProfileTab candidateList={this.state.candidateList}/>;
+                activeTab = <ProfileTab candidateList={this.state.candidateList} formatColumn={this.props.profileColumnFormatter}/>;
                 break;
         }
 
@@ -58,7 +58,7 @@ ProfileTab = React.createClass({
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4 && xhttp.status == 200) {
                 response = JSON.parse(xhttp.responseText);
-                that.setState({data: response.Data, headers: response.Headers, isLoaded: true });
+                that.setState({filters: response.Filters, data: response.Data, headers: response.Headers, isLoaded: true });
             }
             if (xhttp.readyState == 4 && xhttp.status == 500) {
                 console.log(xhttp.responseText);
@@ -69,16 +69,13 @@ ProfileTab = React.createClass({
         xhttp.open("GET", url, true);
         xhttp.send();
     },
-    formatCell: function (a,b,c,d) {
-        return <td>{b}</td>;
-    },
     render: function () {
         var dataTable;
         if (this.state.isLoaded) {
             dataTable = <StaticDataTable
                             Headers={this.state.headers}
                             Data={this.state.data}
-                            getFormattedCell={this.formatCell}
+                            getFormattedCell={this.props.formatColumn}
                         />;
         } else {
             if (this.state.error) {

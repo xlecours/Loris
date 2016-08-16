@@ -19,7 +19,7 @@ GenomicBrowserApp = React.createClass({
 
         switch (this.state.activeTab) {
             case 'profile':
-                activeTab = React.createElement(ProfileTab, { candidateList: this.state.candidateList });
+                activeTab = React.createElement(ProfileTab, { candidateList: this.state.candidateList, formatColumn: this.props.profileColumnFormatter });
                 break;
         }
 
@@ -99,20 +99,13 @@ ProfileTab = React.createClass({
         xhttp.open("GET", url, true);
         xhttp.send();
     },
-    formatCell: function (a, b, c, d) {
-        return React.createElement(
-            'td',
-            null,
-            b
-        );
-    },
     render: function () {
         var dataTable;
         if (this.state.isLoaded) {
             dataTable = React.createElement(StaticDataTable, {
                 Headers: this.state.headers,
                 Data: this.state.data,
-                getFormattedCell: this.formatCell
+                getFormattedCell: this.props.formatColumn
             });
         } else {
             if (this.state.error) {

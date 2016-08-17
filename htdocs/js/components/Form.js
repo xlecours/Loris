@@ -17,7 +17,6 @@ NumericElement, FileElement, HelpTextElement, StaticElement, ButtonElement
 var FormElement = React.createClass({
   displayName: 'FormElement',
 
-
   propTypes: {
     name: React.PropTypes.string.isRequired,
     id: React.PropTypes.string,
@@ -69,7 +68,6 @@ var FormElement = React.createClass({
  */
 var SelectElement = React.createClass({
   displayName: 'SelectElement',
-
 
   propTypes: {
     name: React.PropTypes.string.isRequired,
@@ -235,7 +233,6 @@ var SelectElement = React.createClass({
  */
 var TextareaElement = React.createClass({
   displayName: 'TextareaElement',
-
 
   propTypes: {
     name: React.PropTypes.string.isRequired,
@@ -412,7 +409,6 @@ var TextboxElement = React.createClass({
  */
 var DateElement = React.createClass({
   displayName: 'DateElement',
-
 
   propTypes: {
     name: React.PropTypes.string.isRequired,
@@ -830,7 +826,6 @@ var HelpTextElement = React.createClass({
  */
 var StaticElement = React.createClass({
   displayName: 'StaticElement',
-
 
   mixins: [React.addons.PureRenderMixin],
   propTypes: {

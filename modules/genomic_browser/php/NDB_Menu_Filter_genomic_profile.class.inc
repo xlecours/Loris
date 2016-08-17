@@ -63,7 +63,7 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
     {
         // set the class variables
         $this->columns = array(
-                          'p.Name AS Site',
+                          'p.Name AS site',
                           'LPAD(c.CandID, 6, "0") AS dccid',
                           'c.PSCID AS pscid',
                           'c.Gender AS sex',

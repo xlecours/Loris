@@ -51,10 +51,14 @@ var GenomicBrowserApp = React.createClass({
     xhttp.open("GET", url, true);
     xhttp.send();
   },
+  setFilter: function (field, value) {
+    var newFilter = this.state.filter;
+    newFilter[field] = value;
+    this.setState({filter: newFilter});
+  }, 
   render: function() {
     var activeTab = {};
     var message = {};
-console.log(this.state);
     if (this.state.error) {
       message = <div className="col-md-12">
                   <div className="alert alert-warning">
@@ -65,7 +69,7 @@ console.log(this.state);
 
     switch (this.state.activeTab) {
       case 'profile':
-        activeTab = <ProfileTab filter={this.state.filter}/>;
+        activeTab = <ProfileTab filter={this.state.filter} setFilter={this.setFilter}/>;
         break;
       default:
         activeTab = <VariableTab />;
@@ -164,33 +168,72 @@ var ProfileTab = React.createClass({
     }
     return cellContent;
   },
-  setFilter: function () {},
+  headerToFilter: function (header) {
+    return header.replace(' ', '_' ).toLowerCase();
+  },
+  getDistinctValues: function (header) {
+    var values = [];
+    var index = this.state.headers.indexOf(header);
+    if (index !== -1) {
+
+      Array.prototype.unique = function() {
+        var a = [];
+        for (var i=0, l=this.length; i<l; i++) {
+          if (a.indexOf(this[i]) === -1) {
+            a.push(this[i]);
+          }
+        }
+        return a;
+      }
+
+      values = this.state.data.map(function(value) {
+        return value[index];
+      },this).unique().sort();
+    }
+    return values;
+  },
+  setFilter: function (field, index) {
+    var value = this.refs[field].props.options[index];
+    this.props.setFilter(field, value);
+    this.forceUpdate();
+  },
   render: function() {
     var dataTable;
     var filterTable;
+console.log(this.props.filter);
     if (this.state.isLoaded) {
- 
       dataTable = <StaticDataTable
                     Headers={this.state.headers}
                     Data={this.state.data}
+                    Filter={this.props.filter}
                     getFormattedCell={this.formatColumn}
-                  />;
+                  />
 
+      var filterElements = this.state.headers.map(function(header) {
+        var filter = this.headerToFilter(header);
+        var value;
+        var options;
 
-      var filterElements = Object.keys(this.state.filter).map(function (filter) {
+        options = this.getDistinctValues(header);
+        if (this.state.filter.hasOwnProperty(filter)) {
+          value = ''.concat(options.indexOf(this.state.filter[filter]));
+        }
 
         return <div className="row">
                  <div className="col-md-12">
-                   <TextboxElement
+                   <SelectElement
                      name={filter}
-                     label="Bob"
+                     options={options}
+                     size='1'
+                     label={header}
                      onUserInput={this.setFilter}
-                     value={this.state.filter[filter]}
+                     value={value}
                      ref={filter}
                    />  
                  </div>
                </div>;
       }, this);
+
       filterTable = <FilterTable>
                       {filterElements}
                     </FilterTable>;

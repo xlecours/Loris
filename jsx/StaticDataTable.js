@@ -140,7 +140,6 @@ var StaticDataTable = React.createClass({
      * @returns {boolean}
      */
     hasFilterKeyword: function(headerData, data) {
-
       var header = this.toCamelCase(headerData);
       var filterData = this.props.Filter[header] ? this.props.Filter[header] : null;
 
@@ -166,6 +165,7 @@ var StaticDataTable = React.createClass({
 
     },
     render: function() {
+console.log('SDT.render');
         if (this.props.Data == null || this.props.Data.length == 0) {
             return (
                 <div
@@ -266,7 +266,6 @@ var StaticDataTable = React.createClass({
                 if (this.props.Data[index[i].RowIdx]) {
                     data = this.props.Data[index[i].RowIdx][j];
                 }
-
                 if (this.hasFilterKeyword(this.props.Headers[j], data)) {
                   filterMatchCount++;
                 }

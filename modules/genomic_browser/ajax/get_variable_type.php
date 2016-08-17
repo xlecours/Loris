@@ -29,5 +29,7 @@ $params = array(
 );
 $result = $couch->queryView('genomic_browser', 'sample_label_by_dataset', $params, false);
 
+header("content-type:application/json");
+ini_set('default_charset', 'utf-8');
 echo json_encode($result);
 exit;

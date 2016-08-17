@@ -1,4 +1,5 @@
 /* exported RGenomicBrowserApp */
+/* global QueryString  */
 
 /**
  * Genomic browser page
@@ -6,33 +7,43 @@
  * Renders the genomic browser profile and dataset tab plus a tab for each
  * variable_type of datasets in the variable_type_by_sample view in CouchDB.
  *
+ * @author Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
+ * @version 1.0.0
  **/
 var GenomicBrowserApp = React.createClass({
+  mixins: [React.addons.PureRenderMixin],
   getInitialState: function() {
     return {
       activeTab: 'profile',
-      tabsNav: ['profile', 'dataset']
+      tabsNav: ['profile', 'dataset'],
+      filter: {}
     };
   },
   componentDidMount: function() {
+    var newState = {};
+    var queryString = new QueryString();
+    var queryStringObj = queryString.get();
+    newState['filter'] = JSON.parse(JSON.stringify(queryStringObj));
    // Get variable_type to create tab labels
     var that = this;
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
-      if (xhttp.readyState === 4 && xhttp.status === 200) {
-        var response = JSON.parse(xhttp.responseText);
-        if (Array.isArray(response)) {
-          var tabNames = response.map(function(row) {
-            return row.key[0];
-          });
-          var tabLabels = that.state.tabsNav.concat(tabNames);
-          that.setState({tabsNav: tabLabels});
+      if (xhttp.readyState === 4) {
+        if (xhttp.status === 200) {
+            var response = JSON.parse(xhttp.responseText);
+            if (Array.isArray(response)) {
+              var tabNames = response.map(function(row) {
+                return row.key[0];
+              });
+              newState['tabsNav'] = that.state.tabsNav.concat(tabNames);;
+            }
+        } else {
+          newState['error'] = true;
+          newState['errorCode'] = xhttp.status;
+          newState['errorText'] = 'Can\'t get variable types: '.concat(xhttp.statusText);
         }
-      } else {
-        console.log(
-          'State:'.concat(xhttp.readyState, ', Status:', xhttp.status)
-        );
       }
+      that.setState(newState);
     };
     var url = loris.BaseURL.concat(
       '/genomic_browser/ajax/get_variable_type.php'
@@ -42,16 +53,24 @@ var GenomicBrowserApp = React.createClass({
   },
   render: function() {
     var activeTab = {};
-    var message = <div />;
+    var message = {};
+console.log(this.state);
+    if (this.state.error) {
+      message = <div className="col-md-12">
+                  <div className="alert alert-warning">
+                    'Error: '.concat(this.state.errorText)
+                  </div>
+                </div>;
+    }
 
     switch (this.state.activeTab) {
       case 'profile':
-        activeTab = <ProfileTab />;
+        activeTab = <ProfileTab filter={this.state.filter}/>;
         break;
       default:
         activeTab = <VariableTab />;
     }
-    console.log(this.state.tabsNav);
+
     var tabs = this.state.tabsNav.map(function(tabName) {
       var className = tabName === this.state.activeTab ? 'active' : '';
       var tabLabel = tabName.charAt(0).toUpperCase() + tabName.slice(1);
@@ -61,7 +80,6 @@ var GenomicBrowserApp = React.createClass({
                </a>
              </li>;
     }, this);
-
     return <div className="row">
              {message}
              <div className="col-md-12">
@@ -80,9 +98,17 @@ var GenomicBrowserApp = React.createClass({
 var RGenomicBrowserApp = React.createFactory(GenomicBrowserApp);
 
 var ProfileTab = React.createClass({
+  propTypes: {
+    filter: React.PropTypes.object.isRequired
+  },
+  getDefaultProps: function () {
+    return {
+      variableTypes: []
+    };
+  },
   getInitialState: function() {
     return {
-      filters: null,
+      filter: {},
       headers: null,
       data: null,
       isLoaded: false
@@ -95,15 +121,22 @@ var ProfileTab = React.createClass({
     var that = this;
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
-      if (xhttp.readyState === 4 && xhttp.status === 200) {
-        var response = JSON.parse(xhttp.responseText);
-        that.setState({
-          filters: response.Filters,
-          data: response.Data,
-          headers: response.Headers,
-          isLoaded: true,
-          error: false
-        });
+      if (xhttp.readyState === 4) {
+        if (xhttp.status === 200) {
+          var response = JSON.parse(xhttp.responseText);
+          that.setState({
+            data: response.Data,
+            headers: response.Headers,
+            isLoaded: true,
+            error: false
+          });
+        } else {
+          that.setState({
+            error: true,
+            errorCode: xhttp.status,
+            errorText: xhttp.statusText
+          });
+        }
       } else {
         console.log(
           'ReadyState:'.concat(xhttp.readyState, ', Status:', xhttp.status)
@@ -116,6 +149,14 @@ var ProfileTab = React.createClass({
     xhttp.open("GET", url, true);
     xhttp.send();
   },
+  componentWillReceiveProps: function (nextProps) {
+    if(nextProps.hasOwnProperty('filter')) {
+      this.setState({filter: nextProps.filter});
+    }
+  },
+  shouldComponentUpdate: function(nextProps, nextState) {
+    return true;
+  },
   formatColumn: function(column, value, dataRow, headers) {
     var cellContent = null;
     if (loris.hiddenHeaders.indexOf(column) === -1) {
@@ -123,14 +164,36 @@ var ProfileTab = React.createClass({
     }
     return cellContent;
   },
+  setFilter: function () {},
   render: function() {
     var dataTable;
+    var filterTable;
     if (this.state.isLoaded) {
+ 
       dataTable = <StaticDataTable
                     Headers={this.state.headers}
                     Data={this.state.data}
                     getFormattedCell={this.formatColumn}
                   />;
+
+
+      var filterElements = Object.keys(this.state.filter).map(function (filter) {
+
+        return <div className="row">
+                 <div className="col-md-12">
+                   <TextboxElement
+                     name={filter}
+                     label="Bob"
+                     onUserInput={this.setFilter}
+                     value={this.state.filter[filter]}
+                     ref={filter}
+                   />  
+                 </div>
+               </div>;
+      }, this);
+      filterTable = <FilterTable>
+                      {filterElements}
+                    </FilterTable>;
     } else if (this.state.error) {
       dataTable = <div className="alert alert-danger">
                     <strong>
@@ -147,12 +210,9 @@ var ProfileTab = React.createClass({
 
     return <div>
              <div className="row">
-               <FilterTable>
-                 {this.state.filters}
-               </FilterTable>
-               <ActiveFilter>
-                 {this.state.filters}
-               </ActiveFilter>
+               <div className="col-sm-12">
+                 {filterTable}
+               </div>
              </div>
              <div className="row">
                <div className="col-sm-12">

@@ -157,6 +157,7 @@ var SelectElement = React.createClass({
   },
   render: function() {
     var multiple = this.props.multiple ? 'multiple' : null;
+    var size     = this.props.size ? this.props.size : null;
     var required = this.props.required ? 'required' : null;
     var disabled = this.props.disabled ? 'disabled' : null;
     var options = this.props.options;
@@ -191,6 +192,7 @@ var SelectElement = React.createClass({
           <select
             name={this.props.name}
             multiple={multiple}
+            size={size}
             className="form-control"
             id={this.props.label}
             value={this.state.value}

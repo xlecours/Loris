@@ -66,6 +66,7 @@ class NDB_Form_Genomic_Browser extends NDB_Form
                 $baseURL . '/js/components/FilterTable.js',
                 $baseURL . '/js/components/Form.js',
                 $baseURL . '/js/components/StaticDataTable.js',
+                $baseURL . '/js/components/DynamicDataTable.js',
                 $baseURL . "/genomic_browser/js/genomic_browser_app.js",
             )
         );

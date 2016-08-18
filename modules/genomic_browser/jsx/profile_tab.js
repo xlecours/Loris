@@ -18,6 +18,12 @@ var ProfileTab = React.createClass({
   componentDidMount: function() {
     this.loadCurrentTabContent();
   },  
+  shouldComponentUpdate: function(nextState, nextProps) {
+console.log('PT.should');
+    console.log(nextState);
+    console.log(nextProps);
+    return nextProps.hasOwnProperty('filter');
+  },
   loadCurrentTabContent: function() {
     var that = this;
     var xhttp = new XMLHttpRequest();
@@ -95,6 +101,8 @@ var ProfileTab = React.createClass({
     this.forceUpdate();
   },
   render: function() {
+console.log('PT.render');
+console.log(this.props.filter);
     var dataTable;
     var filterTable;
     if (this.state.isLoaded) {
@@ -130,7 +138,7 @@ var ProfileTab = React.createClass({
                </div>;
       }, this);
 
-      filterTable = <FilterTable>
+      filterTable = <FilterTable Module='Genomic Browser'>
                       {filterElements}
                     </FilterTable>;
     } else if (this.state.error) {

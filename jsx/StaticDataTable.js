@@ -42,6 +42,11 @@ var StaticDataTable = React.createClass({
             Filter: {}
         };
     },
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.hasOwnProperty('Filter')) {
+          this.setState({newFilter: true});
+        }
+    },
     changePage: function(pageNo) {
         this.setState({
             PageNumber: pageNo
@@ -165,7 +170,6 @@ var StaticDataTable = React.createClass({
 
     },
     render: function() {
-console.log('SDT.render');
         if (this.props.Data == null || this.props.Data.length == 0) {
             return (
                 <div

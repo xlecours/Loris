@@ -4,12 +4,12 @@ var ProfileTab = React.createClass({
   propTypes: {
     filter: React.PropTypes.object.isRequired
   },
-  getDefaultProps: function () {
+  getDefaultProps: function() {
     return {
       variableTypes: []
     };
   },
-  getInitialState: function () {
+  getInitialState: function() {
     return {
       filter: {},
       headers: null,
@@ -17,19 +17,19 @@ var ProfileTab = React.createClass({
       isLoaded: false
     };
   },
-  componentDidMount: function () {
+  componentDidMount: function() {
     this.loadCurrentTabContent();
   },
-  shouldComponentUpdate: function (nextState, nextProps) {
+  shouldComponentUpdate: function(nextState, nextProps) {
     console.log('PT.should');
     console.log(nextState);
     console.log(nextProps);
     return nextProps.hasOwnProperty('filter');
   },
-  loadCurrentTabContent: function () {
+  loadCurrentTabContent: function() {
     var that = this;
     var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
+    xhttp.onreadystatechange = function() {
       if (xhttp.readyState === 4) {
         if (xhttp.status === 200) {
           var response = JSON.parse(xhttp.responseText);
@@ -54,15 +54,15 @@ var ProfileTab = React.createClass({
     xhttp.open("GET", url, true);
     xhttp.send();
   },
-  componentWillReceiveProps: function (nextProps) {
+  componentWillReceiveProps: function(nextProps) {
     if (nextProps.hasOwnProperty('filter')) {
-      this.setState({ filter: nextProps.filter });
+      this.setState({filter: nextProps.filter});
     }
   },
-  shouldComponentUpdate: function (nextProps, nextState) {
+  shouldComponentUpdate: function(nextProps, nextState) {
     return true;
   },
-  formatColumn: function (column, value, dataRow, headers) {
+  formatColumn: function(column, value, dataRow, headers) {
     var cellContent = null;
     if (loris.hiddenHeaders.indexOf(column) === -1) {
       cellContent = React.createElement(
@@ -73,15 +73,14 @@ var ProfileTab = React.createClass({
     }
     return cellContent;
   },
-  headerToFilter: function (header) {
+  headerToFilter: function(header) {
     return header.replace(' ', '_').toLowerCase();
   },
-  getDistinctValues: function (header) {
+  getDistinctValues: function(header) {
     var values = [];
     var index = this.state.headers.indexOf(header);
     if (index !== -1) {
-
-      Array.prototype.unique = function () {
+      Array.prototype.unique = function() {
         var a = [];
         for (var i = 0, l = this.length; i < l; i++) {
           if (a.indexOf(this[i]) === -1) {
@@ -91,18 +90,18 @@ var ProfileTab = React.createClass({
         return a;
       };
 
-      values = this.state.data.map(function (value) {
+      values = this.state.data.map(function(value) {
         return value[index];
       }, this).unique().sort();
     }
     return values;
   },
-  setFilter: function (field, index) {
+  setFilter: function(field, index) {
     var value = this.refs[field].props.options[index];
     this.props.setFilter(field, value);
     this.forceUpdate();
   },
-  render: function () {
+  render: function() {
     console.log('PT.render');
     console.log(this.props.filter);
     var dataTable;
@@ -115,7 +114,7 @@ var ProfileTab = React.createClass({
         getFormattedCell: this.formatColumn
       });
 
-      var filterElements = this.state.headers.map(function (header) {
+      var filterElements = this.state.headers.map(function(header) {
         var filter = this.headerToFilter(header);
         var value;
         var options;
@@ -127,10 +126,10 @@ var ProfileTab = React.createClass({
 
         return React.createElement(
           'div',
-          { className: 'row' },
+          {className: 'row'},
           React.createElement(
             'div',
-            { className: 'col-md-12' },
+            {className: 'col-md-12'},
             React.createElement(SelectElement, {
               name: filter,
               options: options,
@@ -146,13 +145,13 @@ var ProfileTab = React.createClass({
 
       filterTable = React.createElement(
         FilterTable,
-        { Module: 'Genomic Browser' },
+        {Module: 'Genomic Browser'},
         filterElements
       );
     } else if (this.state.error) {
       dataTable = React.createElement(
         'div',
-        { className: 'alert alert-danger' },
+        {className: 'alert alert-danger'},
         React.createElement(
           'strong',
           null,
@@ -163,9 +162,9 @@ var ProfileTab = React.createClass({
       var style = "glyphicon glyphicon-refresh glyphicon-refresh-animate";
       dataTable = React.createElement(
         'button',
-        { className: 'btn-info has-spinner' },
+        {className: 'btn-info has-spinner'},
         'Loading',
-        React.createElement('span', { className: style })
+        React.createElement('span', {className: style})
       );
     }
 
@@ -174,19 +173,19 @@ var ProfileTab = React.createClass({
       null,
       React.createElement(
         'div',
-        { className: 'row' },
+        {className: 'row'},
         React.createElement(
           'div',
-          { className: 'col-sm-12' },
+          {className: 'col-sm-12'},
           filterTable
         )
       ),
       React.createElement(
         'div',
-        { className: 'row' },
+        {className: 'row'},
         React.createElement(
           'div',
-          { className: 'col-sm-12' },
+          {className: 'col-sm-12'},
           dataTable
         )
       )

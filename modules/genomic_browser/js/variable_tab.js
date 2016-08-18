@@ -1,7 +1,7 @@
 var VariableTab = React.createClass({
   displayName: "VariableTab",
 
-  render: function () {
+  render: function() {
     return React.createElement(
       "div",
       null,

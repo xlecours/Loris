@@ -22,23 +22,25 @@ var GenomicBrowserApp = React.createClass({
     };
   },
   componentDidMount: function () {
-    var newState = {};
-    var queryString = new QueryString();
-    var queryStringObj = queryString.get();
-    newState['filter'] = JSON.parse(JSON.stringify(queryStringObj));
-    // Get variable_type to create tab labels
     var that = this;
     var xhttp = new XMLHttpRequest();
+
+    // Get variable_type to create tab labels
     xhttp.onreadystatechange = function () {
       if (xhttp.readyState === 4) {
         if (xhttp.status === 200) {
+          var newState = {};
+
           var response = JSON.parse(xhttp.responseText);
           if (Array.isArray(response)) {
-            var tabNames = response.map(function (row) {
+            var variableTypes = response.map(function (row) {
               return row.key[0];
             });
-            newState['tabsNav'] = that.state.tabsNav.concat(tabNames);;
+            newState['tabsNav'] = that.state.tabsNav.concat(variableTypes);
+            newState['variableTypes'] = variableTypes;
           }
+
+          newState['filter'] = new QueryString().get();
         } else {
           newState['error'] = true;
           newState['errorCode'] = xhttp.status;

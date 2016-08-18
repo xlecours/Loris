@@ -20,27 +20,32 @@ var GenomicBrowserApp = React.createClass({
     };
   },
   componentDidMount: function() {
-    var newState = {};
-    var queryString = new QueryString();
-    var queryStringObj = queryString.get();
-    newState['filter'] = JSON.parse(JSON.stringify(queryStringObj));
-   // Get variable_type to create tab labels
     var that = this;
     var xhttp = new XMLHttpRequest();
+
+    // Get variable_type to create tab labels
     xhttp.onreadystatechange = function() {
       if (xhttp.readyState === 4) {
         if (xhttp.status === 200) {
-            var response = JSON.parse(xhttp.responseText);
-            if (Array.isArray(response)) {
-              var tabNames = response.map(function(row) {
-                return row.key[0];
-              });
-              newState['tabsNav'] = that.state.tabsNav.concat(tabNames);;
-            }
+          var newState = {};
+
+          var response = JSON.parse(xhttp.responseText);
+          if (Array.isArray(response)) {
+            var variableTypes = response.map(function(row) {
+              return row.key[0];
+            });
+            newState['tabsNav'] = that.state.tabsNav.concat(variableTypes);
+            newState['variableTypes'] = variableTypes;
+          }
+
+          newState['filter'] = new QueryString().get();
+
         } else {
           newState['error'] = true;
           newState['errorCode'] = xhttp.status;
-          newState['errorText'] = 'Can\'t get variable types: '.concat(xhttp.statusText);
+          newState['errorText'] = 'Can\'t get variable types: '.concat(
+            xhttp.statusText
+          );
         }
       }
       that.setState(newState);
@@ -51,17 +56,17 @@ var GenomicBrowserApp = React.createClass({
     xhttp.open("GET", url, true);
     xhttp.send();
   },
-  changeTab: function (event) {
+  changeTab: function(event) {
     this.setState({activeTab: event.target.innerText});
   },
-  setFilter: function (field, value) {
-console.log('GB.setFilter');
+  setFilter: function(field, value) {
+    console.log('GB.setFilter');
     var newFilter = this.state.filter;
     newFilter[field] = value;
     this.setState({filter: newFilter});
-  }, 
+  },
   render: function() {
-console.log('GB.render');
+    console.log('GB.render');
     var activeTab = {};
     var message = {};
     if (this.state.error) {

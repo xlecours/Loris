@@ -52,11 +52,10 @@ var GenomicBrowserApp = React.createClass({
     xhttp.send();
   },
   changeTab: function (event) {
-    console.log('change tab');
-    console.log(event.target.innerText);
     this.setState({activeTab: event.target.innerText});
   },
   setFilter: function (field, value) {
+console.log('GB.setFilter');
     var newFilter = this.state.filter;
     newFilter[field] = value;
     this.setState({filter: newFilter});
@@ -106,3 +105,4 @@ console.log('GB.render');
   }
 });
 var RGenomicBrowserApp = React.createFactory(GenomicBrowserApp);
+

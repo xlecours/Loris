@@ -62,19 +62,22 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
     function _setupVariables()
     {
         // set the class variables
-        $this->columns = array(
-                          'p.Name AS site',
-                          'LPAD(c.CandID, 6, "0") AS dccid',
-                          'c.PSCID AS pscid',
-                          'c.Gender AS sex',
-                          'GROUP_CONCAT(DISTINCT u.title) AS subproject',
-                          'DATE_FORMAT(c.DoB,\'%Y-%m-%d\') AS date_of_birth',
-                          'c.ExternalID AS external_id',
-                          'COUNT(gcfr.GenomicFileID) AS file_count',
-                          'GROUP_CONCAT(gscr.sample_label) as sample_labels'
-                         );
+        $select = array(
+                   'p.Name AS site',
+                   'LPAD(c.CandID, 6, "0") AS dccid',
+                   'c.PSCID AS pscid',
+                   'c.Gender AS sex',
+                   'GROUP_CONCAT(DISTINCT u.title) AS subproject',
+                   'DATE_FORMAT(c.DoB,\'%Y-%m-%d\') AS date_of_birth',
+                   'c.ExternalID AS external_id',
+                   'COUNT(gcfr.GenomicFileID) AS file_count',
+                   'GROUP_CONCAT(DISTINCT gscr.sample_label) as sample_labels',
+                  );
 
-// TODO :: Column formater should consider subproject and sample_labels as possible arrays
+        $this->columns = $select;
+
+        // TODO :: Column formater should consider subproject and
+        //         sample_labels as possible arrays
 
         // This variable will be used by the columnFormatter javascript
         // to set the default hidden columns in the data table.
@@ -99,10 +102,10 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
                 USING (SubprojectID)
             LEFT JOIN psc p
                 ON (p.CenterID = c.CenterID)
-            LEFT JOIN genomic_candidate_files_rel gcfr
-                USING (CandID)
             LEFT JOIN genomic_sample_candidate_rel gscr
                 USING (CandID) 
+            LEFT JOIN genomic_candidate_files_rel gcfr
+                USING (CandID)
             WHERE 
                 c.Entity_type = 'Human' AND 
                 c.Active = 'Y'";
@@ -114,8 +117,8 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
             $this->query .= $DB->quote($user->getCenterID());
         }
 
-        $this->group_by     = 'c.CandID, p.Name';
-        $this->order_by     = 'p.Name, c.PSCID';
+        $this->group_by = 'c.CandID, p.Name';
+        $this->order_by = 'p.Name, c.PSCID';
 
         $this->validFilters = array(
                                'p.Site',
@@ -130,19 +133,19 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
                               );
 
         $this->formToFilter = array(
-                'site'               => 'candidate.CenterID',
-                'dccid'              => 'candidate.CandID',
-                'pscid'              => 'candidate.PSCID',
-                'sex'                => 'candidate.Gender',
-                'subproject_id'      => 'cohort.SubprojectID',
-                'external_id'        => 'candidate.ExternalID',
-                'show_brief_results' => 'show_brief_results',
-                'file_count'         => 'COUNT(gcfr.GenomicFileID)',
-               );
+                               'site'               => 'candidate.CenterID',
+                               'dccid'              => 'candidate.CandID',
+                               'pscid'              => 'candidate.PSCID',
+                               'sex'                => 'candidate.Gender',
+                               'subproject_id'      => 'cohort.SubprojectID',
+                               'external_id'        => 'candidate.ExternalID',
+                               'show_brief_results' => 'show_brief_results',
+                               'file_count'         => 'COUNT(gcfr.GenomicFileID)',
+                              );
         return true;
     }
 
-    /** 
+    /**
      * Converts this menu filter to an array of the form
      * adding the dataset counts from CouchDB
      *
@@ -154,63 +157,95 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
      * @return associative array
      */
     function toArray()
-    {   
+    {
         $mysql_data = $this->_getFullList();
-        
+
+        // Add the genomic variable types in the headers
         $couch = CouchDB::singleton();
         $couch->setDatabase('test_epi');
         $params = array(
-                'reduce' => 'true',
-                'group_level' => 1,
-            );  
-        $result = $couch->queryView('genomic_browser', 'sample_label_by_dataset', $params, false);
+                   'reduce'      => 'true',
+                   'group_level' => 1,
+                  );
+        $result = $couch->queryView(
+            'genomic_browser',
+            'sample_label_by_dataset',
+            $params,
+            false
+        );
 
-        $variable_types = array_map(function($row) {
-            return $row['key'][0];
-        },$result);
+        $variable_types = array_map(
+            function ($row) {
+                return $row['key'][0];
+            },
+            $result
+        );
 
         $headers = array_map(
             function ($header) {
                 return ucwords(str_replace('_', ' ', $header));
-            },  
+            },
             array_merge($this->headers, $variable_types)
-        );  
+        );
+
+        // Create a mapping between the variable types and the index in the
+        // headers column. This variable is use to make sure that the dataset_count
+        // is append in the MappedData in the same order than the variable types
+        // have been append in the headers.
+        $variable_types_headers_index = array_fill_keys($variable_types, 0);
+        foreach ($variable_types_headers_index as $var_type => $val ) {
+            $variable_types_headers_index[$var_type] = array_search(
+                ucwords(str_replace('_', ' ', $var_type)),
+                $headers
+            );
+        }
 
         $MappedData = array();
+
         foreach ($mysql_data as $row) {
-            $dataset_counts = array();
-            $sample_labels = explode(',', $row['sample_labels']);
+            // Add the dataset count of each genomic variable types for
+            // each of the candidate's sample label.
+            $dataset_counts = array_fill_keys($variable_types, 0);
+            $sample_labels  = explode(',', $row['sample_labels']);
 
             foreach ($sample_labels as $label) {
                 if (!empty($label)) {
-                    $params = array(
-                        'reduce'      => 'true',
-                        'group_level' => '2',
-                        'start_key'   => "[\"$label\"]",
-                        'end_key'     => "[\"$label\",{}]",
-                    );
-                    $counts = $couch->queryView('genomic_browser', 'variable_type_by_sample', $params, false);
-
-                    if (!empty($counts)) {
-                        foreach ($counts as $count) {
-                            $variable_index = array_search($count['key'][1], $headers);
-                            var_dump($variable_index);
+                    foreach ($variable_types as $var_type) {
+                        $params = array(
+                                   'reduce'      => 'true',
+                                   'group_level' => '2',
+                                   'start_key'   => "[\"$label\",\"$var_type\"]",
+                                   'end_key'     => "[\"$label\",{}]",
+                                   'limit'       => '1',
+                                  );
+                        $counts = $couch->queryView(
+                            'genomic_browser',
+                            'variable_type_by_sample',
+                            $params,
+                            false
+                        );
+                        if (!empty($counts)) {
+                            $dataset_counts[$var_type] += $counts[0]["value"];
                         }
                     }
                 }
             }
+
+            foreach ($variable_types_headers_index as $var_type => $index) {
+                $row[$index] = (string) $dataset_counts[$var_type];
+            }
+
             $MappedData[] = array_values($row);
-        }   
+        }
 
         return array(
                 'Headers' => $headers,
                 'Data'    => $MappedData,
-               );  
-    } 
+               );
+    }
 
     /**
-     * Include the column formatter required to display the feedback link colours
-     * in the candidate_list menu
+     * Include the column formatter
      *
      * @return array of javascript to be inserted
      */

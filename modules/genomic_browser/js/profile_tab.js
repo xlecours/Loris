@@ -4,12 +4,12 @@ var ProfileTab = React.createClass({
   propTypes: {
     filter: React.PropTypes.object.isRequired
   },
-  getDefaultProps: function() {
+  getDefaultProps: function () {
     return {
       variableTypes: []
     };
   },
-  getInitialState: function() {
+  getInitialState: function () {
     return {
       filter: {},
       headers: null,
@@ -17,25 +17,24 @@ var ProfileTab = React.createClass({
       isLoaded: false
     };
   },
-  componentDidMount: function() {
+  componentDidMount: function () {
     this.loadCurrentTabContent();
   },
-  shouldComponentUpdate: function(nextState, nextProps) {
-    console.log('PT.should');
-    console.log(nextState);
-    console.log(nextProps);
+  shouldComponentUpdate: function (nextState, nextProps) {
+    console.log('PT.shouldComponentUpdate');
     return nextProps.hasOwnProperty('filter');
   },
-  loadCurrentTabContent: function() {
+  loadCurrentTabContent: function () {
     var that = this;
     var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
+    xhttp.onreadystatechange = function () {
       if (xhttp.readyState === 4) {
         if (xhttp.status === 200) {
           var response = JSON.parse(xhttp.responseText);
           that.setState({
             data: response.Data,
             headers: response.Headers,
+            variableTypes: response.VariableType,
             isLoaded: true,
             error: false
           });
@@ -54,15 +53,16 @@ var ProfileTab = React.createClass({
     xhttp.open("GET", url, true);
     xhttp.send();
   },
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps: function (nextProps) {
+    console.log('PT.componentWillReceiveProps');
     if (nextProps.hasOwnProperty('filter')) {
-      this.setState({filter: nextProps.filter});
+      this.setState({ filter: nextProps.filter });
     }
   },
-  shouldComponentUpdate: function(nextProps, nextState) {
+  shouldComponentUpdate: function (nextProps, nextState) {
     return true;
   },
-  formatColumn: function(column, value, dataRow, headers) {
+  formatColumn: function (column, value, dataRow, headers) {
     var cellContent = null;
     if (loris.hiddenHeaders.indexOf(column) === -1) {
       cellContent = React.createElement(
@@ -73,40 +73,42 @@ var ProfileTab = React.createClass({
     }
     return cellContent;
   },
-  headerToFilter: function(header) {
-    return header.replace(' ', '_').toLowerCase();
+  headerToFilter: function (header) {
+    return header.replace(/ /g, '_').toLowerCase();
   },
-  getDistinctValues: function(header) {
+  getDistinctValues: function (header) {
     var values = [];
     var index = this.state.headers.indexOf(header);
     if (index !== -1) {
-      Array.prototype.unique = function() {
-        var a = [];
+      Array.prototype.unique = function () {
+        var array = [];
         for (var i = 0, l = this.length; i < l; i++) {
-          if (a.indexOf(this[i]) === -1) {
-            a.push(this[i]);
+          if (array.indexOf(this[i]) === -1) {
+            array.push(this[i]);
           }
         }
-        return a;
+        return array;
       };
 
-      values = this.state.data.map(function(value) {
+      values = this.state.data.map(function (value) {
         return value[index];
       }, this).unique().sort();
     }
     return values;
   },
-  setFilter: function(field, index) {
+  setFilter: function (field, index) {
     var value = this.refs[field].props.options[index];
     this.props.setFilter(field, value);
-    this.forceUpdate();
   },
-  render: function() {
-    console.log('PT.render');
-    console.log(this.props.filter);
+  getFilterValue: function (filter) {
+    return this.state.filter.hasOwnProperty(filter) ? this.state.filter[filter] : null;
+  },
+  render: function () {
     var dataTable;
     var filterTable;
+
     if (this.state.isLoaded) {
+
       dataTable = React.createElement(StaticDataTable, {
         Headers: this.state.headers,
         Data: this.state.data,
@@ -114,44 +116,130 @@ var ProfileTab = React.createClass({
         getFormattedCell: this.formatColumn
       });
 
-      var filterElements = this.state.headers.map(function(header) {
-        var filter = this.headerToFilter(header);
-        var value;
-        var options;
-
-        options = this.getDistinctValues(header);
-        if (this.state.filter.hasOwnProperty(filter)) {
-          value = ''.concat(options.indexOf(this.state.filter[filter]));
-        }
-
-        return React.createElement(
+      var separator = React.createElement(
+        'div',
+        { className: 'row' },
+        React.createElement(
           'div',
-          {className: 'row'},
+          { className: 'col-md-12' },
+          React.createElement('hr', null),
           React.createElement(
+            'h4',
+            null,
+            'Dataset counts'
+          )
+        )
+      );
+
+      datasetCounts = [];
+      if (this.state.hasOwnProperty('variableTypes')) {
+        datasetCounts = this.state.variableTypes.map(function (varType) {
+          var filter = this.headerToFilter(varType);
+          return React.createElement(
             'div',
-            {className: 'col-md-12'},
+            { className: 'col-md-4' },
             React.createElement(SelectElement, {
               name: filter,
-              options: options,
-              size: '1',
-              label: header,
+              label: varType,
+              options: this.getDistinctValues(varType),
+              value: this.getFilterValue(filter),
               onUserInput: this.setFilter,
-              value: value,
               ref: filter
             })
-          )
-        );
-      }, this);
+          );
+        }, this);
+      }
 
       filterTable = React.createElement(
         FilterTable,
-        {Module: 'Genomic Browser'},
-        filterElements
+        { Module: 'Genomic Browser' },
+        React.createElement(
+          'div',
+          { className: 'row' },
+          React.createElement(
+            'div',
+            { className: 'col-md-2' },
+            React.createElement(
+              'h4',
+              null,
+              'Participant filters'
+            )
+          )
+        ),
+        React.createElement(
+          'div',
+          { className: 'row' },
+          React.createElement(
+            'div',
+            { className: 'col-md-2' },
+            React.createElement(SelectElement, {
+              name: 'site',
+              label: 'Site',
+              options: this.getDistinctValues('Site'),
+              value: this.getFilterValue('site'),
+              onUserInput: this.setFilter,
+              ref: 'site'
+            })
+          ),
+          React.createElement(
+            'div',
+            { className: 'col-md-2' },
+            React.createElement(TextboxElement, {
+              name: 'pscid',
+              label: 'PSCID',
+              value: this.getFilterValue('pscid'),
+              onUserInput: this.setFilter,
+              ref: 'pscid'
+            })
+          ),
+          React.createElement(
+            'div',
+            { className: 'col-md-2' },
+            React.createElement(SelectElement, {
+              name: 'sex',
+              label: 'Sex',
+              options: this.getDistinctValues('Sex'),
+              value: this.getFilterValue('sex'),
+              onUserInput: this.setFilter,
+              ref: 'sex'
+            })
+          ),
+          React.createElement(
+            'div',
+            { className: 'col-md-2' },
+            React.createElement(NumericElement, {
+              name: 'file_count',
+              label: 'File Count',
+              min: '0',
+              max: null,
+              value: this.getFilterValue('file_count'),
+              onUserInput: this.setFilter,
+              ref: 'file_count'
+            })
+          ),
+          React.createElement(
+            'div',
+            { className: 'col-md-4' },
+            React.createElement(TextboxElement, {
+              name: 'sample_labels',
+              label: 'Sample Labels',
+              value: this.getFilterValue('sample_labels'),
+              onUserInput: this.setFilter,
+              ref: 'sample_labels'
+            })
+          )
+        ),
+        separator,
+        React.createElement(
+          'div',
+          { className: 'row' },
+          datasetCounts
+        )
       );
     } else if (this.state.error) {
       dataTable = React.createElement(
         'div',
-        {className: 'alert alert-danger'},
+        { className: 'alert alert-danger' },
         React.createElement(
           'strong',
           null,
@@ -162,9 +250,9 @@ var ProfileTab = React.createClass({
       var style = "glyphicon glyphicon-refresh glyphicon-refresh-animate";
       dataTable = React.createElement(
         'button',
-        {className: 'btn-info has-spinner'},
+        { className: 'btn-info has-spinner' },
         'Loading',
-        React.createElement('span', {className: style})
+        React.createElement('span', { className: style })
       );
     }
 
@@ -173,19 +261,19 @@ var ProfileTab = React.createClass({
       null,
       React.createElement(
         'div',
-        {className: 'row'},
+        { className: 'row' },
         React.createElement(
           'div',
-          {className: 'col-sm-12'},
+          { className: 'col-sm-12' },
           filterTable
         )
       ),
       React.createElement(
         'div',
-        {className: 'row'},
+        { className: 'row' },
         React.createElement(
           'div',
-          {className: 'col-sm-12'},
+          { className: 'col-sm-12' },
           dataTable
         )
       )

@@ -13,7 +13,7 @@
 var GenomicBrowserApp = React.createClass({
   displayName: 'GenomicBrowserApp',
 
-  mixins: [React.addons.PureRenderMixin],
+  mixin: [React.addons.PureRenderMixin],
   getInitialState: function () {
     return {
       activeTab: 'Profile',
@@ -58,6 +58,7 @@ var GenomicBrowserApp = React.createClass({
   },
   setFilter: function (field, value) {
     console.log('GB.setFilter');
+    console.log(this.state.filter);
     var newFilter = this.state.filter;
     newFilter[field] = value;
     this.setState({ filter: newFilter });

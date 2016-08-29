@@ -239,8 +239,11 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
         }
 
         return array(
-                'Headers' => $headers,
-                'Data'    => $MappedData,
+                'Headers'      => $headers,
+                'Data'         => $MappedData,
+                'VariableType' => array_map( function($varType) {
+                    return ucwords(str_replace('_', ' ', $varType));
+                }, $variable_types), 
                );
     }
 

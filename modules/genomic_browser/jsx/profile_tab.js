@@ -19,6 +19,7 @@ var ProfileTab = React.createClass({
     this.loadCurrentTabContent();
   },
   shouldComponentUpdate: function(nextState, nextProps) {
+    console.log('PT.shouldComponentUpdate');
     return nextProps.hasOwnProperty('filter');
   },
   loadCurrentTabContent: function() {
@@ -31,6 +32,7 @@ var ProfileTab = React.createClass({
           that.setState({
             data: response.Data,
             headers: response.Headers,
+            variableTypes: response.VariableType,
             isLoaded: true,
             error: false
           });
@@ -54,6 +56,7 @@ var ProfileTab = React.createClass({
     xhttp.send();
   },
   componentWillReceiveProps: function(nextProps) {
+    console.log('PT.componentWillReceiveProps');
     if (nextProps.hasOwnProperty('filter')) {
       this.setState({filter: nextProps.filter});
     }
@@ -69,20 +72,20 @@ var ProfileTab = React.createClass({
     return cellContent;
   },
   headerToFilter: function(header) {
-    return header.replace(' ', '_').toLowerCase();
+    return header.replace(/ /g, '_').toLowerCase();
   },
   getDistinctValues: function(header) {
     var values = [];
     var index = this.state.headers.indexOf(header);
     if (index !== -1) {
       Array.prototype.unique = function() {
-        var a = [];
+        var array = [];
         for (var i = 0, l = this.length; i < l; i++) {
-          if (a.indexOf(this[i]) === -1) {
-            a.push(this[i]);
+          if (array.indexOf(this[i]) === -1) {
+            array.push(this[i]);
           }
         }
-        return a;
+        return array;
       };
 
       values = this.state.data.map(function(value) {
@@ -94,14 +97,16 @@ var ProfileTab = React.createClass({
   setFilter: function(field, index) {
     var value = this.refs[field].props.options[index];
     this.props.setFilter(field, value);
-    this.forceUpdate();
+  },
+  getFilterValue: function (filter) {
+      return this.state.filter.hasOwnProperty(filter) ? this.state.filter[filter] : null;
   },
   render: function() {
-    console.log('PT.render');
-    console.log(this.props.filter);
     var dataTable;
     var filterTable;
+
     if (this.state.isLoaded) {
+
       dataTable = <StaticDataTable
                     Headers={this.state.headers}
                     Data={this.state.data}
@@ -109,34 +114,93 @@ var ProfileTab = React.createClass({
                     getFormattedCell={this.formatColumn}
                   />;
 
-      var filterElements = this.state.headers.map(function(header) {
-        var filter = this.headerToFilter(header);
-        var value;
-        var options;
+      var separator = <div className="row">
+                        <div className="col-md-12">
+                          <hr/>
+                          <h4>Dataset counts</h4>
+                        </div>
+                      </div>;
 
-        options = this.getDistinctValues(header);
-        if (this.state.filter.hasOwnProperty(filter)) {
-          value = ''.concat(options.indexOf(this.state.filter[filter]));
-        }
-
-        return <div className="row">
-                 <div className="col-md-12">
+      datasetCounts = [];
+      if (this.state.hasOwnProperty('variableTypes')) {
+        datasetCounts = this.state.variableTypes.map(function(varType) {
+          var filter = this.headerToFilter(varType);
+          return <div className="col-md-4">
                    <SelectElement
                      name={filter}
-                     options={options}
-                     size="1"
-                     label={header}
+                     label={varType}
+                     options={this.getDistinctValues(varType)}
+                     value={this.getFilterValue(filter)}
                      onUserInput={this.setFilter}
-                     value={value}
                      ref={filter}
                    />
                  </div>
-               </div>;
-      }, this);
-
+        }, this);
+      }
+ 
       filterTable = <FilterTable Module="Genomic Browser">
-                      {filterElements}
+                      <div className="row">
+                        <div className="col-md-2">
+                          <h4>Participant filters</h4>
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-2">
+                          <SelectElement
+                            name='site'
+                            label='Site'
+                            options={this.getDistinctValues('Site')}
+                            value={this.getFilterValue('site')}
+                            onUserInput={this.setFilter}
+                            ref='site'
+                          />
+                        </div>
+                        <div className="col-md-2">
+                          <TextboxElement
+                            name='pscid'
+                            label='PSCID'
+                            value={this.getFilterValue('pscid')}
+                            onUserInput={this.setFilter}
+                            ref='pscid'
+                          />
+                        </div>
+                        <div className="col-md-2">
+                          <SelectElement
+                            name='sex'
+                            label='Sex'
+                            options={this.getDistinctValues('Sex')}
+                            value={this.getFilterValue('sex')}
+                            onUserInput={this.setFilter}
+                            ref='sex'
+                          />
+                        </div>
+                        <div className="col-md-2">
+                          <NumericElement
+                            name='file_count'
+                            label='File Count'
+                            min="0"
+                            max={null}
+                            value={this.getFilterValue('file_count')}
+                            onUserInput={this.setFilter}
+                            ref='file_count'
+                          />
+                        </div>
+                        <div className="col-md-4">
+                          <TextboxElement
+                            name='sample_labels'
+                            label='Sample Labels'
+                            value={this.getFilterValue('sample_labels')}
+                            onUserInput={this.setFilter}
+                            ref='sample_labels'
+                          />
+                        </div>
+                      </div>
+                      {separator}
+                      <div className="row">
+                        {datasetCounts}
+                      </div>
                     </FilterTable>;
+
     } else if (this.state.error) {
       dataTable = <div className="alert alert-danger">
                     <strong>

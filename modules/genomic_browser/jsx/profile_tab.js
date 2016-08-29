@@ -19,9 +19,6 @@ var ProfileTab = React.createClass({
     this.loadCurrentTabContent();
   },
   shouldComponentUpdate: function(nextState, nextProps) {
-    console.log('PT.should');
-    console.log(nextState);
-    console.log(nextProps);
     return nextProps.hasOwnProperty('filter');
   },
   loadCurrentTabContent: function() {

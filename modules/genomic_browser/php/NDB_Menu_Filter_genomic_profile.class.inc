@@ -142,6 +142,72 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
         return true;
     }
 
+    /** 
+     * Converts this menu filter to an array of the form
+     * adding the dataset counts from CouchDB
+     *
+     * Headers => (string array)
+     * Data => (array of arrays of row data)
+     *
+     * Suitable for serializing to JSON, CSV, etc..
+     *
+     * @return associative array
+     */
+    function toArray()
+    {   
+        $mysql_data = $this->_getFullList();
+        
+        $couch = CouchDB::singleton();
+        $couch->setDatabase('test_epi');
+        $params = array(
+                'reduce' => 'true',
+                'group_level' => 1,
+            );  
+        $result = $couch->queryView('genomic_browser', 'sample_label_by_dataset', $params, false);
+
+        $variable_types = array_map(function($row) {
+            return $row['key'][0];
+        },$result);
+
+        $headers = array_map(
+            function ($header) {
+                return ucwords(str_replace('_', ' ', $header));
+            },  
+            array_merge($this->headers, $variable_types)
+        );  
+
+        $MappedData = array();
+        foreach ($mysql_data as $row) {
+            $dataset_counts = array();
+            $sample_labels = explode(',', $row['sample_labels']);
+
+            foreach ($sample_labels as $label) {
+                if (!empty($label)) {
+                    $params = array(
+                        'reduce'      => 'true',
+                        'group_level' => '2',
+                        'start_key'   => "[\"$label\"]",
+                        'end_key'     => "[\"$label\",{}]",
+                    );
+                    $counts = $couch->queryView('genomic_browser', 'variable_type_by_sample', $params, false);
+
+                    if (!empty($counts)) {
+                        foreach ($counts as $count) {
+                            $variable_index = array_search($count['key'][1], $headers);
+                            var_dump($variable_index);
+                        }
+                    }
+                }
+            }
+            $MappedData[] = array_values($row);
+        }   
+
+        return array(
+                'Headers' => $headers,
+                'Data'    => $MappedData,
+               );  
+    } 
+
     /**
      * Include the column formatter required to display the feedback link colours
      * in the candidate_list menu

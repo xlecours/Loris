@@ -37,7 +37,9 @@ $candidate_list = array_map(function ($CandID) {
     return  str_pad(strval($CandID), 6, "0", STR_PAD_LEFT);
 }, $candidate_list); 
 
-$sample_candidate_mapping = addSampleLabels($candidate_list);
+addSampleLabels($candidate_list);
+
+exit;
 
 $couch = CouchDB::singleton();
 $couch->setDatabase('test_epi');
@@ -59,7 +61,7 @@ function addSampleLabels(&$candidate_list)
     $result =  $DB->pselect(
         'SELECT 
             CandID, 
-            GROUP_CONCAT(sample_label) 
+            GROUP_CONCAT(sample_label) AS sample_labels
          FROM 
             genomic_sample_candidate_rel 
          WHERE 
@@ -68,12 +70,6 @@ function addSampleLabels(&$candidate_list)
             CandID', 
          array('v_candidates' => join(',',$candidate_list))
     );
-    array_walk($candidate_list, function($CandID, $index, $mysql_result) {
-        $sample_labels = array_filter($mysql_result, function($row) {
-            var_dump($CandID);
-            return $row["CandID"] == $CandID;
-        });
-        var_dump($CandID);
-        var_dump($sample_labels);
-    }, $result);
+
+    var_dump($result);
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/php
 <?php
+// TODO :: genomic_files.AnalysisModality must contain the same value then the pone specified in the dataframe.txt file. (To be garantied by the genomic uploader module)
+// TODO :: The dataframe/datamatrix is defined in the genomic_files.FileType fields which is also used in the genomic_uploader for... ?? should it be a new column
 /**
  * This file should be use to insert a data.frame.csv file in CouchDB.
  * The arguments should be the file_id of that file.
@@ -514,6 +516,7 @@ class Dataframe extends Dataset
                    break;
                default:
                    $variable = new DataVariable($this->loris_file_id, $data[0]);
+                   $variable->initialize($annotation_labels, $data);
                    break;
            }
            return $variable;

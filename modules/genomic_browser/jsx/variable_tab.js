@@ -1,4 +1,23 @@
 var VariableTab = React.createClass({
+  propTypes: {
+    filter: React.PropTypes.object.isRequired,
+    variableType: React.PropTypes.string.isRequired
+  },
+  getDefaultProps: function () {
+    return {setFilter: function() {return null}};
+  },
+  getInitialState: function () {
+    return {
+      filter: {},
+      headers: null,
+      data: null,
+      isLoaded: false
+    };
+  },
+  componentDidMount: function () {
+    // get the filterTable field list
+    
+  },
   render: function() {
 /*
       var filterElements = this.state.headers.map(function(header) {
@@ -30,6 +49,9 @@ var VariableTab = React.createClass({
                       {filterElements}
                     </FilterTable>;
 */
-    return <div>{this.props.variableType}</div>;
+    return <div>
+             <FilterTable />
+             <StaticDataTable />
+           </div>;
   }
 });

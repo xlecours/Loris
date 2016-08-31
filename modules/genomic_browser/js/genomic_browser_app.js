@@ -83,8 +83,11 @@ var GenomicBrowserApp = React.createClass({
       case 'Profile':
         activeTab = React.createElement(ProfileTab, { filter: this.state.filter, setFilter: this.setFilter });
         break;
+      case 'Dataset':
+        activeTab = React.createElement(DatasetTab, { filter: this.state.filter, setFilter: this.setFilter });
+        break;
       default:
-        activeTab = React.createElement(VariableTab, { variableType: this.state.activeTab });
+        activeTab = React.createElement(VariableTab, { filter: this.state.filter, setFilter: this.setFilter, variableType: this.state.activeTab });
     }
 
     var tabs = this.state.tabsNav.map(function (tabName) {

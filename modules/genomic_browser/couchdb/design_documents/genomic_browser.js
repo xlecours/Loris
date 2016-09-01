@@ -1,6 +1,6 @@
 {
    "_id": "_design/genomic_browser",
-   "_rev": "125-642d50a529aee203b4b3c2f2fe8317ce",
+   "_rev": "126-66da0faf6f8a05558a1e1d624cdf1b99",
    "language": "javascript",
    "views": {
        "sample_label_by_dataset": {

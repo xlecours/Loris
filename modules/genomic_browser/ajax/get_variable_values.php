@@ -50,7 +50,7 @@ if(empty($_REQUEST['genomic_file_ids']) ) {
     $genomic_file_ids = is_array($param) ? $param : [$param]; 
 }
 
-$data = [];
+$mapped_data = [];
 
 // Get the variable properties 
 // limit 1000 variables
@@ -110,21 +110,41 @@ foreach ($genomic_file_ids as $genomic_file_id) {
             $sample_label = $sample_labels[$row['key'][2]];
             $pscid        = $sample_pscid_mapping[$sample_label];
  
-            array_push($data, array(
-                'variable_name' => $row['key'][1],
-                'sample_label'  => $sample_label,
-                'pscid'         => $pscid,
-                'value'         => $row['value'], 
-            ));
+            array_push($mapped_data, array_merge(array(
+                'variable_name'   => $row['key'][1],
+                'genomic_file_id' => $row['key'][0],
+                'sample_label'    => $sample_label,
+                'pscid'           => $pscid,
+                'value'           => $row['value'], 
+            ),$props));
         }
     }
 }
-// TODO :: create the headers
-$output = array_map(function($item) {
-    // TODO :: remove the mapping and order the data rows
-return $item;}, $data);
+
+// Create the headers and the data indexes in the output
+$data = array(
+    'headers' => array(),
+    'data'    => array(),
+);
+
+// Ensure uniqueness of headers
+$headers_keys = array();
+foreach ($mapped_data as $row) {
+    foreach($row as $key => $value) {
+        $headers_keys[$key] = true;
+    }
+}
+$data['headers'] = array_keys($headers_keys);
+
+foreach ($mapped_data as $row) {
+    $formated_row = [];
+    foreach ($data['headers'] as $prop_name) {
+        array_push($formated_row, $row[$prop_name]);
+    }
+    array_push($data['data'], $formated_row);
+}
 
 header("content-type:application/json");
 ini_set('default_charset', 'utf-8');
-echo json_encode($output);
+echo json_encode($data);
 exit;

@@ -18,13 +18,12 @@ var ProfileTab = React.createClass({
     };
   },
   componentDidMount: function () {
-    this.loadCurrentTabContent();
+    this.loadDatatableContent();
   },
   shouldComponentUpdate: function (nextState, nextProps) {
-    console.log('PT.shouldComponentUpdate');
     return nextProps.hasOwnProperty('filter');
   },
-  loadCurrentTabContent: function () {
+  loadDatatableContent: function () {
     var that = this;
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
@@ -96,8 +95,11 @@ var ProfileTab = React.createClass({
     }
     return values;
   },
-  setFilter: function (field, index) {
-    var value = this.refs[field].props.options[index];
+  setFilter: function (field, value) {
+    if (this.refs[field].props.options) {
+      var index = value;
+      value = this.refs[field].props.options[index];
+    }
     this.props.setFilter(field, value);
   },
   getFilterValue: function (filter) {
@@ -113,7 +115,8 @@ var ProfileTab = React.createClass({
         Headers: this.state.headers,
         Data: this.state.data,
         Filter: this.props.filter,
-        getFormattedCell: this.formatColumn
+        getFormattedCell: this.formatColumn,
+        ref: 'data_table'
       });
 
       var separator = React.createElement(

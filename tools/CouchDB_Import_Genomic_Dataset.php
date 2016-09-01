@@ -381,13 +381,21 @@ class Datamatrix extends Dataset
 
            switch ($this->meta['variable_type']) {
                case 'Methylation beta-values':
-                   $variable = new MethylationBetaValue($this->loris_file_id, $data[0]);
-                   $variable->initialize($annotation_labels, $data);
+                   $variable_class = 'MethylationBetaValue';
                    break;
                default:
-                   $variable = new DataVariable($this->loris_file_id, $data[0]);
+                   $variable_class = 'DataVariable';
                    break;
            }
+           $variable = new $variable_class(
+               $this->loris_file_id,
+               $this->meta['variable_type'],
+               $data[0]
+           );
+           $variable->initialize(
+               $annotation_labels,
+               $data
+           );
            return $variable;
        }
     }
@@ -511,14 +519,21 @@ class Dataframe extends Dataset
        } else {
            switch ($this->meta['variable_type']) {
                case 'Methylation beta-values':
-                   $variable = new MethylationBetaValue($this->loris_file_id, $data[0]);
-                   $variable->initialize($annotation_labels, $data);
+                   $variable_class = 'MethylationBetaValue';
                    break;
                default:
-                   $variable = new DataVariable($this->loris_file_id, $data[0]);
-                   $variable->initialize($annotation_labels, $data);
+                   $variable_class = 'DataVariable';
                    break;
            }
+           $variable = new $variable_class(
+               $this->loris_file_id,
+               $this->meta['variable_type'],
+               $data[0]
+           );
+           $variable->initialize(
+               $annotation_labels,
+               $data
+           );
            return $variable;
        }
     }
@@ -531,19 +546,21 @@ class DataVariable
         'doctype' => 'variable',
         'identifier' => array(
             'variable_name' => null,
+            'variable_type' => null,
             'genomic_file_id' => null
         )
     );
     var $values = array();
     var $properties = array();
     
-    function __construct($file_id, $variable_name)
+    function __construct($file_id, $variable_type, $variable_name)
     {
         if(empty($file_id) || empty($variable_name)) {
             throw new Exception('Missing required field');
         }
         $this->_id = "$file_id-$variable_name";
         $this->meta['identifier']['genomic_file_id'] = $file_id;
+        $this->meta['identifier']['variable_type'] = $variable_type;
     }
 
     function initialize(&$annotation_labels, &$data)

@@ -1,5 +1,5 @@
 var VariableTab = React.createClass({
-  displayName: "VariableTab",
+  displayName: 'VariableTab',
 
   propTypes: {
     filter: React.PropTypes.object.isRequired,
@@ -12,7 +12,7 @@ var VariableTab = React.createClass({
   },
   getInitialState: function () {
     return {
-      filter: {},
+      filters: [],
       headers: null,
       data: null,
       isLoaded: false
@@ -20,7 +20,38 @@ var VariableTab = React.createClass({
   },
   componentDidMount: function () {
     // get the filterTable field list
+    console.log('VT.componentDidMount');
+    this.getfiltersList();
+  },
+  componentWillReceiveProps: function (nextProps) {
+    console.log('VT.componentWillReceiveProps');
+    console.log(nextProps);
+    if (nextProps.hasOwnProperty('')) {
+      consoe.log('YEAH!');
+    }
+  },
+  getfiltersList: function () {
+    var that = this;
+    var xhttp = new XMLHttpRequest();
 
+    // Get variable_type to create tab labels
+    xhttp.onreadystatechange = function () {
+      var newState = {};
+      if (xhttp.readyState === 4) {
+        if (xhttp.status === 200) {
+          var response = JSON.parse(xhttp.responseText);
+          newState['filters'] = response;
+        } else {
+          newState['error'] = true;
+          newState['errorCode'] = xhttp.status;
+          newState['errorText'] = 'Can\'t get variable types: '.concat(xhttp.statusText);
+        }
+      }
+      that.setState(newState);
+    };
+    var url = loris.BaseURL.concat('/genomic_browser/ajax/get_variable_properties.php?variable_type=', this.props.variableType);
+    xhttp.open("GET", url, true);
+    xhttp.send();
   },
   render: function () {
     /*
@@ -53,10 +84,25 @@ var VariableTab = React.createClass({
                           {filterElements}
                         </FilterTable>;
     */
+    var filters = this.state.filters.map(function (f) {
+      return React.createElement(
+        'li',
+        null,
+        f
+      );
+    }, this);
     return React.createElement(
-      "div",
+      'div',
       null,
-      React.createElement(FilterTable, null),
+      React.createElement(
+        FilterTable,
+        null,
+        React.createElement(
+          'ul',
+          null,
+          filters
+        )
+      ),
       React.createElement(StaticDataTable, null)
     );
   }

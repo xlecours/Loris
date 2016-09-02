@@ -48,7 +48,7 @@ if(empty($_REQUEST['genomic_file_ids']) ) {
     $genomic_file_ids = is_array($param) ? $param : [$param];
 }
 
-$prop_keys = [];
+$props = [];
 foreach ($genomic_file_ids as $genomic_file_id) {
 
     $params = array(
@@ -57,16 +57,12 @@ foreach ($genomic_file_ids as $genomic_file_id) {
         'end_key'   => "[\"$variable_type\",\"$genomic_file_id\",{}]",
     );
     $result = $couch->queryList('genomic_browser', 'distinct_value_keys', 'variable_property_by_identifier', $params, true);
-    $all_props = array_merge($all_props, json_decode($result));
-    
-    // Ensure uniqueness
-    $prop_keys = array_reduce(json_decode($result), function($carry, $prop) {
-        $carry[$prop] = true;
-        return $carry;
-    }, $prop_keys);
+    $props = array_merge($props, json_decode($result));
 }
+
+// Ensure uniqueness
 
 header("content-type:application/json");
 ini_set('default_charset', 'utf-8');
-echo json_encode(array_keys($prop_keys));
+echo json_encode(array_unique($props));
 exit;

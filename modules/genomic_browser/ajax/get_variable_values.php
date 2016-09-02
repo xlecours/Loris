@@ -26,6 +26,7 @@ if(empty($_REQUEST['variable_type']) ) {
     exit;
 }
 
+
 $variable_type = $_REQUEST['variable_type'];
 
 $couch = CouchDB::singleton();
@@ -89,8 +90,14 @@ foreach ($genomic_file_ids as $genomic_file_id) {
         'end_key'     => "[\"$variable_type\",\"$genomic_file_id\",{}]",
         'limit'       => '1000',
     );
-    $result = $couch->queryView('genomic_browser', 'variable_property_by_identifier', $params, false);
-    $variables = array_reduce($result, function($carry, $item){
+    // Special case for genomic_variable
+    if(!empty($_REQUEST['genomic_range']) ) {
+      $genomic_range =  $_REQUEST['genomic_range'];
+      $params['genomic_range'] = "\"$genomic_range\"";
+    }
+
+    $result = $couch->queryList('genomic_browser', 'selection', 'variable_property_by_identifier', $params, true);
+    $variables = array_reduce(json_decode($result,true), function($carry, $item){
         $carry[$item['id']] = $item['value'];
         return $carry;
     },array());
@@ -104,6 +111,7 @@ foreach ($genomic_file_ids as $genomic_file_id) {
             'end_key'   => "[\"$doc_identifier\", {}]",
         );
         $result = $couch->queryView('genomic_browser', 'variable_value_by_identifier', $params, false);
+
         foreach ($result as $row) {
             $sample_label = $sample_labels[$row['key'][2]];
             $pscid        = $sample_pscid_mapping[$sample_label];

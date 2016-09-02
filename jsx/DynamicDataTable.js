@@ -27,6 +27,11 @@ var DynamicDataTable = React.createClass({
       // Unsubscribe from the event before component is destroyed
     window.removeEventListener('update-datatable', this.fetchData);
   },
+  componentDidUpdate: function(prevProps, prevState) {
+    if (this.props.DataURL != prevProps.DataURL) {
+      this.fetchData();
+    }
+  },
   fetchData: function() {
     var that = this;
     $.ajax(this.props.DataURL, {

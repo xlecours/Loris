@@ -31,7 +31,6 @@ $variable_type = $_REQUEST['variable_type'];
 $couch = CouchDB::singleton();
 $couch->setDatabase('test_epi');
 
-$dataset_sample_list = [];
 // Get the genomic_file_ids
 $genomic_file_ids = [];
 if(empty($_REQUEST['genomic_file_ids']) ) {
@@ -62,7 +61,6 @@ foreach ($genomic_file_ids as $genomic_file_id) {
     );
     $result = $couch->queryView('genomic_browser', 'sample_label_by_dataset', $params, false);
     $sample_labels = $result[0]['value'];
-        
     // Get the sample_label-pscid mapping from mysql
     $mysql = Database::singleton();
     $result = $mysql->pselect(
@@ -123,8 +121,8 @@ foreach ($genomic_file_ids as $genomic_file_id) {
 
 // Create the headers and the data indexes in the output
 $data = array(
-    'headers' => array(),
-    'data'    => array(),
+    'Headers' => array(),
+    'Data'    => array(),
 );
 
 // Ensure uniqueness of headers
@@ -134,14 +132,14 @@ foreach ($mapped_data as $row) {
         $headers_keys[$key] = true;
     }
 }
-$data['headers'] = array_keys($headers_keys);
+$data['Headers'] = array_keys($headers_keys);
 
 foreach ($mapped_data as $row) {
     $formated_row = [];
-    foreach ($data['headers'] as $prop_name) {
+    foreach ($data['Headers'] as $prop_name) {
         array_push($formated_row, $row[$prop_name]);
     }
-    array_push($data['data'], $formated_row);
+    array_push($data['Data'], $formated_row);
 }
 
 header("content-type:application/json");

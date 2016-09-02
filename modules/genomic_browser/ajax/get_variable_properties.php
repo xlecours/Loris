@@ -13,8 +13,6 @@
  *  @link       https://github.com/aces/Loris
  */
 
-// TODO :: consider the genomic_file_id(s)
-
 $userSingleton =& User::singleton();
 if (!$userSingleton->hasPermission('genomic_browser_view_site')
     && !$userSingleton->hasPermission('genomic_browser_view_allsites')
@@ -50,27 +48,25 @@ if(empty($_REQUEST['genomic_file_ids']) ) {
     $genomic_file_ids = is_array($param) ? $param : [$param];
 }
 
-$props = [];
+$prop_keys = [];
 foreach ($genomic_file_ids as $genomic_file_id) {
 
     $params = array(
-        'reduce'      => 'true',
-        'group_level' => 3,
-        'start_key'   => "[\"$variable_type\",\"$genomic_file_id\"]",
-        'end_key'     => "[\"$variable_type\",\"$genomic_file_id\",{}]",
+        'reduce'    => 'false',
+        'start_key' => "[\"$variable_type\",\"$genomic_file_id\"]",
+        'end_key'   => "[\"$variable_type\",\"$genomic_file_id\",{}]",
     );
-    $result = $couch->queryView('genomic_browser', 'variable_property', $params, false);
-    $props = array_merge( $props, array_map(function($row) {
-        return $row['key'][2];
-    }, $result));
+    $result = $couch->queryList('genomic_browser', 'distinct_value_keys', 'variable_property_by_identifier', $params, true);
+    $all_props = array_merge($all_props, json_decode($result));
+    
+    // Ensure uniqueness
+    $prop_keys = array_reduce(json_decode($result), function($carry, $prop) {
+        $carry[$prop] = true;
+        return $carry;
+    }, $prop_keys);
 }
 
-// ensure uniqueness
-$keys = [];
-foreach ($props as $prop) {
-    $keys[$prop] = true;
-}
 header("content-type:application/json");
 ini_set('default_charset', 'utf-8');
-echo json_encode(array_keys($keys));
+echo json_encode(array_keys($prop_keys));
 exit;

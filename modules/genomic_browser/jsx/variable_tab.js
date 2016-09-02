@@ -55,6 +55,9 @@ consoe.log('YEAH!')
     xhttp.open("GET", url, true);
     xhttp.send();
   },
+  getFormatedCell: function(column, cell, row, headers) {
+    return <td>{cell}</td>
+  },
   render: function() {
 /*
       var filterElements = this.state.headers.map(function(header) {
@@ -87,13 +90,17 @@ consoe.log('YEAH!')
                     </FilterTable>;
 */
     var filters = this.state.filters.map(function (f) {return <li>{f}</li>},this);
+    var url = loris.BaseURL + '/genomic_browser/ajax/get_variable_values.php?variable_type=' + {this.props.variableType};
     return <div>
              <FilterTable>
                <ul>
                  {filters}
                </ul>
              </FilterTable>
-             <StaticDataTable />
+             <DynamicDataTable 
+               DataURL={url}
+               getFormatedCell={this.formatCell}
+             />
            </div>;
   }
 });

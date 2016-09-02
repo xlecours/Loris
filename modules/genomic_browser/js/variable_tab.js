@@ -26,6 +26,7 @@ var VariableTab = React.createClass({
   componentWillReceiveProps: function (nextProps) {
     console.log('VT.componentWillReceiveProps');
     console.log(nextProps);
+    // variableTyep to check
     if (nextProps.hasOwnProperty('')) {
       consoe.log('YEAH!');
     }
@@ -52,6 +53,13 @@ var VariableTab = React.createClass({
     var url = loris.BaseURL.concat('/genomic_browser/ajax/get_variable_properties.php?variable_type=', this.props.variableType);
     xhttp.open("GET", url, true);
     xhttp.send();
+  },
+  getFormatedCell: function (column, cell, row, headers) {
+    return React.createElement(
+      'td',
+      null,
+      cell
+    );
   },
   render: function () {
     /*
@@ -103,7 +111,10 @@ var VariableTab = React.createClass({
           filters
         )
       ),
-      React.createElement(StaticDataTable, null)
+      React.createElement(DynamicDataTable, {
+        DataURL: 'http://localhost/~xavier/Loris/htdocs//genomic_browser/ajax/get_variable_values.php?variable_type=Methylation%20beta-values',
+        getFormatedCell: this.formatCell
+      })
     );
   }
 });

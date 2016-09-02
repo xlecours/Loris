@@ -25,10 +25,8 @@ var VariableTab = React.createClass({
   },
   componentWillReceiveProps: function (nextProps) {
     console.log('VT.componentWillReceiveProps');
-    console.log(nextProps);
-    // variableTyep to check
     if (nextProps.hasOwnProperty('')) {
-      consoe.log('YEAH!');
+      consoe.log('todo... Change tab');
     }
   },
   getfiltersList: function () {
@@ -61,6 +59,9 @@ var VariableTab = React.createClass({
       cell
     );
   },
+  setFilter: function (...params) {
+    this.props.setFilter(params);
+  },
   render: function () {
     /*
           var filterElements = this.state.headers.map(function(header) {
@@ -92,13 +93,28 @@ var VariableTab = React.createClass({
                           {filterElements}
                         </FilterTable>;
     */
-    var filters = this.state.filters.map(function (f) {
+
+    // Filter are only textbox for now.
+    // 2 by row
+    var filters = this.state.filters.map(function (filter) {
+      var label = filter.charAt(0).toUpperCase() + filter.slice(1);
+      label = label.replace(/_/g, ' ');
+      var value = null;
       return React.createElement(
-        'li',
-        null,
-        f
+        'div',
+        { className: 'col-md-6' },
+        React.createElement(TextboxElement, {
+          name: filter,
+          label: label,
+          onUserInput: this.setFilter,
+          value: value,
+          ref: filter
+        })
       );
     }, this);
+
+    var url = loris.BaseURL + '/genomic_browser/ajax/get_variable_values.php?variable_type=' + this.props.variableType;
+
     return React.createElement(
       'div',
       null,
@@ -112,7 +128,7 @@ var VariableTab = React.createClass({
         )
       ),
       React.createElement(DynamicDataTable, {
-        DataURL: 'http://localhost/~xavier/Loris/htdocs//genomic_browser/ajax/get_variable_values.php?variable_type=Methylation%20beta-values',
+        DataURL: url,
         getFormatedCell: this.formatCell
       })
     );

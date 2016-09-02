@@ -21,10 +21,8 @@ var VariableTab = React.createClass({
   },
   componentWillReceiveProps: function (nextProps) {
     console.log('VT.componentWillReceiveProps');
-    console.log(nextProps);
-// variableTyep to check
     if (nextProps.hasOwnProperty('')) {
-consoe.log('YEAH!')
+      consoe.log('todo... Change tab')
     }
   },
   getfiltersList: function() {
@@ -58,6 +56,9 @@ consoe.log('YEAH!')
   getFormatedCell: function(column, cell, row, headers) {
     return <td>{cell}</td>
   },
+  setFilter: function(...params) {
+    this.props.setFilter(params);
+  },
   render: function() {
 /*
       var filterElements = this.state.headers.map(function(header) {
@@ -89,8 +90,26 @@ consoe.log('YEAH!')
                       {filterElements}
                     </FilterTable>;
 */
-    var filters = this.state.filters.map(function (f) {return <li>{f}</li>},this);
-    var url = loris.BaseURL + '/genomic_browser/ajax/get_variable_values.php?variable_type=' + {this.props.variableType};
+
+    // Filter are only textbox for now.
+    // 2 by row
+    var filters = this.state.filters.map(function (filter) {
+      var label = filter.charAt(0).toUpperCase() + filter.slice(1);
+      label = label.replace(/_/g, ' ');
+      var value = null;
+      return <div className="col-md-6">
+               <TextboxElement
+                 name={filter}
+                 label={label}
+                 onUserInput={this.setFilter}
+                 value={value}
+                 ref={filter}
+               />
+             </div>
+    },this);
+
+    var url = loris.BaseURL + '/genomic_browser/ajax/get_variable_values.php?variable_type=' + this.props.variableType;
+
     return <div>
              <FilterTable>
                <ul>

@@ -64,5 +64,5 @@ foreach ($genomic_file_ids as $genomic_file_id) {
 
 header("content-type:application/json");
 ini_set('default_charset', 'utf-8');
-echo json_encode(array_unique($props));
+echo json_encode(array_values(array_unique($props)));
 exit;

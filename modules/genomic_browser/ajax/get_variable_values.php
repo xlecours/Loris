@@ -63,6 +63,7 @@ foreach ($genomic_file_ids as $genomic_file_id) {
     $result = $couch->queryView('genomic_browser', 'sample_label_by_dataset', $params, false);
     $sample_labels = $result[0]['value'];
     // Get the sample_label-pscid mapping from mysql
+    // TODO :: Check for  $_REQUEST['CandID/PSCID'] list for the filtered profiles.
     $mysql = Database::singleton();
     $result = $mysql->pselect(
         'SELECT 

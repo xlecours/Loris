@@ -212,7 +212,7 @@ ImagePanelHeadersTable = React.createClass({
                 React.createElement(
                     'td',
                     { className: 'col-xs-2' },
-                    this.props.HeaderInfo.Time,
+                    this.props.HeaderInfo.NumVolumes,
                     ' volumes'
                 ),
                 React.createElement(
@@ -295,7 +295,24 @@ ImagePanelHeadersTable = React.createClass({
 ImageQCDropdown = React.createClass({
     displayName: 'ImageQCDropdown',
 
+
     render: function () {
+        var label = React.createElement(
+            'label',
+            null,
+            this.props.Label
+        );
+        if (this.props.url) {
+            label = React.createElement(
+                'label',
+                null,
+                React.createElement(
+                    'a',
+                    { href: this.props.url },
+                    this.props.Label
+                )
+            );
+        }
         var dropdown;
         if (this.props.editable) {
             var options = [];
@@ -326,12 +343,30 @@ ImageQCDropdown = React.createClass({
         return React.createElement(
             'div',
             { className: 'row' },
+            label,
+            dropdown
+        );
+    }
+});
+ImageQCStatic = React.createClass({
+    displayName: 'ImageQCStatic',
+
+    render: function () {
+        var staticInfo;
+        staticInfo = React.createElement(
+            'div',
+            { className: 'col-xs-12' },
+            this.props.defaultValue
+        );
+        return React.createElement(
+            'div',
+            { className: 'row' },
             React.createElement(
                 'label',
                 null,
                 this.props.Label
             ),
-            dropdown
+            staticInfo
         );
     }
 });
@@ -386,6 +421,14 @@ ImagePanelQCCaveatSelector = React.createClass({
     displayName: 'ImagePanelQCCaveatSelector',
 
     render: function () {
+        // Link caveat to MRI Violations if set true
+        var mriViolationsLink = null;
+        if (this.props.SeriesUID && this.props.Caveat === "1") {
+            mriViolationsLink = '/mri_violations/?' +
+              'submenu=mri_protocol_check_violations&SeriesUID=' +
+              this.props.SeriesUID + '&filter=true';
+        }
+
         return React.createElement(ImageQCDropdown, {
             Label: 'Caveat',
             FormName: 'caveat',
@@ -396,7 +439,20 @@ ImagePanelQCCaveatSelector = React.createClass({
                 "1": "True",
                 "0": "False"
             },
-            defaultValue: this.props.Caveat
+            defaultValue: this.props.Caveat,
+            url: mriViolationsLink
+        });
+    }
+});
+ImagePanelQCSNRValue = React.createClass({
+    displayName: 'ImagePanelQCSNRValue',
+
+    render: function () {
+        return React.createElement(ImageQCStatic, {
+            Label: 'SNR',
+            FormName: 'snr',
+            FileID: this.props.FileID,
+            defaultValue: this.props.SNR
         });
     }
 });
@@ -423,7 +479,12 @@ ImagePanelQCPanel = React.createClass({
             React.createElement(ImagePanelQCCaveatSelector, {
                 FileID: this.props.FileID,
                 HasQCPerm: this.props.HasQCPerm,
-                Caveat: this.props.Caveat
+                Caveat: this.props.Caveat,
+                SeriesUID: this.props.SeriesUID
+            }),
+            React.createElement(ImagePanelQCSNRValue, {
+                FileID: this.props.FileID,
+                SNR: this.props.SNR
             })
         );
     }
@@ -581,7 +642,9 @@ ImagePanelBody = React.createClass({
                         QCStatus: this.props.QCStatus,
                         Caveat: this.props.Caveat,
                         SelectedOptions: this.props.SelectedOptions,
-                        Selected: this.props.Selected
+                        Selected: this.props.Selected,
+                        SNR: this.props.SNR,
+                        SeriesUID: this.props.SeriesUID
                     })
                 )
             ),
@@ -650,12 +713,14 @@ ImagePanel = React.createClass({
                     Caveat: this.props.Caveat,
                     SelectedOptions: this.props.SelectedOptions,
                     Selected: this.props.Selected,
+                    SNR: this.props.SNR,
 
                     Fullname: this.props.Fullname,
                     XMLProtocol: this.props.XMLProtocol,
                     XMLReport: this.props.XMLReport,
                     NrrdFile: this.props.NrrdFile,
-                    OtherTimepoints: this.props.OtherTimepoints
+                    OtherTimepoints: this.props.OtherTimepoints,
+                    SeriesUID: this.props.SeriesUID
                 })
             )
         );

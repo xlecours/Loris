@@ -1,30 +1,25 @@
 var VariableTab = React.createClass({
   propTypes: {
     filter: React.PropTypes.object.isRequired,
-    variableType: React.PropTypes.string.isRequired
-  },
-  getDefaultProps: function () {
-    return {setFilter: function() {return null}};
+    variableType: React.PropTypes.string.isRequired,
+    module: React.PropTypes.string.isRequired
   },
   getInitialState: function () {
     return {
       filters: [],
       headers: null,
       data: null,
-      isLoaded: false
+      isLoaded: false,
+      genomicRange: null
     };
   },
   componentDidMount: function () {
     // get the filterTable field list
-    console.log('VT.componentDidMount');
     this.getfiltersList();
   },
   componentWillReceiveProps: function (nextProps) {
-    console.log('VT.componentWillReceiveProps');
-    console.log(nextProps);
-// variableTyep to check
-    if (nextProps.hasOwnProperty('')) {
-consoe.log('YEAH!')
+    if (nextProps.hasOwnProperty('variable_type')) {
+      console.log('todo... Change tab')
     }
   },
   getfiltersList: function() {
@@ -55,45 +50,98 @@ consoe.log('YEAH!')
     xhttp.open("GET", url, true);
     xhttp.send();
   },
+  getFormatedCell: function(column, cell, row, headers) {
+    return <td>{cell}</td>
+  },
+  setFilter: function(formElement, value) {
+    this.props.setFilter(formElement, value);
+  },
+  setGenomicRange: function(formElement, value) {
+    // To minimize the dataqueries, only call the function when a valid genomic range is typed
+    // or if the field is blanked
+    if (/^chr[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$|^[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$/.test(value)) {
+      this.props.setFilter(formElement, value);
+    }
+    if(value.length === 0) {
+      this.props.setFilter(formElement, null);
+    }
+  },
   render: function() {
-/*
-      var filterElements = this.state.headers.map(function(header) {
-        var filter = this.headerToFilter(header);
-        var value;
-        var options;
+    var variable_name_value = null;
+    var specialFilters = [];
+    specialFilters.push(
+                           <div className="col-md-6">
+                             <TextboxElement
+                               name="variable_name"
+                               label="Variable name"
+                               onUserInput={this.setFilter}
+                               value={variable_name_value}
+                               ref="variable_name"
+                             />
+                         </div>);
 
-        options = this.getDistinctValues(header);
-        if (this.state.filter.hasOwnProperty(filter)) {
-          value = ''.concat(options.indexOf(this.state.filter[filter]));
-        }
+    
+    // Special case for Genomic Variable
+    if (this.state.filters.indexOf('chromosome') >= 0 && this.state.filters.indexOf('start_loc') >= 0) {
+      specialFilters.push(<div className="col-md-6">
+                           <TextboxElement
+                               name="genomic_range"
+                               label="Genomic range"
+                               onUserInput={this.setGenomicRange}
+                               value={this.state.genomicRange}
+                               ref="genomic_range"
+                             />
+                          </div>);
+    }
 
-        return <div className="row">
-                 <div className="col-md-12">
-                   <SelectElement
-                     name={filter}
-                     options={options}
-                     size="1"
-                     label={header}
-                     onUserInput={this.setFilter}
-                     value={value}
-                     ref={filter}
-                   />
-                 </div>
-               </div>;
-      }, this);
+    // Filter are only textbox for now.
+    // 2 by row
+    var filters = this.state.filters.map(function (filter) {
+      if (filter !== 'variable_name') {
+        var label = filter.charAt(0).toUpperCase() + filter.slice(1);
+        label = label.replace(/_/g, ' ');
+        var value = null;
+        return <div className="col-md-6">
+                 <TextboxElement
+                   name={filter}
+                   label={label}
+                   onUserInput={this.setFilter}
+                   value={value}
+                   ref={filter}
+                 />
+               </div>
+      }
+    },this);
+    
+    // Remove irrelevant filter keys
+    var filter = {};
+    Object.keys(this.props.filter).forEach(function(key) {
+      if (this.state.filters.indexOf(key) >= 0) {
+        filter[key] = this.props.filter[key];
+      }
+    }, this);
+    var url = loris.BaseURL.concat(
+      '/genomic_browser/ajax/get_variable_values.php?variable_type=',
+      this.props.variableType,
+      '&genomic_range=',
+      this.props.filter.genomic_range || ''
+    );
 
-      filterTable = <FilterTable Module="Genomic Browser">
-                      {filterElements}
-                    </FilterTable>;
-*/
-    var filters = this.state.filters.map(function (f) {return <li>{f}</li>},this);
     return <div>
-             <FilterTable>
-               <ul>
+             <FilterTable Module={this.props.module}>
+               <div className="row">
+                 {specialFilters}
+               </div>
+               <hr />
+               <div className="row">
                  {filters}
-               </ul>
+               </div>
              </FilterTable>
-             <StaticDataTable />
+             <DynamicDataTable 
+               DataURL={url}
+               Filter={filter}
+               getFormatedCell={this.formatCell}
+             />
            </div>;
   }
 });

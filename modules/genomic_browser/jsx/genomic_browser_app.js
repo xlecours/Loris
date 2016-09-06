@@ -20,6 +20,21 @@ var GenomicBrowserApp = React.createClass({
     };
   },
   componentDidMount: function() {
+    var newState = {};
+    var formRefs = this.refs;
+    var queryString = new QueryString();
+    var queryStringObj = queryString.get();
+
+    // Populate input fields from query string
+    Object.keys(queryStringObj).map(function(key) {
+      if (formRefs[key].state && queryStringObj[key]) {
+        formRefs[key].state.value = queryStringObj[key];
+      }   
+    }); 
+
+    newState['filter'] = queryStringObj;
+    newState['queryString'] = queryString;
+
     var that = this;
     var xhttp = new XMLHttpRequest();
 
@@ -27,7 +42,6 @@ var GenomicBrowserApp = React.createClass({
     xhttp.onreadystatechange = function() {
       if (xhttp.readyState === 4) {
         if (xhttp.status === 200) {
-          var newState = {};
 
           var response = JSON.parse(xhttp.responseText);
           if (Array.isArray(response)) {
@@ -59,15 +73,44 @@ var GenomicBrowserApp = React.createClass({
   changeTab: function(event) {
     this.setState({activeTab: event.target.innerText});
   },
-  setFilter: function(field, value) {
-    console.log('GB.setFilter');
-    console.log(this.state.filter);
-    var newFilter = this.state.filter;
-    newFilter[field] = value;
-    this.setState({filter: newFilter});
+  setFilter: function(fieldName, fieldValue) {
+    // Create deep copy of a current filter
+    var Filter = JSON.parse(JSON.stringify(this.state.filter));
+    var queryString = this.state.queryString;
+    var formRefs = this.refs;
+
+    // If fieldName is part of the form, add to querystring
+    if (formRefs.hasOwnProperty(fieldName)) {
+      queryString.set(Filter, fieldName, fieldValue);
+    } else {
+      queryString.clear(this.props.module);
+    }   
+
+    if (fieldValue === "") {
+      delete Filter[fieldName];
+    } else {
+      Filter[fieldName] = fieldValue;
+    }   
+    this.setState({filter: Filter});
+  },
+  clearFilter: function() {
+    var queryString = this.state.queryString;
+    var formRefs = this.refs;
+
+    // Clear query string
+    queryString.clear(this.props.module);
+
+    // Reset state of child components of FilterTable
+    Object.keys(formRefs).map(function(ref) {
+      if (formRefs[ref].state && formRefs[ref].state.value) {
+        formRefs[ref].state.value = ""; 
+      }   
+    }); 
+
+    // Clear filter
+    this.setState({filter: {}});
   },
   render: function() {
-    console.log('GB.render');
     var activeTab = {};
     var message = {};
     if (this.state.error) {
@@ -86,7 +129,7 @@ var GenomicBrowserApp = React.createClass({
         activeTab = <DatasetTab filter={this.state.filter} setFilter={this.setFilter}/>;
         break;
       default:
-        activeTab = <VariableTab filter={this.state.filter} setFilter={this.setFilter} variableType={this.state.activeTab}/>;
+        activeTab = <VariableTab module={this.props.module} filter={this.state.filter} setFilter={this.setFilter} variableType={this.state.activeTab}/>;
     }
 
     var tabs = this.state.tabsNav.map(function(tabName) {

@@ -1,6 +1,6 @@
 {
    "_id": "_design/genomic_browser",
-   "_rev": "126-66da0faf6f8a05558a1e1d624cdf1b99",
+   "_rev": "42-4afe03055e1bbf5e289ee9d83859aaed",
    "language": "javascript",
    "views": {
        "sample_label_by_dataset": {
@@ -26,6 +26,8 @@
    },
    "lists": {
        "by_sample_index": "function (head, req) {    start({'headers' : {'Content-Type': 'application/json'}}); if(req.query.sample_indexes) { var sample_indexes = JSON.parse(req.query.sample_indexes); if (Array.isArray(sample_indexes)) { if (/variable_value_by_identifier.*group_level=3/.test(req.raw_path)) { while(row = getRow()) { if( sample_indexes.indexOf(row.key[2]) !== -1) {send(JSON.stringify(row))};}} else {send(JSON.stringify({error: 'bad request'}))}} else {send(JSON.stringify({error: 'sample_indexes must be an array'}));} } else {send(JSON.stringify({error: 'missing parameter: sample_indexes'}));} }",
-       "distinct_value": "function (head, req) {start({'headers' : {'Content-Type': 'application/json'}}); var values = {}; while(row = getRow()) {values[row.value] = true;} send(JSON.stringify(Object.keys(values)));}"
+       "distinct_value": "function (head, req) {start({'headers' : {'Content-Type': 'application/json'}}); var values = {}; while(row = getRow()) {values[row.value] = true;} send(JSON.stringify(Object.keys(values)));}",
+       "distinct_value_keys": "function (head, req) {start({'headers' : {'Content-Type': 'application/json'}}); var keys = {}; while(row = getRow()) {Object.keys(row.value).forEach(function(k) {keys[k] = true}, this);} send(JSON.stringify(Object.keys(keys)));}",
+       "selection": "function(head, req) { var maxRows=10000; var rowCount=0; var output = []; var by_genomic_range = false; genomic_range = {}; if (req.query.hasOwnProperty('genomic_range')) {by_genomic_range = true; var matches = req.query.genomic_range.match(/([0-9]+):([0-9]+)-([0-9]+)/); genomic_range['chromosome'] = matches[1]; genomic_range['start_loc'] = parseInt(matches[2]); genomic_range['end_loc'] = parseInt(matches[3]);} start({'headers' : {'Content-Type': 'application/json'}}); while((row = getRow()) && rowCount < maxRows) { if (by_genomic_range) { var start_loc = parseInt(row.value.start_loc); var end_loc = parseInt(row.value.start_loc) + parseInt(row.value.size); if (genomic_range.chromosome === row.value.chromosome.match(/[0-9]+/)[0] && ( start_loc  > genomic_range.start_loc && start_loc < genomic_range.end_loc || end_loc > genomic_range.start_loc && end_loc < genomic_range.end_loc )) {output.push(row);}} else {output.push(row);}} send(JSON.stringify(output));}"
    }
 }

@@ -92,7 +92,7 @@ ImagePanelHeadersTable = React.createClass({
                 </tr>
                 <tr>
                     <th className="col-xs-2 info">Number of volumes</th>
-                    <td className="col-xs-2">{this.props.HeaderInfo.Time} volumes</td>
+                    <td className="col-xs-2">{this.props.HeaderInfo.NumVolumes} volumes</td>
 
                     <th className="col-xs-2 info">Pipeline</th>
                     <td className="col-xs-2">{this.props.HeaderInfo.Pipeline}</td>
@@ -121,7 +121,12 @@ ImagePanelHeadersTable = React.createClass({
     }
 });
 ImageQCDropdown = React.createClass({
+
     render: function() {
+        var label = <label>{this.props.Label}</label>;
+        if (this.props.url) {
+          label = <label><a href={this.props.url}>{this.props.Label}</a></label>;
+        }
         var dropdown;
         if(this.props.editable) {
             var options = [];
@@ -147,8 +152,24 @@ ImageQCDropdown = React.createClass({
         }
         return (
             <div className="row">
-                <label>{this.props.Label}</label>
+                {label}
                 {dropdown}
+            </div>
+        );
+    }
+});
+ImageQCStatic = React.createClass({
+    render: function() {
+        var staticInfo;
+        staticInfo = (
+            <div className="col-xs-12">
+                {this.props.defaultValue}
+            </div>
+        );
+        return (
+            <div className="row">
+                <label>{this.props.Label}</label>
+                {staticInfo}
             </div>
         );
     }
@@ -191,6 +212,15 @@ ImagePanelQCSelectedSelector = React.createClass({
 });
 ImagePanelQCCaveatSelector = React.createClass({
     render: function () {
+
+        // Link caveat to MRI Violations if set true
+        var mriViolationsLink = null;
+        if (this.props.SeriesUID && this.props.Caveat === "1") {
+          mriViolationsLink = '/mri_violations/?' +
+            'submenu=mri_protocol_check_violations&SeriesUID=' +
+            this.props.SeriesUID + '&filter=true';
+        }
+
         return (
             <ImageQCDropdown
                 Label="Caveat"
@@ -203,8 +233,21 @@ ImagePanelQCCaveatSelector = React.createClass({
                         "1" : "True",
                         "0" : "False"
                     }
-                } 
+                }
                 defaultValue={this.props.Caveat}
+                url={mriViolationsLink}
+            />
+        );
+    }
+});
+ImagePanelQCSNRValue = React.createClass({
+    render: function () {
+        return (
+            <ImageQCStatic
+                Label="SNR"
+                FormName="snr"
+                FileID={this.props.FileID}
+                defaultValue={this.props.SNR}
             />
         );
     }
@@ -230,8 +273,12 @@ ImagePanelQCPanel = React.createClass({
                     FileID={this.props.FileID}
                     HasQCPerm={this.props.HasQCPerm}
                     Caveat={this.props.Caveat}
+                    SeriesUID={this.props.SeriesUID}
                 />
-
+                <ImagePanelQCSNRValue
+                    FileID={this.props.FileID}
+                    SNR={this.props.SNR}
+                />
             </div>
         );
     }
@@ -269,7 +316,7 @@ ImageQCCommentsButton = React.createClass({
         };
         return (
             <a className="btn btn-default"
-                href="#noID" 
+                href="#noID"
                 onClick={this.openWindowHandler}
                 >
                     <span className="text-default">
@@ -312,10 +359,10 @@ ImageDownloadButtons = React.createClass({
     render: function() {
         return (
             <div className="row mri-second-row-panel col-xs-12">
-                <ImageQCCommentsButton FileID={this.props.FileID} 
+                <ImageQCCommentsButton FileID={this.props.FileID}
                     BaseURL={this.props.BaseURL}
                 />
-                <DownloadButton FileName={this.props.Fullname} 
+                <DownloadButton FileName={this.props.Fullname}
                     Label="Download Minc"
                     BaseURL={this.props.BaseURL}
                 />
@@ -323,11 +370,11 @@ ImageDownloadButtons = React.createClass({
                     BaseURL={this.props.BaseURL}
                     Label="Download XML Protocol"
                 />
-                <DownloadButton FileName={this.props.XMLReport} 
+                <DownloadButton FileName={this.props.XMLReport}
                     BaseURL={this.props.BaseURL}
                     Label="Download XML Report"
                 />
-                <DownloadButton FileName={this.props.NrrdFile} 
+                <DownloadButton FileName={this.props.NrrdFile}
                     BaseURL={this.props.BaseURL}
                     Label="Download NRRD"
                 />
@@ -363,6 +410,8 @@ ImagePanelBody = React.createClass({
                                 Caveat={this.props.Caveat}
                                 SelectedOptions={this.props.SelectedOptions}
                                 Selected={this.props.Selected}
+                                SNR={this.props.SNR}
+                                SeriesUID={this.props.SeriesUID}
                             />
                          </div>
                     </div>
@@ -402,7 +451,7 @@ ImagePanel = React.createClass({
         return (
             <div className="col-xs-12 col-md-6">
                 <div className="panel panel-default">
-                <ImagePanelHeader 
+                <ImagePanelHeader
                     FileID={this.props.FileID}
                     Filename={this.props.Filename}
                     QCStatus={this.props.QCStatus}
@@ -411,7 +460,7 @@ ImagePanel = React.createClass({
                     Expanded={!this.state.BodyCollapsed}
                     HeadersExpanded={!this.state.HeadersCollapsed}
                 />
-                {this.state.BodyCollapsed ? '' : 
+                {this.state.BodyCollapsed ? '' :
                     <ImagePanelBody
                         BaseURL={this.props.BaseURL}
 
@@ -420,7 +469,7 @@ ImagePanel = React.createClass({
                         Checkpic={this.props.Checkpic}
                         HeadersExpanded={!this.state.HeadersCollapsed}
 
-                        HeaderInfo={this.props.HeaderInfo} 
+                        HeaderInfo={this.props.HeaderInfo}
 
                         FileNew={this.props.FileNew}
                         HasQCPerm={this.props.HasQCPerm}
@@ -428,12 +477,14 @@ ImagePanel = React.createClass({
                         Caveat={this.props.Caveat}
                         SelectedOptions={this.props.SelectedOptions}
                         Selected={this.props.Selected}
+                        SNR={this.props.SNR}
 
                         Fullname={this.props.Fullname}
                         XMLProtocol={this.props.XMLProtocol}
                         XMLReport={this.props.XMLReport}
                         NrrdFile={this.props.NrrdFile}
                         OtherTimepoints={this.props.OtherTimepoints}
+                        SeriesUID={this.props.SeriesUID}
                     /> }
                 </div>
             </div>

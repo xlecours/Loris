@@ -13,8 +13,6 @@
  *  @link       https://github.com/aces/Loris
  */
 
-// TODO :: consider the genomic_file_id(s)
-
 $userSingleton =& User::singleton();
 if (!$userSingleton->hasPermission('genomic_browser_view_site')
     && !$userSingleton->hasPermission('genomic_browser_view_allsites')
@@ -54,23 +52,17 @@ $props = [];
 foreach ($genomic_file_ids as $genomic_file_id) {
 
     $params = array(
-        'reduce'      => 'true',
-        'group_level' => 3,
-        'start_key'   => "[\"$variable_type\",\"$genomic_file_id\"]",
-        'end_key'     => "[\"$variable_type\",\"$genomic_file_id\",{}]",
+        'reduce'    => 'false',
+        'start_key' => "[\"$variable_type\",\"$genomic_file_id\"]",
+        'end_key'   => "[\"$variable_type\",\"$genomic_file_id\",{}]",
     );
-    $result = $couch->queryView('genomic_browser', 'variable_property', $params, false);
-    $props = array_merge( $props, array_map(function($row) {
-        return $row['key'][2];
-    }, $result));
+    $result = $couch->queryList('genomic_browser', 'distinct_value_keys', 'variable_property_by_identifier', $params, true);
+    $props = array_merge($props, json_decode($result));
 }
 
-// ensure uniqueness
-$keys = [];
-foreach ($props as $prop) {
-    $keys[$prop] = true;
-}
+// Ensure uniqueness
+
 header("content-type:application/json");
 ini_set('default_charset', 'utf-8');
-echo json_encode(array_keys($keys));
+echo json_encode(array_unique($props));
 exit;

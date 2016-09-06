@@ -243,15 +243,15 @@ class NDB_Page
      * Adds a hidden element to the current page. Note if the hidden element
      * needs a value it should be added to the defaults.
      *
-     * @param string $label      The label to attach to the element
-     * @param array  $attributes List of HTML attributes to add to the
-     *                           element
+     * @param string $name       The name of the hidden element to add
+     * @param array  $value      The value of the hidden element to add
+     * @param array  $attributes Additional html attributes for element
      *
      * @return none
      */
-    function addHidden($label, $attributes=null)
+    function addHidden($name, $value=null, $attributes=array())
     {
-        $this->form->addElement('hidden', $label, $attributes);
+        $this->form->addElement('hidden', $name, $value, $attributes);
     }
 
     /**
@@ -370,6 +370,23 @@ class NDB_Page
         return $this->form->createElement("select", $field, $label, $options, $attr);
     }
 
+    /**
+     * Create a QuickForm label element but does not add it to the form
+     *
+     * @param string $labelString The label to attach to the element
+     *
+     * @return HTML_QuickForm Label element
+     */
+    function createLabel(
+        $labelString
+    ) {
+        return $this->form->createElement(
+            "static",
+            null,
+            null,
+            $labelString
+        );
+    }
     /**
      * Creates a QuickForm text element but does not add it to the form
      *
@@ -553,16 +570,13 @@ class NDB_Page
 
         $www     = $config->getSetting('www');
         $baseurl = $www['url'];
-
-        $paths = $config->getSetting("paths");
-
-        $TestName = $this->name;
+        $min     = ($config->getSetting("sandbox") === '1') ? '' : '.min';
 
         $files = array(
                   $baseurl . '/js/jquery/jquery-1.11.0.min.js',
                   $baseurl . '/js/helpHandler.js',
                   $baseurl . '/js/modernizr.min.js',
-                  $baseurl . '/js/react-with-addons-0.13.3.min.js',
+                  $baseurl . "/js/react-with-addons-0.13.3$min.js",
                   $baseurl . '/js/jquery/jquery-ui-1.10.4.custom.min.js',
                   $baseurl . '/js/jquery.dynamictable.js',
                   $baseurl . '/js/jquery.fileupload.js',
@@ -571,20 +585,6 @@ class NDB_Page
                   $baseurl . '/js/components/react.breadcrumb.js',
                   $baseurl . '/js/components/Form.js',
                  );
-        if (file_exists($paths['base'] . "modules/$TestName/js/$TestName.js")) {
-            error_log(
-                "WARNING: Relying on $TestName.js getting automatically loaded will"
-                . " soon be removed. "
-                . "Override getJSDependencies() instead"
-            );
-
-            if (strpos($_SERVER['REQUEST_URI'], "main.php") === false
-            ) {
-                $files[] = $baseurl . "/$TestName/js/$TestName.js";
-            } else {
-                $files[] = $baseurl . "/GetJS.php?Module=$TestName";
-            }
-        }
         return $files;
     }
 
@@ -604,25 +604,10 @@ class NDB_Page
         $www     = $config->getSetting('www');
         $baseurl = $www['url'];
 
-        $paths = $config->getSetting("paths");
-
-        $TestName = $this->name;
-
         $files = array(
                   $baseurl . "/bootstrap/css/bootstrap.min.css",
                   $baseurl . "/bootstrap/css/custom-css.css",
                  );
-
-        if (file_exists($paths['base'] . "modules/$TestName/css/$TestName.css")) {
-            error_log(
-                "WARNING: Relying on $TestName.css getting automatically loaded will"
-                . " soon be removed. "
-                . "Override getCSSDependencies() instead"
-            );
-
-            $files[] = $baseurl . "/$TestName/css/$TestName.css";
-        }
-
         return $files;
     }
 

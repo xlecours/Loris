@@ -26,12 +26,12 @@ if(empty($_REQUEST['variable_type']) ) {
     exit;
 }
 
+
 $variable_type = $_REQUEST['variable_type'];
 
 $couch = CouchDB::singleton();
 $couch->setDatabase('test_epi');
 
-$dataset_sample_list = [];
 // Get the genomic_file_ids
 $genomic_file_ids = [];
 if(empty($_REQUEST['genomic_file_ids']) ) {
@@ -62,7 +62,6 @@ foreach ($genomic_file_ids as $genomic_file_id) {
     );
     $result = $couch->queryView('genomic_browser', 'sample_label_by_dataset', $params, false);
     $sample_labels = $result[0]['value'];
-        
     // Get the sample_label-pscid mapping from mysql
     $mysql = Database::singleton();
     $result = $mysql->pselect(
@@ -91,8 +90,14 @@ foreach ($genomic_file_ids as $genomic_file_id) {
         'end_key'     => "[\"$variable_type\",\"$genomic_file_id\",{}]",
         'limit'       => '1000',
     );
-    $result = $couch->queryView('genomic_browser', 'variable_property_by_identifier', $params, false);
-    $variables = array_reduce($result, function($carry, $item){
+    // Special case for genomic_variable
+    if(!empty($_REQUEST['genomic_range']) ) {
+      $genomic_range =  $_REQUEST['genomic_range'];
+      $params['genomic_range'] = "\"$genomic_range\"";
+    }
+
+    $result = $couch->queryList('genomic_browser', 'selection', 'variable_property_by_identifier', $params, true);
+    $variables = array_reduce(json_decode($result,true), function($carry, $item){
         $carry[$item['id']] = $item['value'];
         return $carry;
     },array());
@@ -106,6 +111,7 @@ foreach ($genomic_file_ids as $genomic_file_id) {
             'end_key'   => "[\"$doc_identifier\", {}]",
         );
         $result = $couch->queryView('genomic_browser', 'variable_value_by_identifier', $params, false);
+
         foreach ($result as $row) {
             $sample_label = $sample_labels[$row['key'][2]];
             $pscid        = $sample_pscid_mapping[$sample_label];
@@ -123,8 +129,8 @@ foreach ($genomic_file_ids as $genomic_file_id) {
 
 // Create the headers and the data indexes in the output
 $data = array(
-    'headers' => array(),
-    'data'    => array(),
+    'Headers' => array(),
+    'Data'    => array(),
 );
 
 // Ensure uniqueness of headers
@@ -134,14 +140,14 @@ foreach ($mapped_data as $row) {
         $headers_keys[$key] = true;
     }
 }
-$data['headers'] = array_keys($headers_keys);
+$data['Headers'] = array_keys($headers_keys);
 
 foreach ($mapped_data as $row) {
     $formated_row = [];
-    foreach ($data['headers'] as $prop_name) {
+    foreach ($data['Headers'] as $prop_name) {
         array_push($formated_row, $row[$prop_name]);
     }
-    array_push($data['data'], $formated_row);
+    array_push($data['Data'], $formated_row);
 }
 
 header("content-type:application/json");

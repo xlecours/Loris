@@ -1,36 +1,32 @@
+'use strict';
+
 var VariableTab = React.createClass({
   displayName: 'VariableTab',
 
   propTypes: {
     filter: React.PropTypes.object.isRequired,
-    variableType: React.PropTypes.string.isRequired
+    variableType: React.PropTypes.string.isRequired,
+    module: React.PropTypes.string.isRequired
   },
-  getDefaultProps: function () {
-    return { setFilter: function () {
-        return null;
-      } };
-  },
-  getInitialState: function () {
+  getInitialState: function getInitialState() {
     return {
       filters: [],
       headers: null,
       data: null,
-      isLoaded: false
+      isLoaded: false,
+      genomicRange: null
     };
   },
-  componentDidMount: function () {
+  componentDidMount: function componentDidMount() {
     // get the filterTable field list
-    console.log('VT.componentDidMount');
     this.getfiltersList();
   },
-  componentWillReceiveProps: function (nextProps) {
-    console.log('VT.componentWillReceiveProps');
-    console.log(nextProps);
-    if (nextProps.hasOwnProperty('')) {
-      consoe.log('YEAH!');
+  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+    if (nextProps.hasOwnProperty('variable_type')) {
+      console.log('todo... Change tab');
     }
   },
-  getfiltersList: function () {
+  getfiltersList: function getfiltersList() {
     var that = this;
     var xhttp = new XMLHttpRequest();
 
@@ -53,57 +49,107 @@ var VariableTab = React.createClass({
     xhttp.open("GET", url, true);
     xhttp.send();
   },
-  render: function () {
-    /*
-          var filterElements = this.state.headers.map(function(header) {
-            var filter = this.headerToFilter(header);
-            var value;
-            var options;
-    
-            options = this.getDistinctValues(header);
-            if (this.state.filter.hasOwnProperty(filter)) {
-              value = ''.concat(options.indexOf(this.state.filter[filter]));
-            }
-    
-            return <div className="row">
-                     <div className="col-md-12">
-                       <SelectElement
-                         name={filter}
-                         options={options}
-                         size="1"
-                         label={header}
-                         onUserInput={this.setFilter}
-                         value={value}
-                         ref={filter}
-                       />
-                     </div>
-                   </div>;
-          }, this);
-    
-          filterTable = <FilterTable Module="Genomic Browser">
-                          {filterElements}
-                        </FilterTable>;
-    */
-    var filters = this.state.filters.map(function (f) {
-      return React.createElement(
-        'li',
-        null,
-        f
-      );
+  getFormatedCell: function getFormatedCell(column, cell, row, headers) {
+    return React.createElement(
+      'td',
+      null,
+      cell
+    );
+  },
+  setFilter: function setFilter(formElement, value) {
+    this.props.setFilter(formElement, value);
+  },
+  setGenomicRange: function setGenomicRange(formElement, value) {
+    if (/^chr[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$|^[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$/.test(value)) {
+      this.props.setFilter(formElement, value);
+    }
+    if (value.length === 0) {
+      this.props.setFilter(formElement, null);
+    }
+  },
+  render: function render() {
+    var variable_name_value = null;
+    var specialFilters = [];
+    specialFilters.push(React.createElement(
+      'div',
+      { className: 'col-md-6' },
+      React.createElement(TextboxElement, {
+        name: 'variable_name',
+        label: 'Variable name',
+        onUserInput: this.setFilter,
+        value: variable_name_value,
+        ref: 'variable_name'
+      })
+    ));
+
+    // Special case for Genomic Variable
+    if (this.state.filters.indexOf('chromosome') >= 0 && this.state.filters.indexOf('start_loc') >= 0) {
+      specialFilters.push(React.createElement(
+        'div',
+        { className: 'col-md-6' },
+        React.createElement(TextboxElement, {
+          name: 'genomic_range',
+          label: 'Genomic range',
+          onUserInput: this.setGenomicRange,
+          value: this.state.genomicRange,
+          ref: 'genomic_range'
+        })
+      ));
+    }
+
+    // Filter are only textbox for now.
+    // 2 by row
+    var filters = this.state.filters.map(function (filter) {
+      if (filter !== 'variable_name') {
+        var label = filter.charAt(0).toUpperCase() + filter.slice(1);
+        label = label.replace(/_/g, ' ');
+        var value = null;
+        return React.createElement(
+          'div',
+          { className: 'col-md-6' },
+          React.createElement(TextboxElement, {
+            name: filter,
+            label: label,
+            onUserInput: this.setFilter,
+            value: value,
+            ref: filter
+          })
+        );
+      }
     }, this);
+
+    // Remove irrelevant filter keys
+    var filter = {};
+    Object.keys(this.props.filter).forEach(function (key) {
+      if (this.state.filters.indexOf(key) >= 0) {
+        filter[key] = this.props.filter[key];
+      }
+    }, this);
+    var url = loris.BaseURL.concat('/genomic_browser/ajax/get_variable_values.php?variable_type=', this.props.variableType, '&genomic_range=', this.props.filter.genomic_range || '');
+
     return React.createElement(
       'div',
       null,
       React.createElement(
         FilterTable,
-        null,
+        { Module: this.props.module },
         React.createElement(
-          'ul',
-          null,
+          'div',
+          { className: 'row' },
+          specialFilters
+        ),
+        React.createElement('hr', null),
+        React.createElement(
+          'div',
+          { className: 'row' },
           filters
         )
       ),
-      React.createElement(StaticDataTable, null)
+      React.createElement(DynamicDataTable, {
+        DataURL: url,
+        Filter: filter,
+        getFormatedCell: this.formatCell
+      })
     );
   }
 });

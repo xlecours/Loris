@@ -30,7 +30,6 @@ require_once 'NDB_Menu_Filter.class.inc';
  */
 class NDB_Menu_Filter_Media extends NDB_Menu_Filter
 {
-    public $centerIDMap;
     public $hasWritePermission = false;
 
     /**
@@ -76,19 +75,17 @@ class NDB_Menu_Filter_Media extends NDB_Menu_Filter
             // allow only to view own site data
             $site =& Site::singleton($user->getData('CenterID'));
             if ($site->isStudySite()) {
-                $siteList = [
-                             $user->getData('CenterID') => $user->getData('Site'),
-                            ];
+                $siteList = [$user->getData('CenterID') => $user->getData('Site')];
             }
         }
 
         $instrumentList   = [null => 'Any'];
         $instrumentsQuery = $db->pselect(
-            "SELECT Test_name FROM test_names ORDER BY Test_name",
+            "SELECT Test_name, Full_name FROM test_names ORDER BY Test_name",
             []
         );
         foreach ($instrumentsQuery as $instrument) {
-            $instrumentList[$instrument['Test_name']] = $instrument['Test_name'];
+            $instrumentList[$instrument['Test_name']] = $instrument['Full_name'];
         }
 
         // Form Elements
@@ -96,7 +93,6 @@ class NDB_Menu_Filter_Media extends NDB_Menu_Filter
         $this->addSelect('instrument', 'Instrument:', $instrumentList);
         $this->addSelect('visit_label', 'Visit Label:', $visitList);
         $this->addSelect('for_site', 'For Site:', $siteList);
-        $this->addBasicText('uploaded_by', 'Uploaded By');
 
         $this->tpl_data["hasWritePermission"] = $this->hasWritePermission;
 
@@ -104,49 +100,39 @@ class NDB_Menu_Filter_Media extends NDB_Menu_Filter
     }
 
     /**
-     * Build media list
+     * Build a list of media to display in Data Table
      *
      * @return bool
      * @throws DatabaseException
      */
     function _setupVariables()
     {
-        $db =& Database::singleton();
-
-        // create the centerID map
-        $pscRows = $db->pselect("SELECT CenterID, Name FROM psc", []);
-        foreach ($pscRows as $row) {
-            $this->centerIDMap[$row['CenterID']] = $row['Name'];
-        }
-
         // the base query
-        $query  = " FROM media v"; // left join candidate c using(pscid) ";
-        $query .= " WHERE (v.hide_file=false OR v.hide_file IS NULL)";
+        $query  = " FROM media m LEFT JOIN session s ON m.session_id = s.ID".
+        " LEFT JOIN candidate c ON c.CandID=s.CandID";
+        $query .= " WHERE m.hide_file = FALSE";
 
         // set the class variables
         $this->columns
             = [
-               'v.file_name',
-               'v.pscid',
-               'v.visit_label',
-               '(SELECT Full_name FROM test_names WHERE Test_name=v.instrument)',
-               '(SELECT name FROM psc WHERE CenterID=v.for_site)',
-               'v.uploaded_by',
-               'v.date_taken',
-               'substring(v.comments, 1, 50) as comments',
-               'v.date_uploaded',
-               // candidate id
-               "(SELECT CandID FROM candidate WHERE PSCID=v.pscid) as candID",
-                // sessiod id
-               "(SELECT ID FROM session WHERE CandID=(SELECT CandID FROM candidate ".
-               "WHERE PSCID=v.pscid) AND Visit_label=v.visit_label)",
-               'v.id',
+               'm.file_name',
+               '(SELECT PSCID from candidate WHERE CandID=s.CandID) as pscid',
+               's.Visit_label as visit_label',
+               '(SELECT Full_name FROM test_names WHERE Test_name=m.instrument)',
+               '(SELECT name FROM psc WHERE CenterID=s.CenterID) as site',
+               'm.uploaded_by',
+               'm.date_taken',
+               'substring(m.comments, 1, 50) as comments',
+               'm.date_uploaded',
+               's.CandID as cand_id',
+               's.ID as session_id',
+               'm.id',
               ];
 
         $this->query = $query;
 
         $this->group_by = '';
-        $this->order_by = 'v.instrument';
+        $this->order_by = 'm.instrument';
         $this->headers  = [
                            'File Name',
                            'PSCID',
@@ -170,23 +156,16 @@ class NDB_Menu_Filter_Media extends NDB_Menu_Filter
         }
 
         $this->validFilters = [
-                               'v.pscid',
-                               'v.instrument',
-                               'v.data_dir',
-                               'v.for_site',
-                               'v.visit_label',
-                               'v.uploaded_by',
+                               'c.PSCID',
+                               'm.instrument',
+                               's.Visit_label',
+                               's.CenterID',
                               ];
         $this->formToFilter = [
-                               'file_name'     => 'v.file_name',
-                               'data_dir'      => 'v.data_dir',
-                               'instrument'    => 'v.instrument',
-                               'pscid'         => 'v.pscid',
-                               'for_site'      => 'v.for_site',
-                               'uploaded_by'   => 'v.uploaded_by',
-                               'visit_label'   => 'v.visit_label',
-                               'date_uploaded' => 'v.date_uploaded',
-                               'comments'      => 'comments',
+                               'pscid'       => 'c.PSCID',
+                               'instrument'  => 'm.instrument',
+                               'visit_label' => 's.Visit_label',
+                               'for_site'    => 's.CenterID',
                               ];
 
         return true;

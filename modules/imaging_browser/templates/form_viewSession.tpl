@@ -18,7 +18,6 @@
    <div class="panel-body">
       {section name=file loop=$files}
           <div id="image-{$files[file].FileID}"></div>
-
           <script>
           React.render(
                   RImagePanel({
@@ -34,7 +33,8 @@
                       "Selected" : "{if $files[file].Selected}{$files[file].Selected}{/if}",
                       "SelectedOptions" : {$selected_options|json_encode},
 
-                      "Caveat" : "{if $files[file].Caveat}{$files[file].Caveat}{/if}",
+                      "Caveat" : "{$files[file].Caveat}",
+                      "SNR" : "{if $files[file].SNR}{$files[file].SNR}{/if}",
                       'HeaderInfo' : {
                           'XStep' : "{$files[file].Xstep}",
                           'YStep' : "{$files[file].Ystep}",
@@ -62,7 +62,8 @@
                       "XMLProtocol" : "{$files[file].XMLprotocol}",
                       "XMLReport" : "{$files[file].XMLreport}",
                       "NrrdFile" : "{$files[file].NrrdFile}",
-                      "OtherTimepoints" : "{$files[file].OtherTimepoints}"
+                      "OtherTimepoints" : "{$files[file].OtherTimepoints}",
+                      "SeriesUID": "{$files[file].SeriesUID}"
                   }),
                   document.getElementById("image-{$files[file].FileID}" )
                   );

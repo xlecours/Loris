@@ -4,9 +4,6 @@ var VariableTab = React.createClass({
     variableType: React.PropTypes.string.isRequired,
     module: React.PropTypes.string.isRequired
   },
-  getDefaultProps: function () {
-    return {setFilter: function() {return null}};
-  },
   getInitialState: function () {
     return {
       filters: [],
@@ -18,12 +15,9 @@ var VariableTab = React.createClass({
   },
   componentDidMount: function () {
     // get the filterTable field list
-    console.log('VT.componentDidMount');
     this.getfiltersList();
   },
   componentWillReceiveProps: function (nextProps) {
-    console.log('VT.componentWillReceiveProps');
-    console.log(nextProps);
     if (nextProps.hasOwnProperty('variable_type')) {
       console.log('todo... Change tab')
     }
@@ -63,8 +57,13 @@ var VariableTab = React.createClass({
     this.props.setFilter(formElement, value);
   },
   setGenomicRange: function(formElement, value) {
+    // To minimize the dataqueries, only call the function when a valid genomic range is typed
+    // or if the field is blanked
     if (/^chr[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$|^[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$/.test(value)) {
       this.props.setFilter(formElement, value);
+    }
+    if(value.length === 0) {
+      this.props.setFilter(formElement, null);
     }
   },
   render: function() {

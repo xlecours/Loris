@@ -8,11 +8,6 @@ var VariableTab = React.createClass({
     variableType: React.PropTypes.string.isRequired,
     module: React.PropTypes.string.isRequired
   },
-  getDefaultProps: function getDefaultProps() {
-    return { setFilter: function setFilter() {
-        return null;
-      } };
-  },
   getInitialState: function getInitialState() {
     return {
       filters: [],
@@ -24,12 +19,9 @@ var VariableTab = React.createClass({
   },
   componentDidMount: function componentDidMount() {
     // get the filterTable field list
-    console.log('VT.componentDidMount');
     this.getfiltersList();
   },
   componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-    console.log('VT.componentWillReceiveProps');
-    console.log(nextProps);
     if (nextProps.hasOwnProperty('variable_type')) {
       console.log('todo... Change tab');
     }
@@ -70,6 +62,9 @@ var VariableTab = React.createClass({
   setGenomicRange: function setGenomicRange(formElement, value) {
     if (/^chr[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$|^[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$/.test(value)) {
       this.props.setFilter(formElement, value);
+    }
+    if (value.length === 0) {
+      this.props.setFilter(formElement, null);
     }
   },
   render: function render() {

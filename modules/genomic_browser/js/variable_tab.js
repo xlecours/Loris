@@ -21,18 +21,26 @@ var VariableTab = React.createClass({
     // get the filterTable field list
     this.getfiltersList();
   },
-  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-    if (nextProps.hasOwnProperty('variable_type')) {
-      console.log('todo... Change tab');
+  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+    if (prevProps.variableType !== this.props.variableType) {
+      this.getfiltersList();
     }
   },
   getfiltersList: function getfiltersList() {
+    var queryString = new QueryString();
+    var queryStringObj = queryString.get();
+
     var that = this;
     var xhttp = new XMLHttpRequest();
 
     // Get variable_type to create tab labels
     xhttp.onreadystatechange = function () {
       var newState = {};
+
+      var queryString = new QueryString();
+
+      newState['queryString'] = queryString;
+
       if (xhttp.readyState === 4) {
         if (xhttp.status === 200) {
           var response = JSON.parse(xhttp.responseText);
@@ -60,6 +68,8 @@ var VariableTab = React.createClass({
     this.props.setFilter(formElement, value);
   },
   setGenomicRange: function setGenomicRange(formElement, value) {
+    // To minimize the dataqueries, only call the function when a valid genomic range is typed
+    // or if the field is blanked
     if (/^chr[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$|^[0-9]{1,2}:[0-9]{1,10}[-][0-9]{1,10}$/.test(value)) {
       this.props.setFilter(formElement, value);
     }

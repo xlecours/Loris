@@ -18,26 +18,13 @@ var GenomicBrowserApp = React.createClass({
   mixin: [React.addons.PureRenderMixin],
   getInitialState: function getInitialState() {
     return {
-      activeTab: 'Profile',
-      tabsNav: ['Profile', 'Dataset'],
+      activeTab: 'Dataset',
+      tabsNav: ['Dataset', 'Profile'],
       filter: {}
     };
   },
   componentDidMount: function componentDidMount() {
     var newState = {};
-    var formRefs = this.refs;
-    var queryString = new QueryString();
-    var queryStringObj = queryString.get();
-
-    // Populate input fields from query string
-    Object.keys(queryStringObj).map(function (key) {
-      if (formRefs[key].state && queryStringObj[key]) {
-        formRefs[key].state.value = queryStringObj[key];
-      }
-    });
-
-    newState['filter'] = queryStringObj;
-    newState['queryString'] = queryString;
 
     var that = this;
     var xhttp = new XMLHttpRequest();
@@ -63,6 +50,7 @@ var GenomicBrowserApp = React.createClass({
           newState['errorText'] = 'Can\'t get variable types: '.concat(xhttp.statusText);
         }
       }
+      newState['queryString'] = new QueryString();
       that.setState(newState);
     };
     var url = loris.BaseURL.concat('/genomic_browser/ajax/get_variable_type.php');

@@ -109,10 +109,18 @@ var ProfileTab = React.createClass({
 
     if (this.state.isLoaded) {
 
+      // Remove irrelevant filter keys
+      var filter = {};
+      Object.keys(this.props.filter).forEach(function(key) {
+        if (this.state.filter[key]) {
+          filter[key] = this.props.filter[key];
+        }
+      }, this);
+
       dataTable = <StaticDataTable
                     Headers={this.state.headers}
                     Data={this.state.data}
-                    Filter={this.props.filter}
+                    Filter={filter}
                     getFormattedCell={this.formatColumn}
                     ref='data_table'
                   />;
@@ -124,16 +132,16 @@ var ProfileTab = React.createClass({
                         </div>
                       </div>;
 
-      datasetCounts = [];
+      var datasetCounts = [];
       if (this.state.hasOwnProperty('variableTypes')) {
         datasetCounts = this.state.variableTypes.map(function(varType) {
-          var filter = this.headerToFilter(varType);
+          var variable_type = this.headerToFilter(varType);
           return <div className="col-md-4">
                    <SelectElement
                      name={filter}
                      label={varType}
                      options={this.getDistinctValues(varType)}
-                     value={this.getFilterValue(filter)}
+                     value={this.getFilterValue(variable_type)}
                      onUserInput={this.setFilter}
                      ref={filter}
                    />

@@ -14,7 +14,6 @@
  *  Main page: CNV. Submenu: SNP
  */
 
-require_once 'NDB_Menu_Filter.class.inc';
 /**
  * NDB_Menu_Filter_SNP_Browser Class
  *
@@ -27,7 +26,7 @@ require_once 'NDB_Menu_Filter.class.inc';
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt @GPLv3
  * @link     https://github.com/aces/Loris
 */
-class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
+class NDB_Menu_Genomic_Viewer extends NDB_Menu_Filter
 {
     /**
      * Overloading this method to allow access to site users (own site only)
@@ -194,10 +193,9 @@ class NDB_Menu_Lite_Viewer extends NDB_Menu_Filter
             array(
                 $baseurl . '/js/d3.min.js',
                 $baseurl . '/js/c3.min.js',
-                $baseurl . '/genomic_browser/js/jstat.min.js',
-                $baseurl . '/genomic_browser/js/genomic_browser.js',
-                $baseurl . '/genomic_browser/js/lite_viewer.js',
-                $baseurl . '/genomic_browser/js/lite_viewer_react_components.js',
+                $baseurl . '/genomic_viewer/js/jstat.min.js',
+                $baseurl . '/genomic_viewer/js/genomic_viewer_react_components.js',
+                $baseurl . '/genomic_viewer/js/genomic_viewer.js',
             )   
         );  
 

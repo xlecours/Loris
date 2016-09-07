@@ -27,6 +27,7 @@ Class TimePoint_List_ControlPanel extends Candidate
 {
     /**
      * The template data for Smarty
+     *
      * @var    array
      * @access private
      */

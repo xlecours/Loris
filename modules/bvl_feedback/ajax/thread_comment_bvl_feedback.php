@@ -16,12 +16,12 @@ ini_set('default_charset', 'utf-8');
 
 require "bvl_panel_ajax.php";
 
-$user =& User::singleton();
+$user     =& User::singleton();
 $username = $user->getUsername();
 
 $newEntryValues = array();
 
-if(isset($_POST['comment']) && isset($_POST['feedbackID'])){
+if(isset($_POST['comment']) && isset($_POST['feedbackID'])) {
     $newEntryValues = $feedbackThread->createEntry($_POST['feedbackID'], $_POST['comment'], $username);
 }
 

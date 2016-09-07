@@ -20,7 +20,8 @@ class NDB_Form_instrument_builder extends NDB_Form
 
     }
 
-    function getJSDependencies() {
+    function getJSDependencies()
+    {
         $factory = NDB_Factory::singleton();
         $baseurl = $factory->settings()->getBaseURL();
         $depends = parent::getJSDependencies();

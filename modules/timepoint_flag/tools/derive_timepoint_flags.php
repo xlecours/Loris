@@ -3,9 +3,9 @@
  * #!/data/web/neurodb/software/bin/php
  * derives exclusion flags and stores them into parameter_exclusion_session table
  * $Id: derive_timepoint_flags.php,v 3.17 2006/06/20 15:12:29 dario Exp $
- * 
+ *
  * PHP Version 5
- * 
+ *
  *  @category Main
  *  @package  Timepoint_Flag
  *  @author   dario <username@example.com>
@@ -327,7 +327,7 @@ fwrite(STDERR, "End \n");
 
 /**
 * Comments
-* 
+*
 * @param string $value   instrumentList
 * @param string $default listOfFlags
 *

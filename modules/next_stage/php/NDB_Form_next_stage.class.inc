@@ -1,6 +1,7 @@
 <?php
 /**
  * The forms for the start next stage menu
+ *
  * @package main
  */
 class NDB_Form_next_stage extends NDB_Form
@@ -13,60 +14,65 @@ class NDB_Form_next_stage extends NDB_Form
         $timePoint =& TimePoint::singleton($this->identifier);
 
         // check user permissions
-    	if (!$user->hasPermission('data_entry') || $user->getData('CenterID') != $timePoint->getData('CenterID')) {
+        if (!$user->hasPermission('data_entry') || $user->getData('CenterID') != $timePoint->getData('CenterID')) {
             return false;
         }
-		
+
         return $timePoint->isStartable();
     }
-    
-    
+
+
     function _process($values)
     {
         $timePoint =& TimePoint::singleton($this->identifier);
-        
+
         // figure out what the next stage should be
         $newStage = $timePoint->getNextStage();
-        
+
         // start that stage
         $timePoint->startStage($newStage);
-        
+
         // set the date for the new stage
         $timePoint->setData("Date_".$newStage, $values['date1']['Y'].'-'.$values['date1']['M'].'-'.$values['date1']['d']);
-        
+
         // set SubprojectID if applicable
         if(isset($values['SubprojectID'])) {
             $timePoint->setData('SubprojectID', $values['SubprojectID']);
         }
-        
+
         // set scan done if applicable
         if(isset($values['scan_done'])) {
             $timePoint->setData('Scan_done', $values['scan_done']);
         }
-        
+
         // create a new battery object && new battery
-        $battery = new NDB_BVL_Battery;
-        $candidate =& Candidate::singleton($timePoint->getCandID() );
+        $battery   = new NDB_BVL_Battery;
+        $candidate =& Candidate::singleton($timePoint->getCandID());
 
         $firstVisit = false;
-        $vLabel = $candidate->getFirstVisit();//get first visit for candidate 
-        if($vLabel ==  $timePoint->getVisitLabel()){
-            $firstVisit = true; //if current visit label is same as visit label returned must be first visit   
-        }  
-        
+        $vLabel     = $candidate->getFirstVisit();//get first visit for candidate
+        if($vLabel ==  $timePoint->getVisitLabel()) {
+            $firstVisit = true; //if current visit label is same as visit label returned must be first visit
+        }
+
          // select a specific time point (sessionID) for the battery
         $battery->selectBattery($timePoint->getData('SessionID'));
-        
+
         // add instruments to the time point (lower case stage)
-        $battery->createBattery($timePoint->getSubprojectID(), $newStage, $timePoint->getVisitLabel(), 
-                                $timePoint->getCenterID(), $firstVisit);
-        
+        $battery->createBattery(
+            $timePoint->getSubprojectID(),
+            $newStage,
+            $timePoint->getVisitLabel(),
+            $timePoint->getCenterID(),
+            $firstVisit
+        );
+
         //------------------------------------------------------------
 
-        $this->tpl_data['success'] = true;
+        $this->tpl_data['success']   = true;
         $this->tpl_data['sessionID'] = $this->identifier;
-        $this->tpl_data['candID'] = $timePoint->getCandID();
-        
+        $this->tpl_data['candID']    = $timePoint->getCandID();
+
         // freeze it, just in case
         //$this->form->freeze();
     }
@@ -74,16 +80,16 @@ class NDB_Form_next_stage extends NDB_Form
     function next_stage()
     {
         $timePoint =& TimePoint::singleton($this->identifier);
-        $config =& NDB_Config::singleton();
-        
-        $study = $config->getSetting('study');
+        $config    =& NDB_Config::singleton();
+
+        $study       = $config->getSetting('study');
         $dateOptions = array(
-                             'language'        => 'en',
-                             'format'          => 'YMd',
-                             'addEmptyOption'  => true,
-                             'minYear'         => $study['startYear'],
-                             'maxYear'         => $study['endYear']
-                             );
+                        'language'       => 'en',
+                        'format'         => 'YMd',
+                        'addEmptyOption' => true,
+                        'minYear'        => $study['startYear'],
+                        'maxYear'        => $study['endYear'],
+                       );
 
         $this->addHidden('candID', $timePoint->getData('CandID'));
         $this->addHidden('sessionID', $timePoint->getData('SessionID'));
@@ -120,11 +126,9 @@ class NDB_Form_next_stage extends NDB_Form
         $config =& NDB_Config::singleton();
 
         $timePoint =& TimePoint::singleton($this->identifier);
-        $candID = $timePoint->getCandID();
+        $candID    = $timePoint->getCandID();
 
         $candidate =& Candidate::singleton($candID);
-
-        
 
         $errors = array();
         // check date pairs
@@ -157,9 +161,10 @@ class NDB_Form_next_stage extends NDB_Form
             if ($config->getSetting('allowPrenatalTimepoints')!="true" && strcmp($date, $candidateBirthDate) < 1) {
                 $errors['date1'] .= "Date of Visit is less than Date of Birth/EDC. \n";
             }
-        } 
+        }
 
-        if(empty($errors)) return true;
+        if(empty($errors)) { return true;
+        }
         return $errors;
     }
 }

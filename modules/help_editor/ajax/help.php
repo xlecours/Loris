@@ -1,7 +1,7 @@
 <?php
 /**
  * This file retrieves content for specific help section
- * and returns a json object 
+ * and returns a json object
  *
  * PHP Version 5
  *
@@ -29,9 +29,9 @@ if (empty($data['content'])) {
 }
 if (empty($data['updated']) ) {
     $data['updated'] = "-";
-    // if document was never updated should display date created  
+    // if document was never updated should display date created
     if (!empty($data['created'])) {
-        $data['updated'] = $data['created']; 
+        $data['updated'] = $data['created'];
     }
 }
 print json_encode($data);

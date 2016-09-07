@@ -111,7 +111,8 @@ class dataIntegrityFlagTestIntegrationTest extends LorisIntegrationTest
           );
           $this->resetPermissions();
     }
-   /** testing filter with user
+    /**
+ * testing filter with user
      *
      * @return none
      */
@@ -146,7 +147,7 @@ class dataIntegrityFlagTestIntegrationTest extends LorisIntegrationTest
           );
           $this->resetPermissions();
     }
-   /**
+    /**
      * testing filter with visit label
      *
      * @return none

@@ -2,6 +2,7 @@
 
 /**
  * The forms for the new profile menu
+ *
  * @package main
  */
 class NDB_Form_create_timepoint extends NDB_Form
@@ -19,7 +20,7 @@ class NDB_Form_create_timepoint extends NDB_Form
         $candidate =& Candidate::singleton($this->identifier);
 
         // check user permissions
-    	return ($user->hasPermission('data_entry') && $user->getData('CenterID') == $candidate->getData('CenterID'));
+        return ($user->hasPermission('data_entry') && $user->getData('CenterID') == $candidate->getData('CenterID'));
     }
 
     function _getDefaults()
@@ -43,48 +44,46 @@ class NDB_Form_create_timepoint extends NDB_Form
     function create_timepoint()
     {
         $config =& NDB_Config::singleton();
-        if(!empty($_GET['subprojectID']) && is_numeric($_GET['subprojectID'])){
-            $this->subprojectID=$_GET['subprojectID'];
+        if(!empty($_GET['subprojectID']) && is_numeric($_GET['subprojectID'])) {
+            $this->subprojectID =$_GET['subprojectID'];
         }
 
         // cand ID
         $this->tpl_data['candID'] = $this->identifier;
         $this->addHidden('candID', $this->identifier);
-        $candidate =& Candidate::singleton($this->identifier);
-        $subprojList = null; 
+        $candidate   =& Candidate::singleton($this->identifier);
+        $subprojList = null;
         //List of valid subprojects for a given project
         if($config->getSetting('useProjects') === 'true') {
             $subprojList = $candidate->getValidSubprojects();
         }
         // List of all subprojects from config file
-        
 
         //Loop through the subprojects to get an id out and to create the subproject drop down.
-        $allSubprojects = Utility::getSubprojectList();
+        $allSubprojects  = Utility::getSubprojectList();
         $sp_labelOptions = array(null => '');
 
         foreach($allSubprojects as $subprojectID => $title) {
-            if( ! empty($subprojList)) {
-                if(in_array($subprojectID, $subprojList)){
+            if(! empty($subprojList)) {
+                if(in_array($subprojectID, $subprojList)) {
                     $sp_labelOptions[$subprojectID] = $title;
                 }
             } else {
                 $sp_labelOptions[$subprojectID] = $title;
             }
         }
-        
-        $attributes=array("onchange"=>"location.href='?test_name=create_timepoint&candID=".$this->identifier."&identifier=".$this->identifier."&subprojectID='+this[this.selectedIndex].value;");
+
+        $attributes =array("onchange" => "location.href='?test_name=create_timepoint&candID=".$this->identifier."&identifier=".$this->identifier."&subprojectID='+this[this.selectedIndex].value;");
         $this->addSelect('subprojectID', 'Subproject', $sp_labelOptions, $attributes);
         $this->addRule('subprojectID', 'A Subproject ID is required', 'required');
-        $this->_setDefaults(array("subprojectID"=>$this->subprojectID));
-        
-        
+        $this->_setDefaults(array("subprojectID" => $this->subprojectID));
+
         // visit label
         $visitLabelSettings = $config->getSetting('visitLabel');
-        $visitLabelAdded = false;
+        $visitLabelAdded    = false;
 
         foreach(Utility::toArray($visitLabelSettings) AS $visitLabel){
-            if($visitLabel['@']['subprojectID']==$this->subprojectID){
+            if($visitLabel['@']['subprojectID']==$this->subprojectID) {
                 if ($visitLabel['generation'] == 'user') {
                     $this->addBasicText('visitLabel', 'Visit label', array('size' => $visitLabel['length'] + 1, 'maxlength' => $visitLabel['length']));
                     $visitLabelAdded = true;
@@ -98,7 +97,7 @@ class NDB_Form_create_timepoint extends NDB_Form
                 }
             }
         }
-    
+
         // label rules
         if ($visitLabelAdded) {
             $this->addRule('visitLabel', 'Visit label is required', 'required');
@@ -106,22 +105,22 @@ class NDB_Form_create_timepoint extends NDB_Form
 
         $this->form->addFormRule(array(&$this, '_validate'));
     }
-    
-    
-    
+
+
+
     function _validate($values)
     {
         $config =& NDB_Config::singleton();
         $visitLabelSettings = $config->getSetting('visitLabel');
         foreach(Utility::toArray($visitLabelSettings) AS $visitLabel){
-            if($visitLabel['@']['subprojectID']==$values['subprojectID']){
-                $visitLabelSettings=$visitLabel;
+            if($visitLabel['@']['subprojectID']==$values['subprojectID']) {
+                $visitLabelSettings =$visitLabel;
                 break;
             }
         }
-        
+
         $errors = array();
-        
+
         // This can happen if the user quickly clicks "Create Time Point" before the page has loaded
         // and the Visit Label dropdown hasn't been selected yet. The page will create "V1" when this
         // is the case without this check.

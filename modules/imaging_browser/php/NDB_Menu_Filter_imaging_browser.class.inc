@@ -66,7 +66,7 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
             WHEN '' THEN 'new'
             ELSE ''
             END";
-        $T1PassSubquery = "CASE 
+        $T1PassSubquery  = "CASE 
             COALESCE((
                 SELECT MIN(files_qcstatus.QCStatus+0) 
                 FROM files JOIN files_qcstatus 
@@ -78,7 +78,7 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
             WHEN 2 THEN 'Failed'
             END
             ";
-        $T2PassSubquery = "CASE 
+        $T2PassSubquery  = "CASE 
             COALESCE((
                 SELECT MIN(files_qcstatus.QCStatus+0) 
                 FROM files JOIN files_qcstatus 
@@ -113,76 +113,80 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
             f.AcquisitionProtocolID not in (1, 2, 3, 52)";
 
         $config =& NDB_Config::singleton();
-        $user =& User::singleton();
-        $DB = Database::singleton();
+        $user   =& User::singleton();
+        $DB     = Database::singleton();
         if (!$user->hasPermission('imaging_browser_view_allsites')) {
             $this->query .= " AND c.CenterID=" . $DB->quote($user->getCenterID());
         }
 
         $this->columns = array(
-            'p.MRI_alias as Site',
-            'c.PSCID as PSCID',
-            'c.CandID as DCCID',
-            's.visit_label as Visit_Label',
-            "$PendingFailSubquery as QC_Status",
-            'MIN(md.AcquisitionDate) as First_Acq_Date',
-            'FROM_UNIXTIME(MIN(f.InsertTime)) as Insertion_Date',
-            'FROM_UNIXTIME(MAX(fqc.QCLastChangeTime)) as Last_QC',
-            "$NewDataSubquery as New_Data",
-            "$T1PassSubquery as T1_Passed",
-            "$T2PassSubquery as T2_Passed",
-            "GROUP_CONCAT(DISTINCT OutputType) as Links",
-            's.ID as sessionID'
-        );
+                          'p.MRI_alias as Site',
+                          'c.PSCID as PSCID',
+                          'c.CandID as DCCID',
+                          's.visit_label as Visit_Label',
+                          "$PendingFailSubquery as QC_Status",
+                          'MIN(md.AcquisitionDate) as First_Acq_Date',
+                          'FROM_UNIXTIME(MIN(f.InsertTime)) as Insertion_Date',
+                          'FROM_UNIXTIME(MAX(fqc.QCLastChangeTime)) as Last_QC',
+                          "$NewDataSubquery as New_Data",
+                          "$T1PassSubquery as T1_Passed",
+                          "$T2PassSubquery as T2_Passed",
+                          "GROUP_CONCAT(DISTINCT OutputType) as Links",
+                          's.ID as sessionID',
+                         );
 
         $this->order_by = 'c.PSCID, s.Visit_label';
         $this->group_by = 's.ID';
-        $this->headers = array(
-            'Site',
-            'PSCID',
-            'DCCID',
-            'Visit_Label',
-            'QC_Status',
-            'First_Acq_Date',
-            'Insertion_Date_and_Time',
-            'Last_QC',
-            'New_Data',
-            'T1_Passed',
-            'T2_Passed',
-            'Links',
-            'sessionID'
-        );
+        $this->headers  = array(
+                           'Site',
+                           'PSCID',
+                           'DCCID',
+                           'Visit_Label',
+                           'QC_Status',
+                           'First_Acq_Date',
+                           'Insertion_Date_and_Time',
+                           'Last_QC',
+                           'New_Data',
+                           'T1_Passed',
+                           'T2_Passed',
+                           'Links',
+                           'sessionID',
+                          );
 
         // Insert project column after DCCID, if useProject config is enabled
         if ($config->getSetting('useProjects') === "true") {
-            array_splice($this->columns, 3, 0,
-                '(SELECT Name FROM Project WHERE ProjectID=c.ProjectID) as project');
+            array_splice(
+                $this->columns,
+                3,
+                0,
+                '(SELECT Name FROM Project WHERE ProjectID=c.ProjectID) as project'
+            );
             array_splice($this->headers, 3, 0, 'Project');
         }
 
         $this->validFilters = array(
-            'c.PSCID',
-            's.Visit_label',
-            'c.CandID',
-            'c.ProjectID',
-            'c.CenterID',
-            's.MRIQCStatus',
-            'pending',
-            'f.AcquisitionProtocolID'
-        );
+                               'c.PSCID',
+                               's.Visit_label',
+                               'c.CandID',
+                               'c.ProjectID',
+                               'c.CenterID',
+                               's.MRIQCStatus',
+                               'pending',
+                               'f.AcquisitionProtocolID',
+                              );
 
-        $this->formToFilter = array(
-            'pscid' => 'c.PSCID',
-            'VL'    => 's.Visit_label',
-            'DCCID'=> 'c.CandID',
-            'ProjectID' => 'c.ProjectID',
-            'SiteID' => 'c.CenterID',
-            'VisitQCStatus' => 's.MRIQCStatus',
-            'Pending' => 'pending',
-            'Scan_type'=>'f.AcquisitionProtocolID'
-        );
+        $this->formToFilter    = array(
+                                  'pscid'         => 'c.PSCID',
+                                  'VL'            => 's.Visit_label',
+                                  'DCCID'         => 'c.CandID',
+                                  'ProjectID'     => 'c.ProjectID',
+                                  'SiteID'        => 'c.CenterID',
+                                  'VisitQCStatus' => 's.MRIQCStatus',
+                                  'Pending'       => 'pending',
+                                  'Scan_type'     => 'f.AcquisitionProtocolID',
+                                 );
         $this->EqualityFilters = array('f.AcquisitionProtocolID');
-        $this->searchKeyword    = array();
+        $this->searchKeyword   = array();
 
         $this->tpl_data['numTimepoints'] = 0;
 
@@ -212,7 +216,8 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
         if ($user->hasPermission('imaging_browser_view_allsites')) {
             // get the list of study sites - to be replaced by the Site object
             $list_of_sites = Utility::getSiteList();
-            if(is_array($list_of_sites)) $list_of_sites = array('' => 'All') + $list_of_sites;
+            if(is_array($list_of_sites)) { $list_of_sites = array('' => 'All') + $list_of_sites;
+            }
         }
         else {
             // allow only to view own site data
@@ -222,20 +227,30 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
             }
         }
 
-        $DB = Database::singleton();
+        $DB    = Database::singleton();
         $allAr = array('' => 'All');
-        $this->addBasicText('pscid', 'PSCID', array("size"=>10,"maxlength"=>25));
+        $this->addBasicText('pscid', 'PSCID', array("size" => 10, "maxlength" => 25));
         $this->addBasicText(
-            'VL', 'Visit Label', array('size' => "10", "maxlength"=>"25")
+            'VL',
+            'Visit Label',
+            array(
+             'size'      => "10",
+             "maxlength" => "25",
+            )
         );
         $this->addBasicText(
-            'DCCID', 'DCCID', array('size' => 10, "maxlength" => 25)
+            'DCCID',
+            'DCCID',
+            array(
+             'size'      => 10,
+             "maxlength" => 25,
+            )
         );
 
         $config =& NDB_Config::singleton();
         if ($config->getSetting('useProjects') === "true") {
             $list_of_projects = $allAr;
-            $projectList = Utility::getProjectList();
+            $projectList      = Utility::getProjectList();
             foreach ($projectList as $key => $value) {
                 $list_of_projects[$key] =$value;
             }
@@ -246,36 +261,47 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
         $this->addSelect(
             'VisitQCStatus',
             'QC Status',
-            array(''=>'All', 'Pass'=>'Pass', 'Fail'=>'Fail')
+            array(
+             ''     => 'All',
+             'Pass' => 'Pass',
+             'Fail' => 'Fail',
+            )
         );
 
         $this->addSelect(
             'Pending',
             'Pending and New',
-            array(''=>'All', 'P'=>'Pending', 'N'=>'New', 'PN'=>'Pending or New')
+            array(
+             ''   => 'All',
+             'P'  => 'Pending',
+             'N'  => 'New',
+             'PN' => 'Pending or New',
+            )
         );
 
         //query to get scan types that exist for the project
-        $types_q = $DB->pselect(
-                "SELECT ID, Scan_type FROM mri_scan_type mri
+        $types_q    = $DB->pselect(
+            "SELECT ID, Scan_type FROM mri_scan_type mri
                  JOIN files f ON (f.AcquisitionProtocolID=mri.ID)",
-                 array()
+            array()
         );
         $scan_types = $allAr;
         foreach ($types_q as $row) {
-            $type                   = $row['Scan_type'];
+            $type = $row['Scan_type'];
             $scan_types[$row['ID']] = $type;
         }
         $this->addSelect('Scan_type', 'Sequence Type', $scan_types);
 
         $outputTypes = $DB->pselect(
             "SELECT DISTINCT OutputType AS outputType 
-            FROM files WHERE FileType='mnc' AND OutputType!='native'", array()
+            FROM files WHERE FileType='mnc' AND OutputType!='native'",
+            array()
         );
 
         $this->tpl_data['outputTypes'] = array_merge(
             array(
-                array('outputType'=>'native'),array('outputType'=>'selected')
+             array('outputType' => 'native'),
+             array('outputType' => 'selected'),
             ),
             $outputTypes
         );
@@ -284,7 +310,10 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
         $this->addBasicText(
             'keyword',
             'Search keyword in Comments',
-            array("size"=>10,"maxlength"=>25)
+            array(
+             "size"      => 10,
+             "maxlength" => 25,
+            )
         );
 
         $this->tpl_data['backURL'] = $_SERVER['REQUEST_URI'];
@@ -308,11 +337,11 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
                 if (in_array($field, $this->CheckboxFilters) && $val) {
                     $query .= " AND $field";
                 } elseif (strtolower(substr($field, -8)) == 'centerid'
-                        || strtolower(substr($field, -10)) == 'categoryid'
-                        || strtolower(substr($field, -6)) == 'gender'
-                        || (isset($this->EqualityFilters)
-                        && in_array($field, $this->EqualityFilters))
-                        ) {
+                    || strtolower(substr($field, -10)) == 'categoryid'
+                    || strtolower(substr($field, -6)) == 'gender'
+                    || (isset($this->EqualityFilters)
+                    && in_array($field, $this->EqualityFilters))
+                ) {
                     $query .= " AND $field = :v_$prepared_key";
                     // $qparams["v_$prepared_key"] = $val;
                 } else {
@@ -353,7 +382,7 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
      */
     function toArray()
     {
-        $data   = parent::toArray();
+        $data  = parent::toArray();
         $index = array_search('SessionID', $data['Headers']);
         if ($index !== false) {
             $_SESSION['State']->setProperty(
@@ -369,14 +398,13 @@ class NDB_Menu_Filter_Imaging_Browser extends NDB_Menu_Filter
      *
      * @return array of javascript to be inserted
      */
-    function getJSDependencies() {
+    function getJSDependencies()
+    {
         $factory = NDB_Factory::singleton();
         $baseurl = $factory->settings()->getBaseURL();
         return array_merge(
             parent::getJSDependencies(),
-            array(
-                $baseurl . "/imaging_browser/js/columnFormatter.js"
-            )
+            array($baseurl . "/imaging_browser/js/columnFormatter.js")
         );
     }
 }

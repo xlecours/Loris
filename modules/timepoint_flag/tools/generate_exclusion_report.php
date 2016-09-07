@@ -1,13 +1,13 @@
 <?php
 /**
  #!/data/web/neurodb/software/bin/php
- * This reports generates a tab separated file, one row per subject, one column per 
+ * This reports generates a tab separated file, one row per subject, one column per
  * exclusion criteria from the parameter_exclusion table.
  * temporary constraint is: Objective =1, VisitNo = 1
  * $Id: generate_exclusion_report.php,v 3.9 2006/04/07 12:58:41 jharlap Exp $
- * 
+ *
  * PHP Version 5
- * 
+ *
  *  @category Main
  *  @package  Timepoint_Flag
  *  @author   jharlap <username@example.com>
@@ -93,12 +93,26 @@ $db->select($query, $result);
 
 // set array of instrument used for exclusion
 $instrumentLabels = array(
-                     "BTSI_Y1","FTSI_Y1","Neurological_exam","WASI","WJ-III",
-                     "DAS","DISC","CBCL","FIGS_Y1",
+                     "BTSI_Y1",
+                     "FTSI_Y1",
+                     "Neurological_exam",
+                     "WASI",
+                     "WJ-III",
+                     "DAS",
+                     "DISC",
+                     "CBCL",
+                     "FIGS_Y1",
                     );
 $instrumentList   = array(
-                     "brief_interview","full_telephone_screening_interview_year1",
-                     "neuro_obj1","wasi","wj3","das","disc","cbcl","figs_parent",
+                     "brief_interview",
+                     "full_telephone_screening_interview_year1",
+                     "neuro_obj1",
+                     "wasi",
+                     "wj3",
+                     "das",
+                     "disc",
+                     "cbcl",
+                     "figs_parent",
                     );
 
 $TAB     = "\t";
@@ -403,7 +417,7 @@ fwrite(STDERR, "\n end");
 
 /**
 * Comments
-* 
+*
 * @param array $instrumentList instrumentList
 * @param array $listOfFlags    listOfFlags
 * @param array $listOfTriggers listOfTriggers

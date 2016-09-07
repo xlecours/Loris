@@ -18,12 +18,17 @@ $results = $cdb->queryView(
     "DQG-2.0",
     "sessions",
     array(
-        "reduce" => "true",
-        "group" => "true",
+     "reduce" => "true",
+     "group"  => "true",
     )
 );
 
-$sessionResults = array_map(function($element) { return $element['key']; }, $results);
+$sessionResults = array_map(
+    function ($element) {
+        return $element['key'];
+    },
+    $results
+);
 
 print json_encode($sessionResults);
 

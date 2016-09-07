@@ -52,32 +52,32 @@ class NDB_Menu_Filter_survey_accounts extends NDB_Menu_Filter
             JOIN candidate c ON (c.CandID=s.CandID)";
 
         // set the class variables
-        $this->columns = array(
-            'c.PSCID AS PSCID',
-            's.Visit_label AS Visit',
-            'p.Email as Email',
-            'p.Test_name as SurveyName',
-            'p.OneTimePassword as URL',
-            'p.Status'
-        );
-        $this->query = $query;
-        $this->order_by = 'PSCID';
+        $this->columns      = array(
+                               'c.PSCID AS PSCID',
+                               's.Visit_label AS Visit',
+                               'p.Email as Email',
+                               'p.Test_name as SurveyName',
+                               'p.OneTimePassword as URL',
+                               'p.Status',
+                              );
+        $this->query        = $query;
+        $this->order_by     = 'PSCID';
         $this->validFilters = array(
-            'c.PSCID',
-            's.Visit_label',
-            'p.Email',
-            'p.Test_name',
-            'p.OneTimePassword',
-            'p.Status',
-            'p.Test_name'
-        );
+                               'c.PSCID',
+                               's.Visit_label',
+                               'p.Email',
+                               'p.Test_name',
+                               'p.OneTimePassword',
+                               'p.Status',
+                               'p.Test_name',
+                              );
         $this->formToFilter = array(
-            'PSCID' => 'c.PSCID',
-            'VisitLabel' => 's.Visit_label',
-            'Email' => 'p.Email',
-            'key' => 'p.OneTimePassword',
-            'Instrument' => 'p.Test_name'
-        );
+                               'PSCID'      => 'c.PSCID',
+                               'VisitLabel' => 's.Visit_label',
+                               'Email'      => 'p.Email',
+                               'key'        => 'p.OneTimePassword',
+                               'Instrument' => 'p.Test_name',
+                              );
         return true;
     }
 
@@ -122,7 +122,7 @@ class NDB_Menu_Filter_survey_accounts extends NDB_Menu_Filter
         return array_merge(
             $deps,
             array(
-                $baseurl . "/survey_accounts/js/survey_accounts_helper.js",
+             $baseurl . "/survey_accounts/js/survey_accounts_helper.js",
             )
         );
     }

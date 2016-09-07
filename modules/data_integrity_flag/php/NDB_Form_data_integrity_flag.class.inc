@@ -18,7 +18,7 @@ class NDB_Form_data_integrity_flag extends NDB_Form
     function _getDefaults()
     {
         $defaults = array();
-        $DB =& Database::singleton();
+        $DB       =& Database::singleton();
 
         /////////////////////////////////////////////////////
         ///////////////Constructs the where clause...
@@ -28,14 +28,14 @@ class NDB_Form_data_integrity_flag extends NDB_Form
         $extra_where .= $this->AddWhere("dataflag_userid", 'users');
 
         //construct the query
-        if (($extra_where) !=null){
+        if (($extra_where) !=null) {
             $query = "SELECT * FROM data_integrity_flag
                 WHERE 1=1 $extra_where ORDER BY dataflag_date";
             $DB->select($query,  $info);
 
-            $defaults["instrument"] = $_REQUEST['instrument'];
+            $defaults["instrument"]  = $_REQUEST['instrument'];
             $defaults["visit_label"] = $_REQUEST['visit_label'];
-            $defaults["users"] = $_REQUEST['users'];
+            $defaults["users"]       = $_REQUEST['users'];
         }
         return $defaults;
     }
@@ -44,27 +44,26 @@ class NDB_Form_data_integrity_flag extends NDB_Form
     {
 
         // get the userID
-        $user =& User::singleton();
+        $user      =& User::singleton();
         $user_name = $user->getUsername();
 
         $instrument = $this->getTestNameusingMappedName($_REQUEST['instrument']); //get actual test_name
 
         $visit_label = $_REQUEST['visit_label'];
         //save the date, flag status and comment in the data_integrity_flag table
-        $DB =& Database::singleton();
+        $DB      =& Database::singleton();
         $comment = $values['comment'];
-
 
         $date = sprintf("%04d-%02d-%02d", $values['date']['Y'], $values['date']['M'], $values['date']['d']);
         if($date == '0000-00-00') {
-            $date = NULL;
+            $date = null;
         }
 
         $flag = $values['flag_status'];
 
         //$instrument=
-        $sucess =  $DB->update('data_integrity_flag',array('latest_entry'=>0),array('dataflag_instrument' => $instrument, 'dataflag_visitlabel'=>$visit_label));
-        $success = $DB->insert("data_integrity_flag", array('dataflag_instrument'=>$instrument,'dataflag_visitlabel'=>$visit_label,'dataflag_comment'=>$comment,'dataflag_date'=>$date,'dataflag_status'=>$flag,'latest_entry'=>1,'dataflag_userid'=>$user_name));
+        $sucess  =  $DB->update('data_integrity_flag', array('latest_entry' => 0), array('dataflag_instrument' => $instrument, 'dataflag_visitlabel' => $visit_label));
+        $success = $DB->insert("data_integrity_flag", array('dataflag_instrument' => $instrument, 'dataflag_visitlabel' => $visit_label, 'dataflag_comment' => $comment, 'dataflag_date' => $date, 'dataflag_status' => $flag, 'latest_entry' => 1, 'dataflag_userid' => $user_name));
 
         $this->tpl_data['success'] = true;
     }
@@ -74,33 +73,30 @@ class NDB_Form_data_integrity_flag extends NDB_Form
     {
 
         //initializations
-        $DB =& Database::singleton();
+        $DB          =& Database::singleton();
         $extra_where = '';
-        $conflicts = array();
-        $smarty = new Smarty_neurodb();
-        $config =& NDB_Config::singleton();
-        $study = $config->getSetting('study');
-        $instrument = $this->getTestNameusingMappedName($_REQUEST['instrument']); //converts the full_name into the test_name
+        $conflicts   = array();
+        $smarty      = new Smarty_neurodb();
+        $config      =& NDB_Config::singleton();
+        $study       = $config->getSetting('study');
+        $instrument  = $this->getTestNameusingMappedName($_REQUEST['instrument']); //converts the full_name into the test_name
 
-        $visit_array=Utility::getExistingVisitLabels();
-        $visit_array = array_combine($visit_array,$visit_array);
-        $visit_array = array_merge(array('all_visits'=>"All Visits"),$visit_array);
+        $visit_array =Utility::getExistingVisitLabels();
+        $visit_array = array_combine($visit_array, $visit_array);
+        $visit_array = array_merge(array('all_visits' => "All Visits"), $visit_array);
 
         //Menu Filters
         $this->tpl_data['visitLabels'] = $visit_array;
         $this->tpl_data['visit_label'] = $_REQUEST['visit_label'];
-        $this->tpl_data['test_name'] = $instrument;
-        $this->addSelect('users','Users',array_merge(array(''=>'All Users'),$this->getDIUsers()),array('id'=>'users'));
+        $this->tpl_data['test_name']   = $instrument;
+        $this->addSelect('users', 'Users', array_merge(array('' => 'All Users'), $this->getDIUsers()), array('id' => 'users'));
 
-
-
-
-        $this->form->addFormRule(array(&$this,'_validate'));
+        $this->form->addFormRule(array(&$this, '_validate'));
 
         /////////////////////////////////////////////////////
         ///////////////Constructs the where clause...
         ////////////////////////////////////////////////////////
-        $extra_where = null;
+        $extra_where  = null;
         $extra_where .= $this->AddWhere("dataflag_visitlabel", 'visit_label');
         $extra_where .= $this->AddWhere("dataflag_instrument", 'instrument');
         $extra_where .= $this->AddWhere("dataflag_userid", 'users');
@@ -112,29 +108,27 @@ class NDB_Form_data_integrity_flag extends NDB_Form
         $DB->select($query,  $info);
         //}
 
-
-
         ////////////////////////////////////////////////////////
         /////////create the quickform elements/////////////////
         ////////////////////////////////////////////////////////
         $dateOptions = array(
-                'language'        => 'en',
-                'format'          => 'YMd',
-                'addEmptyOption'  => true,
-                'minYear'         => $study['startYear'],
-                'maxYear'         => $study['endYear']
-                );
+                        'language'       => 'en',
+                        'format'         => 'YMd',
+                        'addEmptyOption' => true,
+                        'minYear'        => $study['startYear'],
+                        'maxYear'        => $study['endYear'],
+                       );
 
         $this->addBasicDate('date', "Date:", $dateOptions); //date drop down
         $flag_status_list = array(
-            '' => null,
-            "1" => '1- Ready For Review',
-            "2" => '2- Review Completed',
-            "3" => '3- Feedbacks Closed',
-            "4" => '4- Finalization'
-        );
+                             ''  => null,
+                             "1" => '1- Ready For Review',
+                             "2" => '2- Review Completed',
+                             "3" => '3- Feedbacks Closed',
+                             "4" => '4- Finalization',
+                            );
         $this->addSelect('flag_status', 'Flag Status:', $flag_status_list); //flag status
-        $this->addBasicTextArea('comment','Comment:',array('rows' => 2, 'cols' => 20));//comment box
+        $this->addBasicTextArea('comment', 'Comment:', array('rows' => 2, 'cols' => 20));//comment box
 
         //static or hiddent elements
         $this->form->addElement("static", "instrument", "Instrument: ");//comment box
@@ -146,7 +140,7 @@ class NDB_Form_data_integrity_flag extends NDB_Form
 
         //Show the number of generated results...
         //If there are no data print a message to that effect
-        if(empty($info)){
+        if(empty($info)) {
             $this->form->addElement('static', "status", "No matching criteria found.");
             return;
         } else {
@@ -154,18 +148,18 @@ class NDB_Form_data_integrity_flag extends NDB_Form
         }
         //Loop through the conflicts and add a row per
         foreach($info AS $data) {
-            $this->tpl_data['elements_list_names'] [] = $data['dataflag_id'];
-            $full_name = $DB->pselectOne("SELECT Full_name from test_names where Test_name = :tname",array('tname'=>$data['dataflag_instrument']));
-            $this->tpl_data['elements_array'][$data['dataflag_id']]['date']= $data['dataflag_date'];
-            $this->tpl_data['elements_array'][$data['dataflag_id']]['flag'] = $flag_status_list[$data['dataflag_status']];
-            $this->tpl_data['elements_array'][$data['dataflag_id']]['comment']= $data['dataflag_comment'];
-            $this->tpl_data['elements_array'][$data['dataflag_id']]['instrument']= $data['dataflag_instrument'];
-            $this->tpl_data['elements_array'][$data['dataflag_id']]['full_name']= $full_name;
-            $this->tpl_data['elements_array'][$data['dataflag_id']]['visit_label']= $data['dataflag_visitlabel'];
-            $this->tpl_data['elements_array'][$data['dataflag_id']]['userid']= $data['dataflag_userid'];
-            
+            $this->tpl_data['elements_list_names'][] = $data['dataflag_id'];
+            $full_name = $DB->pselectOne("SELECT Full_name from test_names where Test_name = :tname", array('tname' => $data['dataflag_instrument']));
+            $this->tpl_data['elements_array'][$data['dataflag_id']]['date']        = $data['dataflag_date'];
+            $this->tpl_data['elements_array'][$data['dataflag_id']]['flag']        = $flag_status_list[$data['dataflag_status']];
+            $this->tpl_data['elements_array'][$data['dataflag_id']]['comment']     = $data['dataflag_comment'];
+            $this->tpl_data['elements_array'][$data['dataflag_id']]['instrument']  = $data['dataflag_instrument'];
+            $this->tpl_data['elements_array'][$data['dataflag_id']]['full_name']   = $full_name;
+            $this->tpl_data['elements_array'][$data['dataflag_id']]['visit_label'] = $data['dataflag_visitlabel'];
+            $this->tpl_data['elements_array'][$data['dataflag_id']]['userid']      = $data['dataflag_userid'];
+
             //$this->tpl_data['elements_array'][$data['dataflag_id']]['dc_open_feedback']= $data['dataflag_dc_open_feedback'];
-            $this->tpl_data['elements_array'][$data['dataflag_id']]['dc_open_feedback']= $data['dataflag_fbcreated'] - $data['dataflag_fbclosed']-$data['dataflag_fbcomment'];
+            $this->tpl_data['elements_array'][$data['dataflag_id']]['dc_open_feedback'] = $data['dataflag_fbcreated'] - $data['dataflag_fbclosed']-$data['dataflag_fbcomment'];
         }
     }
 
@@ -173,24 +167,24 @@ class NDB_Form_data_integrity_flag extends NDB_Form
      * AddWhere
      * Constructs the query....
      *
-     * @param unknown_type $Column
-     * @param unknown_type $Filter
+     * @param  unknown_type $Column
+     * @param  unknown_type $Filter
      * @return unknown
      */
 
-    function AddWhere($Column, $Filter) {
+    function AddWhere($Column, $Filter)
+    {
         // create Database object
         $DB = Database::singleton();
 
         if(!empty($_REQUEST[$Filter]) && $_REQUEST[$Filter] !=='All Instruments' && $_REQUEST[$Filter] !=='No instruments for this visit' &&  $_REQUEST[$Filter] !=='All Visits') {
 
-            if ($Filter =='instrument'){
+            if ($Filter =='instrument') {
                 $test_name = $this->getTestNameusingMappedName($_REQUEST[$Filter]); //get actual test_name
                 return " AND $Column LIKE " . $DB->quote($test_name);
             }
             return " AND $Column LIKE " . $DB->quote($_REQUEST[$Filter]);
         }
-
 
         return '';
     }
@@ -198,13 +192,14 @@ class NDB_Form_data_integrity_flag extends NDB_Form
     /**
      * _validate
      *
-     * @param unknown_type $fields
+     * @param  unknown_type $fields
      * @return unknown
      */
-    function _validate($fields){
-        $errors=array();
-        if ((preg_match('/All/',$_REQUEST['instrument'],$matches)) || (preg_match('/All/',$_REQUEST['visit_label'],$matches))){
-            $errors['comment']= 'An Instrument/Vist must be selected';
+    function _validate($fields)
+    {
+        $errors =array();
+        if ((preg_match('/All/', $_REQUEST['instrument'], $matches)) || (preg_match('/All/', $_REQUEST['visit_label'], $matches))) {
+            $errors['comment'] = 'An Instrument/Vist must be selected';
         }
 
         // create Database object
@@ -214,33 +209,33 @@ class NDB_Form_data_integrity_flag extends NDB_Form
 
         foreach ($fields as $field=>$value){
 
-            if (preg_match('/date/',$field,$matches)){
-                if((($value['Y'] == "")&&($value['M'] == "")&&($value['d'] == ""))){
-                    $errors[$field]= 'Date is required';
+            if (preg_match('/date/', $field, $matches)) {
+                if((($value['Y'] == "")&&($value['M'] == "")&&($value['d'] == ""))) {
+                    $errors[$field] = 'Date is required';
                 }
-                if ($value !=null){
+                if ($value !=null) {
                     // if not answered is not selected, time cannot be empty
 
-                    if((($value['Y'] != "")||($value['M'] != "")||($value['d'] != ""))){
-                        if($value['Y'] == ""){
+                    if((($value['Y'] != "")||($value['M'] != "")||($value['d'] != ""))) {
+                        if($value['Y'] == "") {
                             $errors[$field] .= "$field_name: Please fill in the administration date for all 3 fields";
-                        } else if($value['M'] == ""){
+                        } else if($value['M'] == "") {
                             $errors[$field] .= "$field_name: Please fill in the administration date for all 3 fields";
-                        } else if($value['d'] == ""){
+                        } else if($value['d'] == "") {
                             $errors[$field] .= "$field_name: Please fill in the administration date for all 3 fields";
                         }
 
-                        if(!(checkdate($value['M'], $value['d'], $value['Y']))){
-                            $errors[$field]= 'Date is not a valid date';
+                        if(!(checkdate($value['M'], $value['d'], $value['Y']))) {
+                            $errors[$field] = 'Date is not a valid date';
                         }
                     }
                 }
             }
 
-            if (preg_match('/flag_status/',$field,$matches)){
+            if (preg_match('/flag_status/', $field, $matches)) {
 
-                if (($value == '') || ($value==null)){
-                    $errors[$field]= 'The validation flag is not set';
+                if (($value == '') || ($value==null)) {
+                    $errors[$field] = 'The validation flag is not set';
                 }
 
             }
@@ -250,77 +245,85 @@ class NDB_Form_data_integrity_flag extends NDB_Form
 
     // }}}
     // {{{ _getQuickformDate()
-/**
+    /**
  * Convert a database date or timestamp into a QuickForm acceptable date or time
  *
- * @param string  $databaseValue        the date or timestamp from the database
+ * @param  string $databaseValue the date or timestamp from the database
  * @return array   $formDateValue       the quickform date/timestamp array
  * @access private
  */
 
-function _getQuickformDate($databaseValue/*,$date_reference*/){
-    if(!empty($databaseValue)){
-        if(strstr($databaseValue,":")){
-            $formDateValue=explode(":",$databaseValue);
-            $formDateValue=array("H"=>$formDateValue[0],"i"=>$formDateValue[1]);  //handle time
-        } else {
-            // split mysql Date_taken field into array
-            $formDateValue = explode('-', $databaseValue);
-            $formDateValue = array('Y'=>$formDateValue[0], 'M'=>$formDateValue[1], 'd'=>$formDateValue[2]);  //handle date
+    function _getQuickformDate($databaseValue/*,$date_reference*/)
+    {
+        if(!empty($databaseValue)) {
+            if(strstr($databaseValue, ":")) {
+                $formDateValue =explode(":", $databaseValue);
+                $formDateValue =array(
+                                 "H" => $formDateValue[0],
+                                 "i" => $formDateValue[1],
+                                );  //handle time
+            } else {
+                // split mysql Date_taken field into array
+                $formDateValue = explode('-', $databaseValue);
+                $formDateValue = array(
+                                  'Y' => $formDateValue[0],
+                                  'M' => $formDateValue[1],
+                                  'd' => $formDateValue[2],
+                                 );  //handle date
+            }
         }
+        return $formDateValue;
     }
-    return $formDateValue;
-}
 
-/**
+    /**
  * getTestNameusingMappedName
  * returns the Test_name and its corresponding visit_label.. using the full_name  and/or subprojectID ..
  */
 
-function getTestNameusingMappedName ($full_name, $subprojectID = null)
-{
-    $DB =& Database::singleton();
-    $values = array();
-    if ((!(is_null($full_name)))) {
-        $test_name = Utility::getTestNameUsingFullName($full_name);
+    function getTestNameusingMappedName($full_name, $subprojectID = null)
+    {
+        $DB     =& Database::singleton();
+        $values = array();
+        if ((!(is_null($full_name)))) {
+            $test_name = Utility::getTestNameUsingFullName($full_name);
+        }
+        return     $test_name;
     }
-    return 	$test_name;
-}
 
 
-/**
+    /**
  * Returns the list of users changed the Data-integrity flags
  */
 
-function getDIUsers()
-{
-    $DB =& Database::singleton();
-    $users = $DB->pselect("SELECT DISTINCT dataflag_userid FROM data_integrity_flag",array());
-    $user_ids = array();
-    foreach ($users as $user){
-        $user_ids[$user['dataflag_userid']] = $user['dataflag_userid'];
+    function getDIUsers()
+    {
+        $DB       =& Database::singleton();
+        $users    = $DB->pselect("SELECT DISTINCT dataflag_userid FROM data_integrity_flag", array());
+        $user_ids = array();
+        foreach ($users as $user){
+            $user_ids[$user['dataflag_userid']] = $user['dataflag_userid'];
+        }
+        return $user_ids;
     }
-    return $user_ids;
-}
 
-/**
+    /**
  * Include the column formatter required to display the feedback link colours
  * in the candidate_list menu
  *
  * @return array of javascript to be inserted
  */
-function getJSDependencies()
-{
-    $factory = NDB_Factory::singleton();
-    $baseURL = $factory->settings()->getBaseURL();
-    $deps    = parent::getJSDependencies();
-    return array_merge(
-        $deps,
-        array(
-         $baseURL . "/data_integrity_flag/js/data_integrity_flag_helper.js",
-        )
-    );
-}
+    function getJSDependencies()
+    {
+        $factory = NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
+        $deps    = parent::getJSDependencies();
+        return array_merge(
+            $deps,
+            array(
+             $baseURL . "/data_integrity_flag/js/data_integrity_flag_helper.js",
+            )
+        );
+    }
 
 }
 ?>

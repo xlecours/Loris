@@ -1,6 +1,7 @@
 <?php
 /**
  * The menu for user accounts
+ *
  * @package main
  */
 class NDB_Menu_Filter_user_accounts extends NDB_Menu_Filter
@@ -24,37 +25,53 @@ class NDB_Menu_Filter_user_accounts extends NDB_Menu_Filter
         }
 
         // set the class variables
-        $this->columns = array("COALESCE(psc.Name,'Not Assigned') AS PSC", 'UserID AS Username', 'Real_name AS Full_name', 'Email', 'Active', 'Pending_approval');
-        $this->query = $query;
-        $this->order_by = 'Username';
-        $this->validFilters = array('users.CenterID', 'users.UserID', 'users.Real_name', 'users.Email', 'users.Active', 'users.Examiner', 'users.Pending_approval');
+        $this->columns      = array(
+                               "COALESCE(psc.Name,'Not Assigned') AS PSC",
+                               'UserID AS Username',
+                               'Real_name AS Full_name',
+                               'Email',
+                               'Active',
+                               'Pending_approval',
+                              );
+        $this->query        = $query;
+        $this->order_by     = 'Username';
+        $this->validFilters = array(
+                               'users.CenterID',
+                               'users.UserID',
+                               'users.Real_name',
+                               'users.Email',
+                               'users.Active',
+                               'users.Examiner',
+                               'users.Pending_approval',
+                              );
 
         $this->formToFilter = array(
-                                    'centerID' => 'users.CenterID',
-                                    'active' => 'users.Active',
-                                    'userID' => 'users.UserID',
-                                    'real_name' => 'users.Real_name',
-                                    'email' => 'users.Email',
-                                    'pending' => 'users.Pending_approval'
-                                    );
+                               'centerID'  => 'users.CenterID',
+                               'active'    => 'users.Active',
+                               'userID'    => 'users.UserID',
+                               'real_name' => 'users.Real_name',
+                               'email'     => 'users.Email',
+                               'pending'   => 'users.Pending_approval',
+                              );
         return true;
     }
 
 
     function _setFilterForm()
     {
-    	// create user object
+        // create user object
         $user =& User::singleton();
 
         // PSC
         if ($user->hasPermission('user_accounts_multisite')) {
             // get the list of study sites - to be replaced by the Site object
             $list_of_sites = Utility::getSiteList(false);
-            if(is_array($list_of_sites)) $list_of_sites = array('' => 'All') + $list_of_sites;
+            if(is_array($list_of_sites)) { $list_of_sites = array('' => 'All') + $list_of_sites;
+            }
         }
         else {
             // allow only to view own site data
-            $site =& Site::singleton($user->getData('CenterID'));
+            $site          =& Site::singleton($user->getData('CenterID'));
             $list_of_sites = array($user->getData('CenterID') => $user->getData('Site'));
         }
 
@@ -64,7 +81,7 @@ class NDB_Menu_Filter_user_accounts extends NDB_Menu_Filter
         $this->addBasicText('userID', 'Username:');
         $this->addBasicText('real_name', 'Full name:');
         $this->addBasicText('email', 'Email:');
-        $this->addSelect('pending', 'Pending Approval:', array(''=>'All', 'N'=>'N', 'Y'=>'Y'));
+        $this->addSelect('pending', 'Pending Approval:', array('' => 'All', 'N' => 'N', 'Y' => 'Y'));
 
         return true;
     }

@@ -72,9 +72,9 @@ class NDB_Menu_statistics_dd_site extends NDB_Menu_statistics_site
     function _GetResults($centerID, $projectID, $instrument)
     {
         $this->_checkCriteria($centerID, $projectID);
-        $DB     =& Database::singleton();
+        $DB =& Database::singleton();
         $safe_instrument = $DB->escape($instrument);
-        $result = $DB->pselect(
+        $result          = $DB->pselect(
             "SELECT s.CandID, f.SessionID, i.CommentID, c.PSCID, lower(s.Visit_label) as Visit_label  FROM session s, candidate c, flag f, $safe_instrument i
                 WHERE s.ID=f.SessionID AND f.CommentID=i.CommentID AND 
                 s.CandID=c.CandID  AND s.Active='Y' 

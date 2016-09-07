@@ -117,9 +117,9 @@ class NDB_Form_statistics extends NDB_Form
         if(isset($_REQUEST['DemographicProject']) && $_REQUEST['DemographicProject'] != '') {
             $currentProject = $_REQUEST['DemographicProject'];
             $this->tpl_data['CurrentProject'] = array(
-                'ID'   => $currentProject,
-                'Name' => $projects[$currentProject],
-            );
+                                                 'ID'   => $currentProject,
+                                                 'Name' => $projects[$currentProject],
+                                                );
             $Param_Project       ='AND (c.ProjectID IS NULL OR c.ProjectID=:pid) ';
             $this->params['pid'] =$_REQUEST['DemographicProject'];
         } else {
@@ -161,9 +161,9 @@ class NDB_Form_statistics extends NDB_Form
             $sites[$row['NumericID']] = $row['ShortName'];
             if($_REQUEST['DemographicSite'] == $row['NumericID']) {
                 $this->tpl_data['CurrentSite'] = array(
-                    'ID'   => $row['NumericID'],
-                    'Name' => $row['LongName'],
-                );
+                                                  'ID'   => $row['NumericID'],
+                                                  'Name' => $row['LongName'],
+                                                 );
             }
         }
 
@@ -317,9 +317,9 @@ class NDB_Form_statistics extends NDB_Form
         $this->tpl_data['all_instruments'] = $instrument_list;
         if(isset($_REQUEST['DemographicInstrument']) && $_REQUEST['DemographicInstrument'] != '') {
             $Subcategories = array(
-                'Complete',
-                'Incomplete',
-            );
+                              'Complete',
+                              'Incomplete',
+                             );
             $result        = $DB->pselect(
                 "SELECT count(*) as val,
                     f.Data_entry as Subcat,
@@ -368,9 +368,9 @@ class NDB_Form_statistics extends NDB_Form
             );
         } else {
             $Subcategories = array(
-                'Male',
-                'Female',
-            );
+                              'Male',
+                              'Female',
+                             );
             $result        = $DB->pselect(
                 "SELECT c.CenterID as CenterID,
                     s.SubprojectID as SubprojectID,
@@ -557,7 +557,6 @@ class NDB_Form_statistics extends NDB_Form
         $useProjects = $config->getSetting("useProjects");
         $this->tpl_data['useProjects'] = $useProjects;
         $bigTable_params =array();
-
 
         $this->tpl_data['showTable'] = true;
 

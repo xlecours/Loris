@@ -1,9 +1,9 @@
 <?php
  /**
  * Comments
- * 
+ *
  * PHP Version 5
- * 
+ *
  *  @category Main
  *  @package  TimePoint_Flag
  *  @author   jharlap <username@example.com>
@@ -14,7 +14,7 @@
 
 /**
  *  Candidate Parameter form
- * 
+ *
  *  @category Main
  *  @package  Main
  *  @author   jharlap <username@example.com>
@@ -27,9 +27,8 @@ class NDB_Form_Timepoint_Flag extends NDB_Form
 
     /**
     * Comment
-    * 
+    *
     * @return bool
-    * 
     */
     function _hasAccess()
     {
@@ -50,24 +49,23 @@ class NDB_Form_Timepoint_Flag extends NDB_Form
         ) {
             return true;
         } elseif ($user->hasPermission('send_to_dcc')
-                  && $user->getData('CenterID') == $tp->getData('CenterID')
-                  && $tp->getData('Submitted')=='N'
-                  && in_array($cs, array('Screening', 'Visit'))
-                  && !in_array($tp->getData($cs), array(null, 'In Progress'))
-                  && ($config->getSetting("useScanDone")==="false"
-                      || ($tp->getData('Current_stage') == 'Screening'
-                      || !empty($scanDone)))
-          ) {
+            && $user->getData('CenterID') == $tp->getData('CenterID')
+            && $tp->getData('Submitted')=='N'
+            && in_array($cs, array('Screening', 'Visit'))
+            && !in_array($tp->getData($cs), array(null, 'In Progress'))
+            && ($config->getSetting("useScanDone")==="false"
+            || ($tp->getData('Current_stage') == 'Screening'
+            || !empty($scanDone)))
+        ) {
             return true;
         }
         return false;
     }
 
     /**
-    * Comment 
-    * 
+    * Comment
+    *
     * @return bool
-    * 
     */
     function checkTimepointFlag()
     {

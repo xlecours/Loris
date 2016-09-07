@@ -27,7 +27,7 @@ class NDB_Form_survey_accounts extends NDB_Form
     /**
      * Determine whether the logged in user has access to this page.
      * Tied to data_entry
-     * 
+     *
      * @return boolean true if user has access to this page
      */
     function _hasAccess()
@@ -65,73 +65,73 @@ class NDB_Form_survey_accounts extends NDB_Form
             "SELECT COUNT(*) FROM candidate 
             WHERE PSCID=:v_PSCID 
             AND CandID=:v_CandID AND Active='Y'",
-            array('v_PSCID' => $values['PSCID'], 'v_CandID' => $values['CandID'])
+            array(
+             'v_PSCID'  => $values['PSCID'],
+             'v_CandID' => $values['CandID'],
+            )
         );
         if ($numCandidates != 1) {
-            return array(
-                'CandID' =>
-                    'PSCID and DCC ID do not match or candidate does not exist.'
-            );
+            return array('CandID' => 'PSCID and DCC ID do not match or candidate does not exist.');
         }
 
         $numSessions = $db->pselectOne(
             "SELECT COUNT(*) FROM session 
             WHERE CandID=:v_CandID 
             AND UPPER(Visit_label)=UPPER(:v_VL) 
-            AND Active='Y'", 
-            array('v_CandID' => $values['CandID'], 'v_VL' => $values['VL'])
+            AND Active='Y'",
+            array(
+             'v_CandID' => $values['CandID'],
+             'v_VL'     => $values['VL'],
+            )
         );
 
         if ($numSessions != 1) {
             return array(
-                'VL' => "Visit ". $values['VL']." does not exist for given candidate"
-            );
+                    'VL' => "Visit ". $values['VL']." does not exist for given candidate",
+                   );
         }
-        $instrument_list = $db->pselect( 
+        $instrument_list = $db->pselect(
             "SELECT f.Test_name FROM flag f
              JOIN session s on s.ID = f.SessionID
              WHERE s.CandID=:v_CandID  
              AND UPPER(s.Visit_label)=UPPER(:v_VL) 
              AND s.Active='Y'",
-             array('v_CandID' => $values['CandID'], 'v_VL' => $values['VL'])
+            array(
+             'v_CandID' => $values['CandID'],
+             'v_VL'     => $values['VL'],
+            )
         );
         foreach($instrument_list as $instrument) {
             if($values['Test_name'] == $instrument['Test_name']) {
                 return array(
                         'Test_name' => "Instrument ". $values['Test_name'].
-                                       " already exists for given candidate for visit ". $values['VL']
-                        );
+                                       " already exists for given candidate for visit ". $values['VL'],
+                       );
             }
         }
-        if ( !empty($values['Email']) ) {
+        if (!empty($values['Email']) ) {
             if (!filter_var($values['Email'], FILTER_VALIDATE_EMAIL) ) {
-                return array(
-                        'Email'=> 'The email address is not valid.'
-                        );
+                return array('Email' => 'The email address is not valid.');
             }
         }
-        if ( !empty($values['Email']) && !empty($values['Email2'])) {
+        if (!empty($values['Email']) && !empty($values['Email2'])) {
             if ($values['Email'] != $values['Email2']) {
-                return array(
-                        'Email2'=> 'The email addresses do not match.'
-                        );
+                return array('Email2' => 'The email addresses do not match.');
             }
         }
         if(empty($values['Test_name'])) {
-            return array(
-                    'Test_name'=> 'Please choose an instrument.'
-                        );
+            return array('Test_name' => 'Please choose an instrument.');
         }
         if($_REQUEST['fire_away'] !== 'Create survey') {
             if (!filter_var(
                 $values['Email'],
-                FILTER_VALIDATE_EMAIL)
+                FILTER_VALIDATE_EMAIL
+            )
             ) {
                 return array('Email' => 'Email is not valid.');
 
             }
         }
-
 
         return array();
     }
@@ -147,12 +147,12 @@ class NDB_Form_survey_accounts extends NDB_Form
      */
     function _process($values)
     {
-        $db = Database::singleton();
+        $db        = Database::singleton();
         $SessionID = $db->pselectOne(
             "SELECT ID FROM session WHERE CandID=:v_CandID AND Visit_label=:v_VL",
             array(
-                'v_CandID' => $values['CandID'], 
-                'v_VL'     => $values['VL']
+             'v_CandID' => $values['CandID'],
+             'v_VL'     => $values['VL'],
             )
         );
 
@@ -162,8 +162,8 @@ class NDB_Form_survey_accounts extends NDB_Form
             "SELECT 'x' FROM participant_accounts
             WHERE Test_name=:TN AND SessionID=:SID",
             array(
-                'TN' => $values['Test_name'],
-                'SID' => $SessionID
+             'TN'  => $values['Test_name'],
+             'SID' => $SessionID,
             )
         );
         if ($InstrumentExists == 'x') {
@@ -187,27 +187,27 @@ class NDB_Form_survey_accounts extends NDB_Form
         }
 
         $success = $db->insert(
-            "participant_accounts", 
+            "participant_accounts",
             array(
-                'SessionID'        => $SessionID,
-                'Test_name'        => $values['Test_name'],
-                'Email'            => $values['Email'],
-                'Status'           => $status,
-                'OneTimePassword'  => $key,
-                'CommentID'        => $commentID
+             'SessionID'       => $SessionID,
+             'Test_name'       => $values['Test_name'],
+             'Email'           => $values['Email'],
+             'Status'          => $status,
+             'OneTimePassword' => $key,
+             'CommentID'       => $commentID,
             )
         );
         $this->tpl_data['success'] = $success;
- 
+
         if ($email) {
             $config = NDB_Config::singleton();
-            $www = $config->getSetting("www");
+            $www    = $config->getSetting("www");
 
             $msg_data = array(
-                'study'     => $config->getSetting("title"),
-                'url'       => $www['url'] . '/survey.php?key=' . urlencode($key),
-                'EmailForm' => $values['email_dialog']
-            );
+                         'study'     => $config->getSetting("title"),
+                         'url'       => $www['url'] . '/survey.php?key=' . urlencode($key),
+                         'EmailForm' => $values['email_dialog'],
+                        );
             Email::send($values['Email'], 'new_survey.tpl', $msg_data);
         }
     }

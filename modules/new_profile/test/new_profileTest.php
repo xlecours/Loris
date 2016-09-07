@@ -61,7 +61,8 @@ class newProfileTestIntegrationTest extends LorisIntegrationTest
      *
      * @return none
      */
-    function testNewProfileLoadsWithoutProjects() {
+    function testNewProfileLoadsWithoutProjects()
+    {
         $this->setUpConfigSetting("useProjects", "false");
 
         $this->safeGet($this->url . "/new_profile/");
@@ -82,7 +83,8 @@ class newProfileTestIntegrationTest extends LorisIntegrationTest
      *
      * @return none
      */
-    function testNewProfileLoadsWithoutEDC() {
+    function testNewProfileLoadsWithoutEDC()
+    {
         $this->setUpConfigSetting("useEDC", "false");
 
         $this->safeGet($this->url . "/new_profile/");
@@ -109,7 +111,8 @@ class newProfileTestIntegrationTest extends LorisIntegrationTest
      *
      * @return none
      */
-    function testNewProfileEDCDateError() {
+    function testNewProfileEDCDateError()
+    {
         $this->setUpConfigSetting("useEDC", "true");
 
         $this->webDriver->get($this->url . "/new_profile/");
@@ -141,7 +144,8 @@ class newProfileTestIntegrationTest extends LorisIntegrationTest
      *
      * @return none
      */
-    function testNewProfilePSCIDError() {
+    function testNewProfilePSCIDError()
+    {
 
         $this->markTestSkipped("Config not properly set up to test that PSCID is required");
 
@@ -166,7 +170,8 @@ class newProfileTestIntegrationTest extends LorisIntegrationTest
      *
      * @return none
      */
-    function testNewProfileDoBDateError() {
+    function testNewProfileDoBDateError()
+    {
         $this->webDriver->get($this->url . "/new_profile/");
 
         $dates = $this->webDriver->findElements(WebDriverBy::cssSelector(".ws-date"));
@@ -192,7 +197,8 @@ class newProfileTestIntegrationTest extends LorisIntegrationTest
      *
      * @return none
      */
-    function testNewProfileCreateCandidate() {
+    function testNewProfileCreateCandidate()
+    {
 
         $this->changeStudySite();
         $this->webDriver->get($this->url . "/new_profile/");
@@ -219,7 +225,8 @@ class newProfileTestIntegrationTest extends LorisIntegrationTest
      *
      * @return none
      */
-    function testNewProfilePSCIDSequential() {
+    function testNewProfilePSCIDSequential()
+    {
 
         $this->changeStudySite();
         $this->webDriver->get($this->url . "/new_profile/");

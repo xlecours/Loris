@@ -2,7 +2,7 @@
 /**
  * Timepoint flag automated integration tests
  * Timepoint_FlagTestIntegrationTest File Doc Comment
- * 
+ *
  * PHP Version 5
  *
  * @category Test
@@ -17,7 +17,7 @@ require_once __DIR__ .
 /**
  * Timepoint flag automated integration tests
  * Timepoint_FlagTestIntegrationTest Class Doc Comment
- * 
+ *
  * PHP Version 5
  *
  * @category Test

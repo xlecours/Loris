@@ -5,7 +5,7 @@
  * This class provides methods to 'flag' any data records in the schema.
  * Structure:
  * Data is overlayed by flags. Flags are defined in the parameter_timepoint_flag
- * table. 
+ * table.
  * A flag has a set of triggers, tests defined for a db field. Triggers are defined
  * in the parameter_timepoint_flag_triggers table.
  * A flag may also have a set of review fields that are looked up and displayed in
@@ -22,13 +22,13 @@
  *
  * Modules,menus,tools:
  * Flags are triggered by a cmd-line tool and updateds via the web GUI's menu_filter
- * class, both of which are written separately for each project. 
+ * class, both of which are written separately for each project.
  * This class provides methods needed to evaluate, trigger, and update flag records
  * in the system.
  * There are three 'classes' of methods
- * 
+ *
  * PHP Version 5
- * 
+ *
  *  @category Main
  *  @package  TimePoint_Flag
  *  @author   jharlap <username@example.com>
@@ -64,7 +64,7 @@ if (!defined('TIMEPOINT_FLAG_NULL_STATUS')) {
  * Comments
  *
  * PHP Version 5
- * 
+ *
  *  @category Main
  *  @package  TimePoint_Flag
  *  @author   jharlap <username@example.com>
@@ -97,9 +97,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * Comments
-    * 
+    *
     * @param int $sessionID sessionID
-    * 
+    *
     * @return object $flagList[$sessionID] flagList
     */
     static function &singleton($sessionID)
@@ -123,7 +123,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * sets the [@link $this->flagTypes] property
-    * 
+    *
     * @throws PEAR error
     * @return void
     */
@@ -153,7 +153,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns an array of flag types, keyed by TypeID
-    * 
+    *
     * @throws PEAR error
     * @return array list of types keyed by typeID
     */
@@ -168,7 +168,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns an inverse array of @link $this->flagTypes ; array Name=>TypeID
-    * 
+    *
     * @throws PEAR error
     * @return array $list list of type IDs keyed by type name
     */
@@ -187,9 +187,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * return the hex code of the type color defined in default.conf
-    * 
+    *
     * @param string $type type
-    * 
+    *
     * @return string color hex code
     * @access public
     * @static
@@ -203,7 +203,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * sets the [@link $this->flagList] property, array w/ Name and Type elements
-    * 
+    *
     * @throws PEAR error
     * @return void
     */
@@ -245,7 +245,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * retrieves the list of flags
-    * 
+    *
     * @return array list of flags w/ Name and Type elements
     * @throws PEAR error
     */
@@ -260,9 +260,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns full record for the flag from the flag and type table
-    * 
+    *
     * @param string $flagName name of the flag
-    * 
+    *
     * @return array
     * @throws PEAR::error
     * @static
@@ -291,9 +291,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the flag's type
-    * 
+    *
     * @param string $flagName flag name
-    * 
+    *
     * @return string flag type
     * @access public
     * @static
@@ -314,9 +314,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the flag's description
-    * 
+    *
     * @param string $flagName flag name
-    * 
+    *
     * @return string flag description
     * @access public
     * @static
@@ -336,9 +336,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the flag's subproject
-    * 
+    *
     * @param string $flagName flag name
-    * 
+    *
     * @return string flag subproject
     * @access public
     * @static
@@ -361,7 +361,7 @@ Class TimePoint_Flag extends TimePoint
     *  the flag name
     *
     * @param string $flagName name of the flag
-    * 
+    *
     * @return void
     */
     function setFlagTriggers($flagName)
@@ -381,9 +381,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * Sets the list of trigger values for the flag
-    * 
+    *
     * @param string $flagName name of the flag
-    * 
+    *
     * @return array list of flag's triggers
     */
     function getFlagTriggers($flagName)
@@ -403,7 +403,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the list of ALL instruments/sources used to evaluate the flags
-    * 
+    *
     * @return array list of instruments
     * @throws PEAR error
     */
@@ -429,7 +429,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the list of ALL instruments/sources used for the flag
-    * 
+    *
     * @return array list of instruments for the flag
     * @throws PEAR error
     */
@@ -448,7 +448,7 @@ Class TimePoint_Flag extends TimePoint
     /**
     * sets a list of all active bvl instruments in project, registered in
     * test_battery table
-    * 
+    *
     * @return array list of instruments
     * @throws PEAR error
     */
@@ -472,7 +472,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the list of all active bvl instruments in project
-    * 
+    *
     * @return array list of instruments
     * @throws PEAR error
     */
@@ -486,7 +486,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the list of instruments in a timepoint battery
-    * 
+    *
     * @return void
     * @throws PEAR error
     */
@@ -512,7 +512,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the list of instruments in a timepoint battery
-    * 
+    *
     * @return array list of instruments
     * @throws PEAR error
     */
@@ -526,7 +526,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * sets the list of NA instruments for the timepoint
-    * 
+    *
     * @throws PEAR error
     * @return void
     */
@@ -550,7 +550,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns the list of NA instrumetns
-    * 
+    *
     * @return array list of NA instruments
     * @throws PEARR error
     */
@@ -582,7 +582,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * wraps the [@link $this->evaluateFlag()] and tests all flag for the timepoint
-    * 
+    *
     * @throws PEAR error
     * @return void
     */
@@ -607,11 +607,11 @@ Class TimePoint_Flag extends TimePoint
     /**
     * Evaluates the flag's triggers values against the benchmark, returns flag
     *  status (typeID) as a class constant
-    * 
+    *
     * @param string $flagName name of the flag
-    * 
+    *
     * @return mixed typeid of the flag if triggered or a constant
-    * 
+    *
     * TimePoing_Flag::TIMEPOINT_FLAG_NA_INSTRUMENT
     * |TimePoing_Flag::TIMEPOINT_FLAG_NULL
     * @throws PEAR error
@@ -662,9 +662,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns an array of triggers that tested positive
-    * 
+    *
     * @param string $flagName flag name
-    * 
+    *
     * @return array list of triggers w/ values that tested positive
     * @throws PEAR error
     */
@@ -763,12 +763,11 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * return the values of all fields underlying triggers w/o evaluating them
-    * 
+    *
     * @param stirng $flagName name of flag
-    * 
+    *
     * @throws PEAR error
     * @return array list of triggers w/ values, keyed by trigger name
-    *
     */
     function getFlagTriggersFieldValues($flagName)
     {
@@ -815,13 +814,12 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * return a value of a trigger
-    * 
+    *
     * @param string $flagName    name of flag
     * @param string $triggerName name of the trigger the value of which we need
-    * 
+    *
     * @throws PEAR error
     * @return mixed value, null, numeric, string
-    *
     */
     function getTriggerValue($flagName, $triggerName)
     {
@@ -856,12 +854,11 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * return the values of all fields underlying triggers w/o evaluating them
-    * 
+    *
     * @param stirng $flagName name of flag
-    * 
+    *
     * @throws PEAR error
     * @return array list of triggers w/ values, keyed by trigger name
-    *
     */
     function getFlagReviewFieldsValues($flagName)
     {
@@ -914,10 +911,10 @@ Class TimePoint_Flag extends TimePoint
     /**
     * insert a new flag record
     * flag table parameter_timepoint_flag_session
-    * 
+    *
     * @param string $flagName name of the flag
     * @param string $typeID   flag type ID
-    * 
+    *
     * @throws PEAR Error
     * @return mixed true if OK
     */
@@ -947,14 +944,14 @@ Class TimePoint_Flag extends TimePoint
     *  otherwise update w/ new value
     * if the was turned OFF, and the value is changed, than turn the flag back ON
     *  so that new value could be reviewed
-    * 
+    *
     * @param string $flagName       name of the flag
     * @param string $userID         system user
     * @param string $flagStatus     ON/OFF
     * @param string $comment        comment for the flag
     * @param string $pending        flag to mark if there's an issue (Y/N)
     * @param string $pendingComment comment for the issue
-    * 
+    *
     * @throws PEAR Error
     * @return mixed
     */
@@ -1022,10 +1019,10 @@ Class TimePoint_Flag extends TimePoint
     /**
     * returns the flag record from the table parameter_timepoint_flag_session, if any
     * can be use statically, just supply SessionID and FlagName
-    * 
+    *
     * @param int    $sessionID sessionID
     * @param string $flagName  name of flag
-    * 
+    *
     * @return array flag details
     * @throws PEAR error
     * @static
@@ -1064,10 +1061,10 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * wraps the [@link $this->getFlag()] and gets the flag data for the timepoint
-    * 
+    *
     * @return array list of flag records from parameter_timepoint_flag_session table
     * @throws PEAR error
-    * @see $this->getListOfFlags()
+    * @see    $this->getListOfFlags()
     */
     function getTimepointFlags()
     {
@@ -1088,10 +1085,10 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * returns true if the flag is raised for the timepoint
-    * 
-    * @param int    $sessionID sessionID 
-    * @param string $flagName  flag name 
-    * 
+    *
+    * @param int    $sessionID sessionID
+    * @param string $flagName  flag name
+    *
     * @return bool
     * @throws PEAR::Error
     */
@@ -1113,7 +1110,7 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * return name of the  max type of the Active (Flag_status<>OFF) flag
-    * 
+    *
     * @return string name of the max flag type
     */
     function getMaxFlagForTimepoint()
@@ -1136,9 +1133,9 @@ Class TimePoint_Flag extends TimePoint
 
     /**
     * Comment
-    * 
+    *
     * @param string $name name
-    * 
+    *
     * @return string constant($name)
     */
     function showConstant($name)

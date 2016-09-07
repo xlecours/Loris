@@ -28,8 +28,8 @@ require_once __DIR__ .
 require_once __DIR__ . "/../../../test/integrationtests/LorisIntegrationTest.class.inc";
 class Statistics_Test extends LorisIntegrationTest
 {
-    
-   /**
+
+    /**
      * Tests that, when loading the Statistics module, some
      * text appears in the body.
      *
@@ -78,7 +78,8 @@ class Statistics_Test extends LorisIntegrationTest
         $this->resetPermissions();
     }
 
-    /** Tests that, when loading the Statistics module behavioural tab, some
+    /**
+ * Tests that, when loading the Statistics module behavioural tab, some
      * text appears in the body.
      *
      * @return void
@@ -89,7 +90,8 @@ class Statistics_Test extends LorisIntegrationTest
         $bodyText = $this->safeFindElement(WebDriverBy::cssSelector(".statsH2"))->getText();
         $this->assertContains("Data Entry Statistics", $bodyText);
     }
-   /** Tests that, when loading the Reliability Statistics Tab in Statistics module, some
+    /**
+ * Tests that, when loading the Reliability Statistics Tab in Statistics module, some
      * text appears in the body.
      *
      * @return void

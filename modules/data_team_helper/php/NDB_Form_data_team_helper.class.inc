@@ -122,37 +122,37 @@ class NDB_Form_data_team_helper extends NDB_Form
             );
             $this->tpl_data['percent_completed'] = $percent_completed;
 
-         /* Visit_labels
-         */
-        $visit_array =Utility::getExistingVisitLabels();
-        $visit_array = array_combine($visit_array, $visit_array);
-        $this->tpl_data['visitLabels'] = $visit_array;
+            /* Visit_labels
+            */
+            $visit_array =Utility::getExistingVisitLabels();
+            $visit_array = array_combine($visit_array, $visit_array);
+            $this->tpl_data['visitLabels'] = $visit_array;
 
-        $incompleteCandidates = $this->
+            $incompleteCandidates = $this->
             getIncompleteCandidates($instrument, $_REQUEST['visit_label'], $candID);
 
-        $this->tpl_data['Incomplete_candidates']
+            $this->tpl_data['Incomplete_candidates']
             = json_encode($incompleteCandidates);
 
-        $this->tpl_data['Incomplete_candidates_length']
+            $this->tpl_data['Incomplete_candidates_length']
             = count($incompleteCandidates);
 
-        $conflicts = $this->
+            $conflicts = $this->
             InstrumentInConflict($instrument, $_REQUEST['visit_label'], $candID);
 
-        $this->tpl_data['Conflicts'] =  json_encode($conflicts);
+            $this->tpl_data['Conflicts'] =  json_encode($conflicts);
 
-        $this->tpl_data['Conflicts_length'] = count($conflicts);
+            $this->tpl_data['Conflicts_length'] = count($conflicts);
 
-        $bvlFeedback = $this
+            $bvlFeedback = $this
             ->getFeedbacks($instrument, $candID, $_REQUEST['visit_label']);
 
-        $this->tpl_data['Bvl_Feedback'] = json_encode($bvlFeedback);
+            $this->tpl_data['Bvl_Feedback'] = json_encode($bvlFeedback);
 
-        $this->tpl_data['Bvl_Feedback_length'] = count($bvlFeedback);
+            $this->tpl_data['Bvl_Feedback_length'] = count($bvlFeedback);
 
-        $this->tpl_data['percent_complete'] = $this
-            ->_getPercentCompleted($instrument, $_REQUEST['visit_label'], $candID);
+            $this->tpl_data['percent_complete'] = $this
+                ->_getPercentCompleted($instrument, $_REQUEST['visit_label'], $candID);
 
     }
 
@@ -508,7 +508,7 @@ class NDB_Form_data_team_helper extends NDB_Form
         $total_count       = $this
             ->getInstrumentCount($instrument, $visit_label, $candidate);
 
-        $complete_count    = $this
+        $complete_count = $this
             ->getCompleteInstrumentCount($instrument, $visit_label, $candidate);
 
         if ($complete_count !=0) {
@@ -520,8 +520,9 @@ class NDB_Form_data_team_helper extends NDB_Form
     /**
      * getTestNameusingMappedName
      * returns the Test_name and its corresponding visit_label.. using the full_name  and/or subprojectID ..
-     * @param $full_name
-     * @param null      $subprojectID
+     *
+     * @param  $full_name
+     * @param  null      $subprojectID
      * @return mixed|Non
      * @throws DatabaseException
      */
@@ -543,9 +544,10 @@ class NDB_Form_data_team_helper extends NDB_Form
     /**
      * *
      * get all the instruments for the given visit...
-     * @param $visit_label
-     * @return unknown
-     * @throws DatabaseException
+     *
+     * @param    $visit_label
+     * @return   unknown
+     * @throws   DatabaseException
      * @internal param unknown_type $visit
      */
     static function getVisitInstruments($visit_label)
@@ -568,7 +570,7 @@ class NDB_Form_data_team_helper extends NDB_Form
 
         return $test_names;
     }
-    
+
     /**
      * Include the column formatter required to display the feedback link colours
      * in the candidate_list menu

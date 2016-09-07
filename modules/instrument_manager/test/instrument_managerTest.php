@@ -34,7 +34,7 @@ class instrumentManagerTestIntegrationTest extends LorisIntegrationTest
      * @return void
      */
     function testInstrumentManagerDoespageLoadWithpermission()
-    {   
+    {
         $this->setupPermissions(array("superuser"));
         $this->safeGet($this->url . "/instrument_manager/");
         $bodyText = $this->webDriver->findElement(WebDriverBy::cssSelector("body"))->getText();

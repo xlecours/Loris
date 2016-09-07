@@ -3,7 +3,7 @@
  * NDB_Menu_Filter_timepoint_flag.call.inc File Doc Comment
  *
  * PHP Version 5
- * 
+ *
  *  @category Main
  *  @package  Timepoint_Flag
  *  @author   jharlap <username@example.com>
@@ -15,16 +15,16 @@
 /**
  * The menu for timepoint flags
  *
- * this is the GUI front-end to the parameter_flag class. It lists the 
- * flags in a user-friendly color-coded way. 
- * The module also dislays a form for each record that allows users to 
+ * this is the GUI front-end to the parameter_flag class. It lists the
+ * flags in a user-friendly color-coded way.
+ * The module also dislays a form for each record that allows users to
  * review and set flags (ON/OFF), enter comments and mark pending-issues...
  * for detailes on methods called by this module:
- * this class contains a custom data form to update flag (records) 
+ * this class contains a custom data form to update flag (records)
  * status and store comments
  *
  * PHP Version 5
- * 
+ *
  *  @category Main
  *  @package  Timepoint_Flag
  *  @author   jharlap <username@example.com>
@@ -42,6 +42,7 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
 
     /**
     * array of error flags (per flag/sessionID)
+     *
     * @access private
     */
     var $_showDataEntryError = array();
@@ -107,10 +108,12 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
 
         // set the class variables
         $columns = array(
-                    'session.ID AS sessionID', 'session.CenterID AS centerID',
+                    'session.ID AS sessionID',
+                    'session.CenterID AS centerID',
                     'parameter_timepoint_flag.Flag_name AS flag',
                     'parameter_timepoint_flag.Flag_label AS flagLabel',
-                    'ft.Name AS flagType', 'fc.CategoryID AS flagCategory',
+                    'ft.Name AS flagType',
+                    'fc.CategoryID AS flagCategory',
                    );
 
         // mode switch
@@ -119,8 +122,10 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
             $headers            = array('flag');
             $this->order_by     = 'parameter_timepoint_flag.Flag_name';
             $this->validFilters = array(
-                                   'session.CenterID', 'session.SubprojectID',
-                                   'candidate.CandID', 'session.ID',
+                                   'session.CenterID',
+                                   'session.SubprojectID',
+                                   'candidate.CandID',
+                                   'session.ID',
                                   );
             break;
 
@@ -141,7 +146,8 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
                                   );
             $this->order_by     = 'psc.Name, candidate.CandID DESC, session.ID';
             $this->validFilters = array(
-                                   'session.CenterID', 'session.SubprojectID',
+                                   'session.CenterID',
+                                   'session.SubprojectID',
                                    'parameter_timepoint_flag.CategoryID',
                                    'parameter_timepoint_flag.Flag_name',
                                   );
@@ -152,8 +158,14 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
         $this->headers = array_merge(
             $headers,
             array(
-             'objective', 'status', 'comment', 'last change', 'issues',
-             'comment on issues', 'triggers', 'review fields',
+             'objective',
+             'status',
+             'comment',
+             'last change',
+             'issues',
+             'comment on issues',
+             'triggers',
+             'review fields',
             )
         );
 
@@ -198,7 +210,7 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
                                                   . '_flag.CategoryID',
                                                   'parameter_timepoint'
                                                   . '_flag.Flag_name',
-                                                 )
+                                                 ),
                               );
 
         return true;
@@ -388,7 +400,7 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
 
     /**
     * Comments
-    * 
+    *
     * @param int $count count
     *
     * @return true
@@ -451,7 +463,7 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
                 $this->tpl_data['items'][$x][$i]['value'] = $val;
 
                 if ($key == 'flag') {
-                    $type = $timepointFlag->getFlagType($val);
+                    $type        = $timepointFlag->getFlagType($val);
                     $description = $timepointFlag->getFlagDescription($val);
                     $this->tpl_data['items'][$x][$i]['class'] = $type;
                 }
@@ -667,10 +679,10 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
 
     /**
     * returns the flag's current info
-    * 
+    *
     * @param int    $sessionID sessionID
     * @param string $flagName  flagName
-    * 
+    *
     * @return array $hasAccess hasAccess
     * @access private
     */
@@ -682,11 +694,11 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
     }
 
     /**
-    * generates tpl_data elements for the talbe with the flag to evaluate 
+    * generates tpl_data elements for the talbe with the flag to evaluate
     * timepoint exclusions
-    * 
+    *
     * @param int $sessionID sessionID
-    * 
+    *
     * @return bool
     * @access private
     */
@@ -751,9 +763,9 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
     }
 
     /**
-    * returns true if the user has a permission to evaluate 
+    * returns true if the user has a permission to evaluate
     * timepoint overall exclusion
-    * 
+    *
     * @return bool
     */
     function _hasAccessEvaluateTimepoint()

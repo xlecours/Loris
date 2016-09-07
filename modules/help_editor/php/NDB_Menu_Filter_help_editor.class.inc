@@ -1,6 +1,6 @@
 <?php
 /**
- * This file contains code for editing context help section 
+ * This file contains code for editing context help section
  *
  * PHP Version 5
  *
@@ -12,7 +12,7 @@
  */
 
 /**
- * This file contains code for editing context help section 
+ * This file contains code for editing context help section
  *
  * PHP Version 5
  *
@@ -40,19 +40,22 @@ class NDB_Menu_Filter_help_editor extends NDB_Menu_Filter
         // the base query
         $query = " FROM help WHERE hash IS NOT NULL AND topic IS NOT NULL";
 
-
         // set the class variables
-        $this->columns      = array('topic as Topic', 'parentID as Parent_Topic',
-                               'COALESCE(projectContent,content) as Content' );
-        $this->query        = $query;
-        $this->order_by     = 'helpID';
+        $this->columns  = array(
+                           'topic as Topic',
+                           'parentID as Parent_Topic',
+                           'COALESCE(projectContent,content) as Content',
+                          );
+        $this->query    = $query;
+        $this->order_by = 'helpID';
         //$this->headers      = array('Topic','Parent Topic', 'Content');
         $this->validFilters = array('topic');
 
-        $this->formToFilter = array(
-                'topic' => 'topic'
-                );
-        $this->searchKeyword = array('topic','content');
+        $this->formToFilter  = array('topic' => 'topic');
+        $this->searchKeyword = array(
+                                'topic',
+                                'content',
+                               );
         return true;
     }
 
@@ -74,16 +77,18 @@ class NDB_Menu_Filter_help_editor extends NDB_Menu_Filter
         $help = $DB->pselect("SELECT helpID, topic from help", array());
         foreach ($help as $row) {
             $help_section[$row['helpID']] = $row['topic'];
-        } 
+        }
         $x = 0;
 
         foreach ($this->list as $item) {
             $this->tpl_data['items'][$x][0]['value'] = $x + $count;
-            $i                                       = 1;
+            $i = 1;
             foreach ($item as $key => $val) {
                 if (substr($key, "Topic") == 0) {
-                    $this->tpl_data['items'][$x][$i]['helpID']   = array_search($val,
-                                                                   $help_section);
+                    $this->tpl_data['items'][$x][$i]['helpID']   = array_search(
+                        $val,
+                        $help_section
+                    );
                     $this->tpl_data['items'][$x][$i]['parentID'] = $item['Parent_Topic'];
                     $item['Parent_Topic'] = $help_section[$item['Parent_Topic']];// this is to make sure sorting is done on the topic and not the ID
                 }
@@ -103,12 +108,12 @@ class NDB_Menu_Filter_help_editor extends NDB_Menu_Filter
             }
 
             $x++;
-        } 
-        setCookie("LastUrl", "?test_name=help_editor"); 
+        }
+        setCookie("LastUrl", "?test_name=help_editor");
         return true;
 
-    } 
-    
+    }
+
     /**
      * Include the column formatter required to display the feedback link colours
      * in the candidate_list menu

@@ -84,14 +84,14 @@ class datadictTestIntegrationTest extends LorisIntegrationTest
 
         $this->markTestSkipped("Data Dict test not yet updated for React");
         /*
-		try {
+        try {
             while (true) {
                 $oldBody->isDisplayed();
         }
-		} catch(Exception $e) {
-			$this->webDriver->executescript("document.documentElement.outerHTML");
+        } catch(Exception $e) {
+        $this->webDriver->executescript("document.documentElement.outerHTML");
 
-		}
+        }
          */
 
         $rows = $this->webDriver->findElements(WebDriverBy::cssSelector("table tbody tr"));

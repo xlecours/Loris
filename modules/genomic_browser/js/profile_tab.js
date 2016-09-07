@@ -219,13 +219,13 @@ var ProfileTab = React.createClass((_React$createClass = {
           'div',
           { className: 'col-md-2' },
           React.createElement(NumericElement, {
-            name: 'file_count',
-            label: 'File Count',
+            name: 'file_occurrence',
+            label: 'File Occurrence',
             min: '0',
             max: null,
-            value: this.getFilterValue('file_count'),
+            value: this.getFilterValue('file_occurrence'),
             onUserInput: this.setFilter,
-            ref: 'file_count'
+            ref: 'file_occurrence'
           })
         ),
         React.createElement(

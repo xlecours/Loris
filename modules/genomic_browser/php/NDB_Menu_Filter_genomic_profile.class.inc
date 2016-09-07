@@ -70,7 +70,7 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
                    'GROUP_CONCAT(DISTINCT u.title) AS subproject',
                    'DATE_FORMAT(c.DoB,\'%Y-%m-%d\') AS date_of_birth',
                    'c.ExternalID AS external_id',
-                   'COUNT(gcfr.GenomicFileID) AS file_count',
+                   'COUNT(gcfr.GenomicFileID) AS file_occurrence',
                    'GROUP_CONCAT(DISTINCT gscr.sample_label) as sample_labels',
                   );
 
@@ -129,7 +129,7 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
                                'c.DoB',
                                'c.ExternalID',
                                'show_brief_results',
-                               'file_count',
+                               'file_occurrence',
                               );
 
         $this->formToFilter = array(
@@ -140,7 +140,7 @@ class NDB_Menu_Filter_Genomic_Profile extends NDB_Menu_Filter
                                'subproject_id'      => 'cohort.SubprojectID',
                                'external_id'        => 'candidate.ExternalID',
                                'show_brief_results' => 'show_brief_results',
-                               'file_count'         => 'COUNT(gcfr.GenomicFileID)',
+                               'file_occurence'         => 'COUNT(gcfr.GenomicFileID)',
                               );
         return true;
     }

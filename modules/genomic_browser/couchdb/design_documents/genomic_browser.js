@@ -1,6 +1,6 @@
 {
    "_id": "_design/genomic_browser",
-   "_rev": "42-4afe03055e1bbf5e289ee9d83859aaed",
+   "_rev": "130-e05496a199227003a00afe2468500ed7",
    "language": "javascript",
    "views": {
        "sample_label_by_dataset": {
@@ -22,6 +22,9 @@
        "variable_property": {
            "map": "function(doc) {\n  if (doc.meta && doc.meta.doctype && doc.meta.doctype === 'variable') {\n    Object.keys(doc.meta.identifier).forEach(function(k) {\n      if (k !== 'variable_type' && k !== 'genomic_file_id') {\n        var key = [doc.meta.identifier.variable_type, doc.meta.identifier.genomic_file_id, k];\n        emit(key, doc.meta.identifier[k]);\n      }\n    },this);\n    Object.keys(doc.properties).forEach(function(k) {\n      var key = [doc.meta.identifier.variable_type, doc.meta.identifier.genomic_file_id, k];\n      emit(key, doc.properties[k]);\n    },this);\n  }\n}",
            "reduce": "_count"
+       },
+       "datasets": {
+           "map": "function(doc) {\n  if (doc.meta && doc.meta.doctype && doc.meta.doctype === 'dataset') {\n    emit(null, doc);\n  }\n}"
        }
    },
    "lists": {

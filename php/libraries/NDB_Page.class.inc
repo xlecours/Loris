@@ -243,14 +243,15 @@ class NDB_Page
      * Adds a hidden element to the current page. Note if the hidden element
      * needs a value it should be added to the defaults.
      *
-     * @param string $name  The name of the hidden element to add
-     * @param array  $value The value of the hidden element to add
+     * @param string $name       The name of the hidden element to add
+     * @param array  $value      The value of the hidden element to add
+     * @param array  $attributes Additional html attributes for element
      *
      * @return none
      */
-    function addHidden($name, $value=null)
+    function addHidden($name, $value=null, $attributes=array())
     {
-        $this->form->addElement('hidden', $name, $value);
+        $this->form->addElement('hidden', $name, $value, $attributes);
     }
 
     /**
@@ -603,25 +604,10 @@ class NDB_Page
         $www     = $config->getSetting('www');
         $baseurl = $www['url'];
 
-        $paths = $config->getSetting("paths");
-
-        $TestName = $this->name;
-
         $files = array(
                   $baseurl . "/bootstrap/css/bootstrap.min.css",
                   $baseurl . "/bootstrap/css/custom-css.css",
                  );
-
-        if (file_exists($paths['base'] . "modules/$TestName/css/$TestName.css")) {
-            error_log(
-                "WARNING: Relying on $TestName.css getting automatically loaded will"
-                . " soon be removed. "
-                . "Override getCSSDependencies() instead"
-            );
-
-            $files[] = $baseurl . "/$TestName/css/$TestName.css";
-        }
-
         return $files;
     }
 

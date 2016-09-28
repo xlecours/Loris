@@ -325,8 +325,9 @@ class NDB_Menu_Filter_CNV_Browser extends NDB_Menu_Filter
         $this->addBasicText('Gene_Symbol', 'Gene:');
 
         $DB = Database::singleton();
-        $platform_results = $DB->select(
-            "SELECT distinct Name FROM genotyping_platform"
+        $platform_results = $DB->pselect(
+            "SELECT distinct Name FROM genotyping_platform",
+            array()
         );
 
         $platform_options = array('' => 'Any');

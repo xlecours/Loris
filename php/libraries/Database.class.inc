@@ -375,6 +375,68 @@ class Database
     }
 
     /**
+     * Inserts or updates row.
+     *
+     * Inserts into the table such if there already exists a row with
+     * the same primary or unique key new values will be applied.
+     *
+     * The difference with replace is that there is no DELETE then INSERT here.
+     * Also, each update expression is applied separatly. The number of affected
+     * row will be multiplied by the number or update expression for each rows
+     * when the update happen.
+     *
+     * @param string $table      the table into which to insert the row
+     * @param array  $set        the values with which to fill the new row
+     * @param bool   $autoescape determines whether the values to be set should
+     *                           automatically have the html escaped
+     *
+     * @return none
+     * @access public
+     */
+    function insertOrUpdate($table, $set, $autoescape = true)
+    {
+        if ($autoescape === true) {
+            $set = $this->_HTMLEscapeArray($set);
+        }
+        $query  = "INSERT INTO $table SET ";
+        $query .= $this->_implodeWithKeys(', ', $set);
+        $query .= " ON DUPLICATE KEY UPDATE ";
+        $query .= $this->_implodeWithKeys(', ', $set);
+
+        $prepQ       = "INSERT INTO $table SET ";
+        $exec_params = array();
+        $prepQ      .= $this->_implodeAsPrepared(",", $set, $exec_params);
+        $prepQ      .= " ON DUPLICATE KEY UPDATE ";
+        $prepQ      .= $this->_implodeAsPrepared(",", $set, $exec_params);
+
+        if (DEBUG) {
+            fwrite(STDERR, $query."\n");
+            return;
+        }
+
+        // There is no where clause for an insert, so add a fake
+        // one.
+        $this->_printQuery($query);
+        $prep   = $this->_PDO->prepare($prepQ);
+        $result = $prep->execute($exec_params);
+        if ($result === false) {
+            throw new DatabaseException(
+                "Insert statement did not execute successfully: "
+                . print_r($prep->errorInfo(), true),
+                $prepQ,
+                $exec_params
+            );
+        }
+
+        $this->affected     = $prep->rowCount();
+        $this->lastInsertID = $this->_PDO->lastInsertId();
+
+        // Track changes must be called after last insertId is set
+        $err = $this->trackChanges($table, $set, '2=1', 'I');
+        return true;
+    }
+
+    /**
      * Updates a row
      *
      * Updates a single row in the specified table. This will automatically escape

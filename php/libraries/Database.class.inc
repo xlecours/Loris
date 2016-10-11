@@ -382,7 +382,7 @@ class Database
      *
      * The difference with replace is that there is no DELETE then INSERT here.
      * Also, each update expression is applied separatly. The number of affected
-     * is 1 if the insert is performed and 2 if the existing row is updated. 
+     * is 1 if the insert is performed and 2 if the existing row is updated.
      *
      * @param string $table      the table into which to insert the row
      * @param array  $set        the values with which to fill the new row

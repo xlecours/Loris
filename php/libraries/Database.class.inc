@@ -382,8 +382,7 @@ class Database
      *
      * The difference with replace is that there is no DELETE then INSERT here.
      * Also, each update expression is applied separatly. The number of affected
-     * row will be multiplied by the number or update expression for each rows
-     * when the update happen.
+     * is 1 if the insert is performed and 2 if the existing row is updated. 
      *
      * @param string $table      the table into which to insert the row
      * @param array  $set        the values with which to fill the new row
@@ -433,7 +432,6 @@ class Database
 
         // Track changes must be called after last insertId is set
         $err = $this->trackChanges($table, $set, '2=1', 'I');
-        return true;
     }
 
     /**

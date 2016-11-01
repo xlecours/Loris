@@ -511,5 +511,82 @@ class User extends UserPermissions
             json_encode($userobj)
         );
     }
+
+    /**
+     * Loads the menu tab structure into an array that can be used by
+     * smarty a smarty template.
+     *
+     * @return An array of Label, Visible, Link, and ID to build the menu
+     *         for the currently logged in user
+     */
+    function getMenuItems()
+    {
+        $DB =& Database::singleton();
+
+        // get user data from database
+        $query = "
+        SELECT DISTINCT 
+            lm.Label,
+            lm.Link,
+            lm_parent.Label as Parent_Label,
+            lm_parent.OrderNumber as Parent_Order,
+            lm.OrderNumber as Menu_Order
+        FROM LorisMenu lm
+        LEFT JOIN LorisMenu lm_parent
+            ON (lm.Parent = lm_parent.ID)
+        LEFT JOIN LorisMenuPermissions lmp
+            ON (lm.ID = lmp.MenuID)
+        LEFT JOIN permissions p
+            ON (lmp.PermID = p.permID)
+        LEFT JOIN user_perm_rel upr
+            ON (p.permID = upr.permID)
+        LEFT JOIN users u
+            ON (upr.userID = u.ID)
+        WHERE (u.userID = :v_user) 
+        UNION 
+        SELECT DISTINCT
+            lm.Label,
+            lm.Link,
+            lm_parent.Label as Parent_Label,
+            lm_parent.OrderNumber,
+            lm.OrderNumber as Menu_Order
+        FROM LorisMenu lm
+        LEFT JOIN LorisMenu lm_parent
+            ON (lm.Parent = lm_parent.ID)
+         LEFT OUTER JOIN LorisMenuPermissions lmp
+            ON (lm.ID = lmp.MenuID)
+        WHERE lmp.MenuID IS NULL
+        AND lm_parent.Label IS NOT NULL
+        ORDER BY
+            Parent_Order,
+            Menu_Order";
+
+        $row = $DB->pselect($query, array('v_user' => $this->userInfo['UserID']));
+
+        $menu_tabs = array_reduce(
+            $row,
+            function ($carry, $item) {
+
+                if (empty($carry[$item['Parent_Label']])) {
+                    $carry[$item['Parent_Label']] = array()
+
+                    $carry[$item['Parent_Label']]['Label']   = $item['Parent_Label'];
+                    $carry[$item['Parent_Label']]['Visible'] = 1;
+                    $carry[$item['Parent_Label']]['subtabs'] = array();
+                }
+
+                $obj = array(
+                        'Label'   => $item['Label'],
+                        'Visible' => 1,
+                        'Link'    => $item['Link'],
+                       );
+
+                array_push($carry[$item['Parent_Label']]['subtabs'], $obj);
+                return $carry;
+            },
+            array()
+        );
+        return $menu_tabs;
+    }
 }
 ?>

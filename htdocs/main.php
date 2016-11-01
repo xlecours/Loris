@@ -91,7 +91,8 @@ try {
 }
 
 // the the list of tabs, their links and perms
-$tpl_data['tabs'] = NDB_Config::GetMenuTabs();
+
+$tpl_data['tabs'] = $user->getMenuItems();
 
 //--------------------------------------------------
 

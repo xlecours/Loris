@@ -106,7 +106,6 @@ class NDB_Config
     {
         // load the configuration data into a global variable $config
         $newroot = simplexml_load_file($configFile);
-
         if ($newroot === false || $newroot === null) {
             throw new Exception(
                 "Could not load Loris config file $configFile"
@@ -482,101 +481,6 @@ class NDB_Config
                     'RecruitmentTarget' => $info['RecruitmentTarget'],
                    );
         }
-    }
-
-    /**
-     * Checks if the logged in user has permission for the given
-     * $menuID, so that we can determine if the menu should show
-     * up for them or not.
-     *
-     * @param integer $menuID The menuID to check.
-     *
-     * @return boolean true if the user can access the menu item
-     */
-    static function checkMenuPermission($menuID)
-    {
-        $DB   = Database::singleton();
-        $user = User::singleton();
-
-        $perms = $DB->pselect(
-            "SELECT code FROM LorisMenuPermissions
-                JOIN permissions using (permID) WHERE MenuID=:MID",
-            array('MID' => $menuID)
-        );
-
-        if (empty($perms)) {
-            return true;
-        }
-
-        foreach ($perms as $perm) {
-            if ($user->hasPermission($perm['code'])) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Loads the menu tab structure into an array that can be used by
-     * smarty a smarty template. This is done as a static function instead
-     * of using $this->getSetting() to give more options for how to load
-     * the menus, exactly (config.xml, different database tables, etc..)
-     *
-     * @param integer $parent The parent ID of the tree. This should not
-     *                        be passed. It's used to build the tree recursively
-     *                        from the LorisMenu table.
-     *
-     * @return An array of Label, Visible, Link, and ID to build the menu
-     *         for the currently logged in user
-     */
-    static function getMenuTabs($parent = null)
-    {
-        $DB = Database::singleton();
-        if ($parent === null) {
-            $thisLevel = $DB->pselect(
-                "SELECT Label,
-                       CASE Visible WHEN 'false' THEN 0 ELSE 1 END as Visible,
-                       Link,
-                       ID
-                  FROM LorisMenu
-                  WHERE Parent IS NULL ORDER BY OrderNumber",
-                array()
-            );
-        } else {
-            $thisLevel = $DB->pselect(
-                "SELECT Label,
-                        CASE Visible WHEN 'false' THEN 0 ELSE 1 END as Visible,
-                        Link,
-                        ID
-                  FROM LorisMenu
-                  WHERE Parent=:ParentID ORDER BY OrderNumber",
-                array('ParentID' => $parent)
-            );
-
-            $LevelWithPerm = array_filter(
-                $thisLevel,
-                function ($el) {
-                    return NDB_Config::checkMenuPermission($el['ID']);
-                }
-            );
-
-            if (!empty($LevelWithPerm)) {
-                return $LevelWithPerm;
-            }
-            return;
-        }
-
-        foreach ($thisLevel as &$thisRow) {
-            $nextLevel = NDB_Config::getMenuTabs($thisRow['ID']);
-
-            if (!empty($nextLevel)) {
-                if (NDB_Config::checkMenuPermission($nextLevel[0]['ID'])) {
-                    $thisRow['subtabs'] = $nextLevel;
-                }
-            }
-        }
-
-        return $thisLevel;
     }
 
     /**

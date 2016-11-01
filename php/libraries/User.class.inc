@@ -568,7 +568,7 @@ class User extends UserPermissions
             function ($carry, $item) {
 
                 if (empty($carry[$item['Parent_Label']])) {
-                    $carry[$item['Parent_Label']] = array()
+                    $carry[$item['Parent_Label']] = array();
 
                     $carry[$item['Parent_Label']]['Label']   = $item['Parent_Label'];
                     $carry[$item['Parent_Label']]['Visible'] = 1;

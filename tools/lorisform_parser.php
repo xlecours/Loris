@@ -200,6 +200,10 @@ function parseElements($elements, $groupLabel="")
             }
             break;
 
+        case "time":
+            $output .="time{@}".$element['name']."{@}".$label."\n";
+            break;
+
         case "html":
         case "file":
         case "hidden":

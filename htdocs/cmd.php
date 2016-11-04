@@ -12,7 +12,7 @@ $server = IoServer::factory(
             new NotificationControler()
         )
     ),
-    8080
+    8089
 );
 
 $server->run();

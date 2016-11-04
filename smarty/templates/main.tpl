@@ -32,7 +32,7 @@
         <script type="text/javascript">
           $(document).ready(function() {
 
-	 var conn = new WebSocket('wss://epigenomics-dev.loris.ca:8080/wss2/NNN');
+	 var conn = new WebSocket('wss://epigenomics-dev.loris.ca:8089/wss2/NNN');
    	 conn.onopen = function(e) {
          	console.log("Connection established!");
     	 };

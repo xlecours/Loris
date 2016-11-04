@@ -847,6 +847,9 @@ class Database
      */
     protected function trackChanges($table, $set, $where, $type='U')
     {
+        // Notify even if we are not trackong changes?
+        NotificationController::handleDatabaseEvent(func_get_args());
+
         // Tracking changes on the history table would result in an
         // infinite loop
         if (!$this->_trackChanges || $table == 'history') {

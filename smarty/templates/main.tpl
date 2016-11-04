@@ -31,6 +31,13 @@
         </title>
         <script type="text/javascript">
           $(document).ready(function() {
+
+	 var conn = new WebSocket('wss://epigenomics-dev.loris.ca:8080/wss2/NNN');
+   	 conn.onopen = function(e) {
+         	console.log("Connection established!");
+    	 };
+	console.log("asdas");
+
             {if $crumbs != "" && empty($error_message)}
               var crumbs = {$crumbs|@json_encode},
                       baseurl = "{$baseurl}",

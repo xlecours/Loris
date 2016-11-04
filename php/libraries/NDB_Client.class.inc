@@ -110,14 +110,15 @@ class NDB_Client
         //    See: https://github.com/jquery/jquery/issues/2012
         // 4. Allow data URLs for fonts, because our bootstrap theme
         //    seems to load a font that way.
-        header(
+        /*header(
             "Content-Security-Policy: "
             . "default-src 'self' 'unsafe-inline'; "
             . "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+	    . "connect-src 'self' ws://epigenomics-dev.loris.ca; "
             . "font-src 'self' data:; "
             . "img-src 'self' data:; "
             . $config_additions
-        );
+        );*/
         // start php session
         session_start();
 

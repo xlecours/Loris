@@ -13,7 +13,7 @@
 FormElement = React.createClass({
   displayName: 'FormElement',
 
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
       'name': '',
       'id': '',
@@ -22,14 +22,14 @@ FormElement = React.createClass({
       'class': 'form-horizontal'
     };
   },
-  handleSubmit: function (e) {
+  handleSubmit: function handleSubmit(e) {
     // Override default submit if property is set
     if (this.props.onSubmit) {
       e.preventDefault();
       this.props.onSubmit(e);
     }
   },
-  render: function () {
+  render: function render() {
     return React.createElement(
       'form',
       {
@@ -52,7 +52,7 @@ FormElement = React.createClass({
 SelectElement = React.createClass({
   displayName: 'SelectElement',
 
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
       'name': '',
       'id': '',
@@ -66,32 +66,32 @@ SelectElement = React.createClass({
       'required': false,
       'value': '',
       'errorMessage': 'The field is required!',
-      'onUserInput': function () {
+      'onUserInput': function onUserInput() {
         console.warn('onUserInput() callback is not set');
       }
     };
   },
-  componentDidMount: function () {
+  componentDidMount: function componentDidMount() {
     if (this.props.value) {
       this.setState({
         value: this.props.value
       });
     }
   },
-  componentWillReceiveProps: function () {
+  componentWillReceiveProps: function componentWillReceiveProps() {
     if (this.props.hasError) {
       this.setState({
         hasError: this.props.hasError
       });
     }
   },
-  getInitialState: function () {
+  getInitialState: function getInitialState() {
     return {
       value: '',
       hasError: false
     };
   },
-  handleChange: function (e) {
+  handleChange: function handleChange(e) {
 
     var hasError = false;
     if (this.props.required && e.target.value == "") {
@@ -105,7 +105,7 @@ SelectElement = React.createClass({
 
     this.props.onUserInput(this.props.name, e.target.value);
   },
-  render: function () {
+  render: function render() {
     var multiple = this.props.multiple ? this.props.multiple : '';
     var options = this.props.options;
     var errorMessage = '';
@@ -173,18 +173,18 @@ SelectElement = React.createClass({
 FileElement = React.createClass({
   displayName: 'FileElement',
 
-  getInitialState: function () {
+  getInitialState: function getInitialState() {
     return {
       'id': '',
       'value': null,
       'required': '',
       'hasError': false,
-      'onUserInput': function () {
+      'onUserInput': function onUserInput() {
         console.warn('onUserInput() callback is not set');
       }
     };
   },
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
       'label': 'File to Upload',
       'name': 'file',
@@ -195,21 +195,21 @@ FileElement = React.createClass({
       'disabled': false
     };
   },
-  componentDidMount: function () {
+  componentDidMount: function componentDidMount() {
     if (this.props.value) {
       this.setState({
         value: this.props.value
       });
     }
   },
-  componentWillReceiveProps: function () {
+  componentWillReceiveProps: function componentWillReceiveProps() {
     if (this.props.hasError) {
       this.setState({
         hasError: this.props.hasError
       });
     }
   },
-  handleChange: function (e) {
+  handleChange: function handleChange(e) {
     var hasError = false;
     if (this.props.required && e.target.value == "") {
       hasError = true;
@@ -223,7 +223,7 @@ FileElement = React.createClass({
     this.props.onUserInput(this.props.name, file);
   },
 
-  render: function () {
+  render: function render() {
     var required = this.props.required ? 'required' : '';
     var errorMessage = '';
     var elementClass = 'row form-group';
@@ -339,14 +339,14 @@ FileElement = React.createClass({
 HelpTextElement = React.createClass({
   displayName: 'HelpTextElement',
 
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
       'html': false,
       'label': '',
       'text': ''
     };
   },
-  render: function () {
+  render: function render() {
     if (this.props.html) {
       return React.createElement(
         'div',
@@ -391,12 +391,12 @@ HelpTextElement = React.createClass({
 ButtonElement = React.createClass({
   displayName: 'ButtonElement',
 
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
       'label': 'Submit'
     };
   },
-  render: function () {
+  render: function render() {
     return React.createElement(
       'div',
       { className: 'form-group' },
@@ -420,7 +420,7 @@ ButtonElement = React.createClass({
 HeaderElement = React.createClass({
   displayName: 'HeaderElement',
 
-  render: function () {
+  render: function render() {
     return React.createElement(
       'h2',
       null,
@@ -435,7 +435,7 @@ HeaderElement = React.createClass({
 LabelElement = React.createClass({
   displayName: 'LabelElement',
 
-  render: function () {
+  render: function render() {
     return React.createElement(
       'p',
       null,
@@ -450,7 +450,7 @@ LabelElement = React.createClass({
 ScoredElement = React.createClass({
   displayName: 'ScoredElement',
 
-  render: function () {
+  render: function render() {
     var score = this.props.score ? this.props.score : 0;
     return React.createElement(
       'div',
@@ -475,7 +475,7 @@ ScoredElement = React.createClass({
 TextboxElement = React.createClass({
   displayName: 'TextboxElement',
 
-  render: function () {
+  render: function render() {
     return React.createElement(
       'div',
       { className: 'row form-group' },
@@ -499,7 +499,7 @@ TextboxElement = React.createClass({
 TextareaElement = React.createClass({
   displayName: 'TextareaElement',
 
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
       'label': 'Text Area',
       'name': 'textarea',
@@ -508,28 +508,28 @@ TextareaElement = React.createClass({
       'disabled': '',
       'required': '',
       'value': '',
-      'onUserInput': function () {
+      'onUserInput': function onUserInput() {
         console.warn('onUserInput() callback is not set');
       }
     };
   },
-  getInitialState: function () {
+  getInitialState: function getInitialState() {
     return {
       value: ''
     };
   },
-  componentDidMount: function () {
+  componentDidMount: function componentDidMount() {
     if (this.props.value) {
       this.setState({ value: this.props.value });
     }
   },
-  handleChange: function (e) {
+  handleChange: function handleChange(e) {
     this.setState({
       value: e.target.value
     });
     this.props.onUserInput(this.props.name, e.target.value);
   },
-  render: function () {
+  render: function render() {
     return React.createElement(
       'div',
       { className: 'row form-group' },
@@ -561,7 +561,7 @@ TextareaElement = React.createClass({
 DateElement = React.createClass({
   displayName: 'DateElement',
 
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
       'label': 'Date',
       'name': '',
@@ -570,28 +570,28 @@ DateElement = React.createClass({
       'required': '',
       'value': '',
       'class': 'form-control',
-      'onUserInput': function () {
+      'onUserInput': function onUserInput() {
         console.warn('onUserInput() callback is not set');
       }
     };
   },
-  getInitialState: function () {
+  getInitialState: function getInitialState() {
     return {
       value: ''
     };
   },
-  componentDidMount: function () {
+  componentDidMount: function componentDidMount() {
     if (this.props.value) {
       this.setState({ value: this.props.value });
     }
   },
-  handleChange: function (e) {
+  handleChange: function handleChange(e) {
     this.setState({
       value: e.target.value
     });
     this.props.onUserInput(this.props.name, e.target.value);
   },
-  render: function () {
+  render: function render() {
     var required = this.props.required ? 'required' : '';
     return React.createElement(
       'div',
@@ -626,7 +626,7 @@ DateElement = React.createClass({
 NumericElement = React.createClass({
   displayName: 'NumericElement',
 
-  render: function () {
+  render: function render() {
     return React.createElement(
       'div',
       { className: 'row form-group' },
@@ -649,6 +649,67 @@ NumericElement = React.createClass({
   }
 });
 
+LorisFormCondition = React.createClass({
+  displayName: 'LorisFormCondition',
+
+  propTypes: {
+    inputName: React.PropTypes.string.isRequired,
+    inputValue: React.PropTypes.any.isRequired,
+    operator: React.PropTypes.oneOf(['equals', 'differs', 'contains', 'greaterThan', 'lowerThan', 'greaterOrEqualThan', 'lowerOrEqualThan'])
+  },
+  render: function render() {
+    return null;
+  }
+});
+
+LorisFormConditionGroup = React.createClass({
+  displayName: 'LorisFormConditionGroup',
+
+  propTypes: {
+    conditions: React.PropTypes.arrayOf(React.PropTypes.oneOfType([React.PropTypes.instanceOf(LorisFormCondition), React.PropTypes.instanceOf(LorisFormConditionGroup)])),
+    operator: React.PropTypes.oneOf(['OR', 'AND'])
+  },
+  render: function render() {
+    return null;
+  }
+});
+
+LorisElementsGroup = React.createClass({
+  displayName: 'LorisElementsGroup',
+
+  propTypes: {
+    formRef: React.PropTypes.string.isRequired,
+    conditions: React.PropTypes.array.isRequired
+  },
+  getInitialState: function getInitialState() {
+    return {
+      conditionFulfilled: false
+    };
+  },
+  componentDidMount: function componentDidMount() {
+    var conditionFulfilled = this.props.conditions.map(function (c) {
+      console.log(c);
+      return true;
+    }).reduce(function (carry, currentValue) {
+      return carry && currentValue;
+    }, true);
+
+    this.setState({ conditionFulfilled: conditionFulfilled });
+  },
+  render: function render() {
+    console.log(this.props);
+    var group = null;
+    if (this.state.conditionFulfilled) {
+      group = React.createElement(
+        'div',
+        null,
+        this.props.children
+      );
+    }
+    console.log(group);
+    return group;
+  }
+});
 /*
  * This is the React class for a LORIS element. It takes
  * in an element and render's the HTML based on its type
@@ -657,7 +718,7 @@ NumericElement = React.createClass({
 LorisElement = React.createClass({
   displayName: 'LorisElement',
 
-  render: function () {
+  render: function render() {
     var element = this.props.element,
         elementHtml = '';
     switch (element.Type) {

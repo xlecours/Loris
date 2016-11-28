@@ -17,7 +17,7 @@ var MediaUploadForm = React.createClass({
     action: React.PropTypes.string.isRequired
   },
 
-  getInitialState: function () {
+  getInitialState: function getInitialState() {
     return {
       'Data': [],
       'formData': {},
@@ -28,11 +28,11 @@ var MediaUploadForm = React.createClass({
     };
   },
 
-  componentDidMount: function () {
+  componentDidMount: function componentDidMount() {
     var that = this;
     $.ajax(this.props.DataURL, {
       dataType: 'json',
-      xhr: function () {
+      xhr: function xhr() {
         var xhr = new window.XMLHttpRequest();
         xhr.addEventListener("progress", function (evt) {
           that.setState({
@@ -41,13 +41,13 @@ var MediaUploadForm = React.createClass({
         });
         return xhr;
       },
-      success: function (data) {
+      success: function success(data) {
         that.setState({
           'Data': data,
           'isLoaded': true
         });
       },
-      error: function (data, error_code, error_msg) {
+      error: function error(data, error_code, error_msg) {
         that.setState({
           'error': 'An error occured when loading the form!'
         });
@@ -55,7 +55,7 @@ var MediaUploadForm = React.createClass({
     });
   },
 
-  render: function () {
+  render: function render() {
 
     if (!this.state.isLoaded) {
       if (this.state.error != undefined) {
@@ -92,6 +92,8 @@ var MediaUploadForm = React.createClass({
         alertMessage = errorMessage ? errorMessage : "Failed to upload!";
       }
     }
+
+    var conditions = [{ input: 'pscid', value: 'MTL001', operator: 'equals' }];
 
     return React.createElement(
       'div',
@@ -140,21 +142,25 @@ var MediaUploadForm = React.createClass({
           ref: 'for_site',
           required: true
         }),
-        React.createElement(SelectElement, {
-          name: 'instrument',
-          label: 'Instrument',
-          options: this.state.Data.instruments,
-          onUserInput: this.setFormData,
-          ref: 'instrument'
-        }),
-        React.createElement(DateElement, {
-          name: 'date_taken',
-          label: 'Date of Administration',
-          minYear: '2000',
-          maxYear: '2017',
-          onUserInput: this.setFormData,
-          ref: 'date_taken'
-        }),
+        React.createElement(
+          LorisElementsGroup,
+          { conditions: conditions },
+          React.createElement(SelectElement, {
+            name: 'instrument',
+            label: 'Instrument',
+            options: this.state.Data.instruments,
+            onUserInput: this.setFormData,
+            ref: 'instrument'
+          }),
+          React.createElement(DateElement, {
+            name: 'date_taken',
+            label: 'Date of Administration',
+            minYear: '2000',
+            maxYear: '2017',
+            onUserInput: this.setFormData,
+            ref: 'date_taken'
+          })
+        ),
         React.createElement(TextareaElement, {
           name: 'comments',
           label: 'Comments',
@@ -185,7 +191,7 @@ var MediaUploadForm = React.createClass({
    * @param instrument
    * @returns {string}
    */
-  getValidFileName: function (pscid, visitLabel, instrument) {
+  getValidFileName: function getValidFileName(pscid, visitLabel, instrument) {
     var fileName = pscid + "_" + visitLabel;
     if (instrument) fileName += "_" + instrument;
 
@@ -196,7 +202,7 @@ var MediaUploadForm = React.createClass({
    * Handles form submission
    * @param e
    */
-  handleSubmit: function (e) {
+  handleSubmit: function handleSubmit(e) {
     e.preventDefault();
 
     var myFormData = this.state.formData;
@@ -236,7 +242,7 @@ var MediaUploadForm = React.createClass({
       cache: false,
       contentType: false,
       processData: false,
-      xhr: function () {
+      xhr: function xhr() {
         var xhr = new window.XMLHttpRequest();
         xhr.upload.addEventListener("progress", function (evt) {
           if (evt.lengthComputable) {
@@ -250,7 +256,7 @@ var MediaUploadForm = React.createClass({
         }, false);
         return xhr;
       },
-      success: function (data) {
+      success: function success(data) {
         $("#file-progress").addClass('hide');
         self.setState({
           uploadResult: "success",
@@ -272,7 +278,7 @@ var MediaUploadForm = React.createClass({
         // rerender components
         self.forceUpdate();
       },
-      error: function (err) {
+      error: function error(err) {
         var errorMessage = JSON.parse(err.responseText).message;
         self.setState({
           uploadResult: "error",
@@ -291,7 +297,7 @@ var MediaUploadForm = React.createClass({
    * @param fileName
    * @returns {boolean}
    */
-  isValidFileName: function (requiredFileName, fileName) {
+  isValidFileName: function isValidFileName(requiredFileName, fileName) {
     if (fileName == null || requiredFileName == null) {
       return false;
     }
@@ -306,7 +312,7 @@ var MediaUploadForm = React.createClass({
    * @param formData
    * @returns {boolean}
    */
-  isValidForm: function (formRefs, formData) {
+  isValidForm: function isValidForm(formRefs, formData) {
 
     var isValidForm = true;
     var requiredFields = {
@@ -336,7 +342,7 @@ var MediaUploadForm = React.createClass({
    * @param formElement
    * @param value
    */
-  setFormData: function (formElement, value) {
+  setFormData: function setFormData(formElement, value) {
 
     // Only display visits and sites available for the current pscid
     if (formElement === "pscid") {
@@ -355,7 +361,7 @@ var MediaUploadForm = React.createClass({
   /**
    * Display a success/error alert message after form submission
    */
-  showAlertMessage: function () {
+  showAlertMessage: function showAlertMessage() {
     var self = this;
 
     if (this.refs["alert-message"] == null) {

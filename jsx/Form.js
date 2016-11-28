@@ -537,6 +537,55 @@ NumericElement = React.createClass({
   }
 });
 
+var LorisFormConditionType = React.PropTypes.shape({
+  inputName: React.PropTypes.string.isRequired,
+  inputValue: React.PropTypes.any.isRequired,
+  operator: React.PropTypes.oneOf(['equals', 'differs', 'contains', 'greaterThan', 'lowerThan', 'greaterOrEqualThan', 'lowerOrEqualThan'])
+});
+
+LorisFormConditionGroup = React.createClass({
+  propTypes: {
+    conditions: React.PropTypes.arrayOf(React.PropTypes.oneOfType([
+      React.PropTypes.instanceOf(LorisFormCondition),
+      React.PropTypes.instanceOf(LorisFormConditionGroup)
+    ])),
+    operator: React.PropTypes.oneOf(['OR', 'AND'])
+  },
+  render: function render() {
+    return null;
+  }
+});
+
+LorisElementsGroup = React.createClass({
+  propTypes: {
+    formRef: React.PropTypes.string.isRequired,
+    conditions: React.PropTypes.array.isRequired,
+  },
+  getInitialState: function getInitialState() {
+    return ({
+      conditionFulfilled: false
+    });
+  },
+  componentDidMount: function componentDidMount() {
+    var conditionFulfilled = this.props.conditions.map(function(c){
+      console.log(c)
+      return true;
+    }).reduce(function(carry,currentValue){
+      return carry && currentValue;
+    },true);
+
+    this.setState({conditionFulfilled: conditionFulfilled});
+  },
+  render: function render() {
+    console.log(this.props);
+    var group = null;
+    if (this.state.conditionFulfilled) {
+      group = (<div>{this.props.children}</div>);
+    }
+    console.log(group);
+    return group;
+  }
+});
 /*
  * This is the React class for a LORIS element. It takes
  * in an element and render's the HTML based on its type

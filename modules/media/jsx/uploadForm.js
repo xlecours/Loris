@@ -89,6 +89,10 @@ var MediaUploadForm = React.createClass({
       }
     }
 
+    var conditions = [
+      {input: 'pscid', value:'MTL001', operator:'equals'}
+    ];
+
     return (
       <div>
         <div className={alertClass} role="alert" ref="alert-message">
@@ -127,6 +131,7 @@ var MediaUploadForm = React.createClass({
             ref="for_site"
             required={true}
           />
+        <LorisElementsGroup conditions={conditions}>
           <SelectElement
             name="instrument"
             label="Instrument"
@@ -142,6 +147,7 @@ var MediaUploadForm = React.createClass({
             onUserInput={this.setFormData}
             ref="date_taken"
           />
+        </LorisElementsGroup>
           <TextareaElement
             name="comments"
             label="Comments"

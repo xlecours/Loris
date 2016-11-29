@@ -927,8 +927,6 @@ class GroupElement extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log(nextState);
-    console.log(this.state);
     return nextState != this.state;
   }
 

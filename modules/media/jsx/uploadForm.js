@@ -98,6 +98,11 @@ var MediaUploadForm = React.createClass({
       }
     }
 
+var condition1 = new LorisFormCondition('PSCID', 'MTL001', 'equals');
+var condition2 = new LorisFormCondition('PSCID', 'MTL002', 'equals');
+
+var conditionGroup = new LorisFormConditionGroup([condition1,condition2], 'OR');
+
     return (
       <div>
         <div className={alertClass} role="alert" ref="alert-message">
@@ -140,6 +145,7 @@ var MediaUploadForm = React.createClass({
             ref="forSite"
             required={true}
           />
+<GroupElement condition={conditionGroup}>
           <SelectElement
             name="instrument"
             label="Instrument"
@@ -155,6 +161,7 @@ var MediaUploadForm = React.createClass({
             onUserInput={this.setFormData}
             ref="dateTaken"
           />
+</GroupElement>
           <TextareaElement
             name="comments"
             label="Comments"

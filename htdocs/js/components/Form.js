@@ -1070,8 +1070,6 @@ var GroupElement = function (_React$Component) {
   }, {
     key: 'shouldComponentUpdate',
     value: function shouldComponentUpdate(nextProps, nextState) {
-      console.log(nextState);
-      console.log(this.state);
       return nextState != this.state;
     }
   }, {

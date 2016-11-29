@@ -917,11 +917,19 @@ class GroupElement extends React.Component {
   }
 
   componentDidMount() {
-    var conditionFulfilled = this.props.conditions.map(function(c){
-      return c;
-    }).reduce(function(carry,currentValue) {
-      return (carry && currentValue);
-    }, true);
+    var conditionFulfilled = this.props.condition.evaluate();
+  }
+
+  componentWillReceiveProps() {
+    this.setState({
+      conditionFulfilled: this.props.condition.evaluate()
+    });
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log(nextState);
+    console.log(this.state);
+    return nextState != this.state;
   }
 
   render () {

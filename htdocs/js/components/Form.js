@@ -1058,11 +1058,21 @@ var GroupElement = function (_React$Component) {
   _createClass(GroupElement, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      var conditionFulfilled = this.props.conditions.map(function (c) {
-        return c;
-      }).reduce(function (carry, currentValue) {
-        return carry && currentValue;
-      }, true);
+      var conditionFulfilled = this.props.condition.evaluate();
+    }
+  }, {
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps() {
+      this.setState({
+        conditionFulfilled: this.props.condition.evaluate()
+      });
+    }
+  }, {
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      console.log(nextState);
+      console.log(this.state);
+      return nextState != this.state;
     }
   }, {
     key: 'render',

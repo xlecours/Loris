@@ -906,3 +906,104 @@ var LorisElement = React.createClass({
     return elementHtml;
   }
 });
+
+class GroupElement extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      conditionFulfilled: false
+    };
+  }
+
+  componentDidMount() {
+    var conditionFulfilled = this.props.conditions.map(function(c){
+      return c;
+    }).reduce(function(carry,currentValue) {
+      return (carry && currentValue);
+    }, true);
+  }
+
+  render () {
+    var group = null;
+    if (this.state.conditionFulfilled) {
+      group = (
+        <div>
+          {this.props.children}
+        </div>
+      );
+    }
+    return group;
+  }
+}
+
+GroupElement.proptTypes = {
+  formRef: React.PropTypes.string.isRequired,
+  conditions: React.PropTypes.array.isRequired
+};
+
+class LorisFormCondition {
+  constructor (inputId, value, comparisonOperator) {
+    this.inputId = inputId;
+    this.value = value;
+    this.comparisonOperator = comparisonOperator;
+
+    this.evaluate = this.evaluate.bind(this);
+  }
+
+  evaluate() {
+    var verdict = false;
+    var inputValue = document.getElementById(this.inputId).value;
+   
+    switch (this.comparisonOperator) {
+      case 'equals':
+        verdict = (inputValue == this.value);
+      break;
+      case 'notEquals':
+        verdict = (inputValue != this.value);
+      break;
+      case 'ge':
+        verdict = (inputValue >= this.value);
+      break;
+      case 'gt':
+        verdict = (inputValue > this.value);
+      break;
+      case 'le':
+        verdict = (inputValue <= this.value);
+      break;
+      case 'lt':
+        verdict = (inputValue < this.value);
+      break;
+    }
+    return verdict;
+  }
+} 
+
+class LorisFormConditionGroup {
+  constructor (conditions, logicalOperator) {
+    this.conditions = conditions;
+    this.logicalOperator = logicalOperator;
+
+    this.evaluate = this.evaluate.bind(this);
+  }
+
+  evaluate() {
+    var reducer = null;
+    var initialValue = null;
+
+    switch (this.logicalOperator) {
+      case 'AND':
+        reducer = function (A,B) {return (A && B)};
+        initialValue = true;
+      break; 
+      case 'OR':
+        reducer = function (A,B) {return (A || B)};
+        initialValue = false;
+      break;
+    }
+
+    return this.conditions.map(function(c) {
+      return c.evaluate();
+    }).reduce(reducer, initialValue);
+  }
+}

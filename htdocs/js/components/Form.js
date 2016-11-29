@@ -1,5 +1,13 @@
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 /* exported FormElement, SelectElement, TextareaElement, TextboxElement, DateElement,
 NumericElement, FileElement, HelpTextElement, StaticElement, ButtonElement, LorisElement
 */
@@ -1032,3 +1040,133 @@ var LorisElement = React.createClass({
     return elementHtml;
   }
 });
+
+var GroupElement = function (_React$Component) {
+  _inherits(GroupElement, _React$Component);
+
+  function GroupElement(props) {
+    _classCallCheck(this, GroupElement);
+
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GroupElement).call(this, props));
+
+    _this.state = {
+      conditionFulfilled: false
+    };
+    return _this;
+  }
+
+  _createClass(GroupElement, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var conditionFulfilled = this.props.conditions.map(function (c) {
+        return c;
+      }).reduce(function (carry, currentValue) {
+        return carry && currentValue;
+      }, true);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var group = null;
+      if (this.state.conditionFulfilled) {
+        group = React.createElement(
+          'div',
+          null,
+          this.props.children
+        );
+      }
+      return group;
+    }
+  }]);
+
+  return GroupElement;
+}(React.Component);
+
+GroupElement.proptTypes = {
+  formRef: React.PropTypes.string.isRequired,
+  conditions: React.PropTypes.array.isRequired
+};
+
+var LorisFormCondition = function () {
+  function LorisFormCondition(inputId, value, comparisonOperator) {
+    _classCallCheck(this, LorisFormCondition);
+
+    this.inputId = inputId;
+    this.value = value;
+    this.comparisonOperator = comparisonOperator;
+
+    this.evaluate = this.evaluate.bind(this);
+  }
+
+  _createClass(LorisFormCondition, [{
+    key: 'evaluate',
+    value: function evaluate() {
+      var verdict = false;
+      var inputValue = document.getElementById(this.inputId).value;
+
+      switch (this.comparisonOperator) {
+        case 'equals':
+          verdict = inputValue == this.value;
+          break;
+        case 'notEquals':
+          verdict = inputValue != this.value;
+          break;
+        case 'ge':
+          verdict = inputValue >= this.value;
+          break;
+        case 'gt':
+          verdict = inputValue > this.value;
+          break;
+        case 'le':
+          verdict = inputValue <= this.value;
+          break;
+        case 'lt':
+          verdict = inputValue < this.value;
+          break;
+      }
+      return verdict;
+    }
+  }]);
+
+  return LorisFormCondition;
+}();
+
+var LorisFormConditionGroup = function () {
+  function LorisFormConditionGroup(conditions, logicalOperator) {
+    _classCallCheck(this, LorisFormConditionGroup);
+
+    this.conditions = conditions;
+    this.logicalOperator = logicalOperator;
+
+    this.evaluate = this.evaluate.bind(this);
+  }
+
+  _createClass(LorisFormConditionGroup, [{
+    key: 'evaluate',
+    value: function evaluate() {
+      var reducer = null;
+      var initialValue = null;
+
+      switch (this.logicalOperator) {
+        case 'AND':
+          reducer = function reducer(A, B) {
+            return A && B;
+          };
+          initialValue = true;
+          break;
+        case 'OR':
+          reducer = function reducer(A, B) {
+            return A || B;
+          };
+          initialValue = false;
+          break;
+      }
+
+      return this.conditions.map(function (c) {
+        return c.evaluate();
+      }).reduce(reducer, initialValue);
+    }
+  }]);
+
+  return LorisFormConditionGroup;
+}();

@@ -37,7 +37,7 @@ var img = new Image();
 img.onload = function() {
   draw();
 };
-img.src = loris.BaseURL.concat('images/ball.png');
+img.src = loris.BaseURL.concat('/images/ball.png');
 
 function keyDownHandler(e) {
     if(e.keyCode == 39) {

@@ -1,0 +1,1 @@
+INSERT INTO LorisMenu (Parent,Label,Link,OrderNumber) SELECT p.ID as Parent, 'Genomic Viewer' as Label, 'genomic_viewer/' as Link, MAX(m.OrderNumber) + 1 as OrderNumber FROM LorisMenu m join LorisMenu p ON (m.Parent = p.ID) WHERE p.Label = 'Tools' GROUP BY m.Parent;

@@ -317,7 +317,6 @@ class NDB_Caller
     }
 
     function loadPage($class) {
-        //$this->existsAndRequire("modules/genomic_viewer/php/genomic_viewer.class.inc");
         $this->existsAndRequire("$class.class.inc");
         $this->page = new Genomic_Viewer();
         $this->page->menu = $class;

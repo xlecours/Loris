@@ -1,0 +1,71 @@
+/* 
+ * General
+ */
+td {
+    border-bottom: 1px solid #eee;
+}
+
+.track-handle .track-content {
+  padding: 5px;
+}
+
+.track-content *.focus {
+  stroke: orange;
+  fill: orange;
+  fill-opacity: 1;
+  outline: ;
+}
+
+
+/* Genes */
+.yAxis-geneName {
+  margin: 5px;
+}
+
+/* Box plots */
+.boxes line {
+  stroke: #999;
+  stroke-width: 0.5px;
+  stroke-dasharray: 5;
+}
+
+.box {
+  font: 10px sans-serif;
+}
+
+.box line,
+.box rect,
+.box circle {
+  stroke: #999;
+  stroke-width: 1px;
+  stroke-dasharray: 0;
+}
+
+.box:not(.focus) rect {
+  fill: #053665;
+}
+
+.box text {
+  fill-opacity: 0
+}
+
+.box .center {
+  stroke-dasharray: 3,3;
+}
+
+.box .outlier {
+  fill: none;
+  stroke: #ccc;
+}
+
+/* SNP */
+.snps:not(:root) {
+  overflow: inherit;
+}
+
+.snps rect {
+  fill: #053665;
+  stroke: #053665;
+  stroke-width: 1px;
+}
+

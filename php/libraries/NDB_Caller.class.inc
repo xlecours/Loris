@@ -111,6 +111,7 @@ class NDB_Caller
                 "$ModuleDir/php:"
                 . get_include_path()
             );
+
             $submenu = null;
             if (!empty($_REQUEST['submenu'])) {
                 $submenu = $_REQUEST['submenu'];
@@ -125,7 +126,7 @@ class NDB_Caller
 
             if ($test_name == 'genomic_viewer') {
                 return $this->loadPage($test_name); 
-            }elseif (((empty($subtest)
+            } else if (((empty($subtest)
                 && $submenu === null)
                 && ($this->existsAndRequire($menu_filter_testname)
                 || $this->existsAndRequire($menu_form_testname)
@@ -145,7 +146,7 @@ class NDB_Caller
 
                 $this->type = 'menu';
                 return $html;
-            } else if ($this->existsAndRequire("$test_name.class.inc")) {
+            } else if ($this->existsAndRequire("NDB_Form_$test_name.class.inc")) {
                 $identifier = isset($_REQUEST['identifier'])
                     ? $_REQUEST['identifier']
                     : '';
@@ -316,6 +317,9 @@ class NDB_Caller
         return $html;
     }
 
+    /**
+     * Form module that are not a Menu and not a form.
+     */
     function loadPage($class) {
         $this->existsAndRequire("$class.class.inc");
         $this->page = new Genomic_Viewer();

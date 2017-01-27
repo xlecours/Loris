@@ -2,9 +2,9 @@
 /**
  * PHP Version 7
  *
- * @category Imaging
- * @package  Imaging
- * @author   Loris Team <loris.mni@bic.mni.mcgill.ca>
+ * @category Notification
+ * @package  Notification
+ * @author   Rida Abou-Haidar <rida.loris@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
@@ -38,9 +38,10 @@ class NDB_Notifier extends NDB_Notifier_Abstract
         $operation_type,
         $extra_tpl_data=array()
     ) {
-        parent::__construct($module_name,
+        parent::__construct(
+            $module_name,
             $operation_type,
-            $extra_tpl_data=array()
+            $extra_tpl_data = array()
         );
     }
 
@@ -59,18 +60,18 @@ class NDB_Notifier extends NDB_Notifier_Abstract
         $adminNotifier=false,
         $extra_tpl_data=array()
     ) {
-        $this->_tpl_data = $this->_tpl_data + $extra_tpl_data;
+        $this->tpl_data = $this->tpl_data + $extra_tpl_data;
 
         if (!empty($custom_message)) {
-            $this->_template ="notifier_custom.tpl";
-            $this->_tpl_data['custom_message'] =$custom_message;
+            $this->template ="notifier_custom.tpl";
+            $this->tpl_data['custom_message'] =$custom_message;
         }
         if ($adminNotifier) {
-            $this->_notifier =$this->_adminNotifier;
+            $this->notifier =$this->adminNotifier;
         }
 
         // Basic email handler
-        if (!empty($this->_notified['basic_email'])) {
+        if (!empty($this->notified['basic_email'])) {
             $this->_sendEmails();
         }
     }
@@ -84,20 +85,20 @@ class NDB_Notifier extends NDB_Notifier_Abstract
      */
     private function _sendEmails()
     {
-        foreach ($this->_notified['basic_email'] as $name=>$uid) {
-            $this->_tpl_data['notified_user'] = $name;
-            $this->_tpl_data['notifier_user'] =
-                $this->_notifier['name'].' <'.$this->_notifier['email'].'>';
-            $email=$this->_getEmail($uid);
+        foreach ($this->notified['basic_email'] as $name=>$uid) {
+            $this->tpl_data['notified_user'] = $name;
+            $this->tpl_data['notifier_user']
+                = $this->notifier['name'].' <'.$this->notifier['email'].'>';
+            $email =$this->getEmail($uid);
 
-            if ($this->_notifier['ID'] === $uid) {
+            if ($this->notifier['ID'] === $uid) {
                 // TODO send confirmation email instead
             } else {
                 error_log("NOTIFIED ->".$email);
                 Email::send(
                     $email,
-                    $this->_template,
-                    $this->_tpl_data
+                    $this->template,
+                    $this->tpl_data
                 );
             }
         }

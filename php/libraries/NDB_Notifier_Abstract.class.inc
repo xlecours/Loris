@@ -2,14 +2,13 @@
 /**
  * PHP Version 7
  *
- * @category Imaging
- * @package  Imaging
- * @author   Loris Team <loris.mni@bic.mni.mcgill.ca>
+ * @category Notification
+ * @package  Notification
+ * @author   Rida Abou-Haidar <rida.loris@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
 
-require_once "Email.class.inc";
 
 /**
  * A class allowing to issue notification using several services including sms,
@@ -28,49 +27,49 @@ abstract class NDB_Notifier_Abstract
      *
      * @var array [ID,name,email]
      */
-    protected $_notifier;
+    protected $notifier;
 
     /**
      * Get the admin user issuing the notification.
      *
      * @var string
      */
-    protected $_adminNotifier;
+    protected $adminNotifier;
 
     /**
      * Get list of users to be notified and notification methods.
      *
      * @var array
      */
-    protected $_notified =array();
+    protected $notified =array();
 
     /**
      * Module for which the notifier is setup
      *
      * @var string
      */
-    protected $_module;
+    protected $module;
 
     /**
      * Operation for which the notifier is setup
      *
      * @var string
      */
-    protected $_operation;
+    protected $operation;
 
     /**
      * Template to use for email/sms/phone
      *
      * @var string
      */
-    protected $_template;
+    protected $template;
 
     /**
      * Data to be sent to the template fo filling
      *
      * @var array
      */
-    protected $_tpl_data =array();
+    protected $tpl_data =array();
 
     /**
      * NDB_Notifier constructor.
@@ -89,23 +88,23 @@ abstract class NDB_Notifier_Abstract
     ) {
         $config =& NDB_Config::singleton();
 
-        $this->_module        =$module_name;
-        $this->_operation     =$operation_type;
-        $this->_notified      =$this->_get2DListToNotify();
-        $this->_notifier      =$this->_getLoggedInUser();
-        $this->_adminNotifier =$this->_getAdminUser();
-        $this->_tpl_data      = $this->_tpl_data + $extra_tpl_data;
-        $this->_tpl_data['study_logo'] = $config->getSetting('studylogo');
-        $this->_tpl_data['baseurl']    = $config->getSetting('url');
-        $this->_tpl_data['study_name'] = $config->getSetting('title');
+        $this->module        =$module_name;
+        $this->operation     =$operation_type;
+        $this->notified      =$this->_get2DListToNotify();
+        $this->notifier      =$this->_getLoggedInUser();
+        $this->adminNotifier =$this->getAdminUser();
+        $this->tpl_data      = $this->tpl_data + $extra_tpl_data;
+        $this->tpl_data['study_logo'] = $config->getSetting('studylogo');
+        $this->tpl_data['baseurl']    = $config->getSetting('url');
+        $this->tpl_data['study_name'] = $config->getSetting('title');
 
         switch ($module_name) {
         case 'media':
             if ($operation_type==='download') {
-                $this->_template ="notifier_media_download.tpl";
+                $this->template ="notifier_media_download.tpl";
                 break;
             } elseif ($operation_type==='upload') {
-                $this->_template ="notifier_media_upload.tpl";
+                $this->template ="notifier_media_upload.tpl";
                 break;
             } else {
                 throw new LorisException(
@@ -139,7 +138,7 @@ abstract class NDB_Notifier_Abstract
      */
     public function getNotifier()
     {
-        return $this->_notifier;
+        return $this->notifier;
     }
 
     /**
@@ -149,7 +148,7 @@ abstract class NDB_Notifier_Abstract
      */
     public function getNotified()
     {
-        return $this->_notified;
+        return $this->notified;
     }
 
     /**
@@ -159,9 +158,9 @@ abstract class NDB_Notifier_Abstract
      */
     private function _getLoggedInUser()
     {
-        $user        =& User::singleton();
+        $user       =& User::singleton();
         $info_array =array();
-        $info_array ['ID']   = $user->getData('ID');
+        $info_array['ID']    = $user->getData('ID');
         $info_array['name']  = $user->getFullname();
         $info_array['email'] = $user->getData('Email');
         return $info_array;
@@ -172,7 +171,7 @@ abstract class NDB_Notifier_Abstract
      *
      * @return string   string in the form `First Last <email@domain.com>`
      */
-    protected function _getAdminUser()
+    protected function getAdminUser()
     {
         $DB          = Database::singleton();
         $result      = $DB->pselectRow(
@@ -217,8 +216,8 @@ abstract class NDB_Notifier_Abstract
                         )
                     ";
         $params = array(
-                   "nm"  => $this->_module,
-                   "ot"  => $this->_operation,
+                   "nm"  => $this->module,
+                   "ot"  => $this->operation,
                    "cid" => $site_concerned,
                   );
         $result = $DB->pselect($query, $params);
@@ -227,7 +226,7 @@ abstract class NDB_Notifier_Abstract
         $notification_list =array();
 
         foreach ($result as $k=>$row) {
-            $notification_list[$row['service']][$row['Real_name']]= $row['user'];
+            $notification_list[$row['service']][$row['Real_name']] = $row['user'];
         }
         return $notification_list;
     }
@@ -235,15 +234,16 @@ abstract class NDB_Notifier_Abstract
     /**
      * Get email of a user from his ID
      *
-     * @param  int     $uid containing the userID
+     * @param int $uid containing the userID
      *
      * @return string  email of the user
      */
-    protected function _getEmail($uid) {
-        $DB          = Database::singleton();
-        $result      = $DB->pselectOne(
+    protected function getEmail($uid)
+    {
+        $DB     = Database::singleton();
+        $result = $DB->pselectOne(
             "SELECT Email FROM users WHERE ID=:uid",
-            array("uid"=>$uid)
+            array("uid" => $uid)
         );
         return $result;
     }
@@ -251,20 +251,27 @@ abstract class NDB_Notifier_Abstract
     /**
      * Get phone number of a user from his ID
      *
-     * @param  int     $uid containing the userID
+     * @param int $uid containing the userID
      *
      * @return string  Phone number of the user
      */
-    protected function _getPhone($uid) {
-        $DB          = Database::singleton();
-        $result      = $DB->pselectOne(
+    protected function getPhone($uid)
+    {
+        $DB     = Database::singleton();
+        $result = $DB->pselectOne(
             "SELECT Phone FROM users WHERE ID=:uid",
-            array("uid"=>$uid)
+            array("uid" => $uid)
         );
 
         return $result;
     }
 
+    /**
+     * Abstract function notify. To be implemented by project depending on
+     * services offered (text_email, HTML email, sms, phone calls, ...).
+     *
+     * @return mixed
+     */
     abstract function notify();
 
 }

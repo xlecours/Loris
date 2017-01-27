@@ -26,7 +26,7 @@ abstract class NDB_Notifier_Abstract
     /**
      * Get the current logged in user issuing the notification.
      *
-     * @var string
+     * @var array [ID,name,email]
      */
     protected $_notifier;
 
@@ -135,7 +135,7 @@ abstract class NDB_Notifier_Abstract
     /**
      * Getter for user issuing notification
      *
-     * @return string   User issuing notification
+     * @return array   User issuing notification in form [ID,name,email]
      */
     public function getNotifier()
     {
@@ -160,8 +160,11 @@ abstract class NDB_Notifier_Abstract
     private function _getLoggedInUser()
     {
         $user        =& User::singleton();
-        $concat_name = $user->getFullname().' <'.$user->getData('Email').'>';
-        return $concat_name;
+        $info_array =array();
+        $info_array ['ID']   = $user->getData('ID');
+        $info_array['name']  = $user->getFullname();
+        $info_array['email'] = $user->getData('Email');
+        return $info_array;
     }
 
     /**
@@ -193,42 +196,25 @@ abstract class NDB_Notifier_Abstract
         $user =& User::singleton();
         $site_concerned =  $user->getCenterID();
         // query needs to take into account the notified user permissions.
-//        $query  = "SELECT
-//                    u.Real_name as name,
-//                    u.Email as emailAddress,
-//                    u.Phone as phoneNum,
-//                    unr.email,
-//                    unr.sms,
-//                    unr.phone
-//                  FROM users u
-//                    JOIN users_notifications_rel unr ON (u.ID = unr.user_id)
-//                    JOIN notification_modules nm ON (nm.id=unr.notification_id)
-//                    LEFT JOIN user_perm_rel upr ON (u.ID=upr.user_id)
-//                  WHERE nm.module_name=:nm
-//                    AND nm.operation_type=:ot
-//                    AND (u.CenterID=:cid OR upr.permID=(SELECT permID
-//                                    FROM permissions
-//                                    WHERE code='access_all_profiles')
-//                        )
-//                    AND (unr.email ='Y' OR unr.sms='Y' OR unr.phone='Y')
-//                    ";
 
-        $query  = "SELECT 
-                    u.Real_name as name,
-                    u.Email as emailAddress, 
-                    u.Phone as phoneNum
+        $query  = "SELECT DISTINCT 
+                    u.ID as user,
+                    u.Real_name, 
+                    u.Email, 
+                    u.Phone,
+                    nm.*, 
+                    ns.*
                   FROM users u 
                     JOIN users_notifications_rel unr ON (u.ID = unr.user_id) 
                     JOIN notification_modules nm ON (nm.id = unr.module_id)
                     JOIN notification_services ns ON (ns.id = unr.service_id)
-                    LEFT JOIN user_perm_rel upr ON (u.ID=upr.user_id)
+                    JOIN user_perm_rel upr ON (u.ID=upr.UserID)
                   WHERE nm.module_name=:nm
                     AND nm.operation_type=:ot
                     AND (u.CenterID=:cid OR upr.permID=(SELECT permID 
                                     FROM permissions 
                                     WHERE code='access_all_profiles')
                         )
-                    AND (unr.email ='Y' OR unr.sms='Y' OR unr.phone='Y')
                     ";
         $params = array(
                    "nm"  => $this->_module,
@@ -239,55 +225,46 @@ abstract class NDB_Notifier_Abstract
 
         //parse $result and create 2D array
         $notification_list =array();
+
         foreach ($result as $k=>$row) {
-            if ($row['email']==='Y') {
-                $notification_list['email'][$row['name']] = $row['emailAddress'];
-            }
-            if ($row['sms']==='Y') {
-                $notification_list['sms'][$row['name']] = $row['phoneNum'];
-            }
-            if ($row['phone']==='Y') {
-                $notification_list['phone'][$row['name']] = $row['phoneNum'];
-            }
+            $notification_list[$row['service']][$row['Real_name']]= $row['user'];
         }
         return $notification_list;
     }
 
+    /**
+     * Get email of a user from his ID
+     *
+     * @param  int     $uid containing the userID
+     *
+     * @return string  email of the user
+     */
+    protected function _getEmail($uid) {
+        $DB          = Database::singleton();
+        $result      = $DB->pselectOne(
+            "SELECT Email FROM users WHERE ID=:uid",
+            array("uid"=>$uid)
+        );
+        return $result;
+    }
 
     /**
-     * Function to be overridden by module using the notification system
+     * Get phone number of a user from his ID
      *
-     * @param string $custom_message message overriding module-defined message
-     * @param bool   $adminNotifier  when true, sends notification as if
-     *                  triggered by administrator not user.
-     * @param array  $extra_tpl_data additional variables to be sent to the template.
+     * @param  int     $uid containing the userID
      *
-     * @return void
+     * @return string  Phone number of the user
      */
-    public function notify(
-        $custom_message=null,
-        $adminNotifier=false,
-        $extra_tpl_data=array()
-    ) {
-        $this->_tpl_data = $this->_tpl_data + $extra_tpl_data;
+    protected function _getPhone($uid) {
+        $DB          = Database::singleton();
+        $result      = $DB->pselectOne(
+            "SELECT Phone FROM users WHERE ID=:uid",
+            array("uid"=>$uid)
+        );
 
-        if (!empty($custom_message)) {
-            $this->_template ="notifier_custom.tpl";
-            $this->_tpl_data['custom_message'] =$custom_message;
-        }
-        if ($adminNotifier) {
-            $this->_notifier =$this->_adminNotifier;
-        }
-
-        if (!empty($this->_notified['email'])) {
-            $this->_sendEmails();
-        }
-        if (!empty($this->_notified['sms'])) {
-            $this->_sendSMS();
-        }
-        if (!empty($this->_notified['phone'])) {
-            $this->_sendPhone();
-        }
+        return $result;
     }
+
+    abstract function notify();
 
 }

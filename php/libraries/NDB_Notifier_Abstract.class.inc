@@ -21,56 +21,56 @@ require_once "Email.class.inc";
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-class NDB_Notifier
+abstract class NDB_Notifier_Abstract
 {
     /**
      * Get the current logged in user issuing the notification.
      *
      * @var string
      */
-    private $_notifier;
+    protected $_notifier;
 
     /**
      * Get the admin user issuing the notification.
      *
      * @var string
      */
-    private $_adminNotifier;
+    protected $_adminNotifier;
 
     /**
      * Get list of users to be notified and notification methods.
      *
      * @var array
      */
-    private $_notified =array();
+    protected $_notified =array();
 
     /**
      * Module for which the notifier is setup
      *
      * @var string
      */
-    private $_module;
+    protected $_module;
 
     /**
      * Operation for which the notifier is setup
      *
      * @var string
      */
-    private $_operation;
+    protected $_operation;
 
     /**
      * Template to use for email/sms/phone
      *
      * @var string
      */
-    private $_template;
+    protected $_template;
 
     /**
      * Data to be sent to the template fo filling
      *
      * @var array
      */
-    private $_tpl_data =array();
+    protected $_tpl_data =array();
 
     /**
      * NDB_Notifier constructor.
@@ -169,7 +169,7 @@ class NDB_Notifier
      *
      * @return string   string in the form `First Last <email@domain.com>`
      */
-    private function _getAdminUser()
+    protected function _getAdminUser()
     {
         $DB          = Database::singleton();
         $result      = $DB->pselectRow(
@@ -193,16 +193,34 @@ class NDB_Notifier
         $user =& User::singleton();
         $site_concerned =  $user->getCenterID();
         // query needs to take into account the notified user permissions.
+//        $query  = "SELECT
+//                    u.Real_name as name,
+//                    u.Email as emailAddress,
+//                    u.Phone as phoneNum,
+//                    unr.email,
+//                    unr.sms,
+//                    unr.phone
+//                  FROM users u
+//                    JOIN users_notifications_rel unr ON (u.ID = unr.user_id)
+//                    JOIN notification_modules nm ON (nm.id=unr.notification_id)
+//                    LEFT JOIN user_perm_rel upr ON (u.ID=upr.user_id)
+//                  WHERE nm.module_name=:nm
+//                    AND nm.operation_type=:ot
+//                    AND (u.CenterID=:cid OR upr.permID=(SELECT permID
+//                                    FROM permissions
+//                                    WHERE code='access_all_profiles')
+//                        )
+//                    AND (unr.email ='Y' OR unr.sms='Y' OR unr.phone='Y')
+//                    ";
+
         $query  = "SELECT 
                     u.Real_name as name,
                     u.Email as emailAddress, 
-                    u.Phone as phoneNum, 
-                    unr.email, 
-                    unr.sms, 
-                    unr.phone 
+                    u.Phone as phoneNum
                   FROM users u 
                     JOIN users_notifications_rel unr ON (u.ID = unr.user_id) 
-                    JOIN notification_modules nm ON (nm.ID=unr.notification_id)
+                    JOIN notification_modules nm ON (nm.id = unr.module_id)
+                    JOIN notification_services ns ON (ns.id = unr.service_id)
                     LEFT JOIN user_perm_rel upr ON (u.ID=upr.user_id)
                   WHERE nm.module_name=:nm
                     AND nm.operation_type=:ot
@@ -272,51 +290,4 @@ class NDB_Notifier
         }
     }
 
-    /**
-     * Send emails to concerned users.
-     *
-     * @return void
-     *
-     * TODO add validation for email sent/failed
-     */
-    private function _sendEmails()
-    {
-        foreach ($this->_notified['email'] as $name=>$email) {
-            $this->_tpl_data['notified_user'] =$name;
-            $this->_tpl_data['notifier_user'] =$this->_notifier;
-            if ($this->_tpl_data['notified_user']=== $this->_notifier) {
-                // TODO send confirmation email instead
-            } else {
-                Email::send(
-                    $email,
-                    $this->_template,
-                    $this->_tpl_data
-                );
-            }
-        }
-    }
-
-    /**
-     * Send sms to concerned users.
-     *
-     * @return void
-     *
-     * TODO add validation
-     */
-    private function _sendSMS()
-    {
-
-    }
-
-    /**
-     * Send phone call to concerned users.
-     *
-     * @return void
-     *
-     * TODO add validation
-     */
-    private function _sendPhone()
-    {
-
-    }
 }

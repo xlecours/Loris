@@ -109,7 +109,6 @@ class NDB_Form_User_Accounts extends NDB_Form
             $defaults['Zip_code']    = htmlspecialchars($defaults['Zip_code']);
             $defaults['Country']     = htmlspecialchars($defaults['Country']);
             $defaults['Fax']         = htmlspecialchars($defaults['Fax']);
-            $defaults['examiner']    = $defaults['examiner'];
 
             foreach ($defaults['examiner'] as $cid=>$vals) {
                 //sets pending approval info
@@ -125,6 +124,24 @@ class NDB_Form_User_Accounts extends NDB_Form
                     || ($vals[0]=='N' && $defaults['examiner_pending']=='Y')
                 ) {
                     $defaults['ex_'.$cid] ='on';
+                }
+            }
+
+            // Notification defaults
+            // "notif_".$module."_".$operation."_".$service
+            $curr_sub = NDB_Notifier::getUserNotificationModuleServices(
+                $user->getData("ID")
+            );
+            foreach ($curr_sub as $module=>$operations) {
+                foreach ($operations as $operation => $services) {
+                    unset($services['desc']);
+                    foreach ($services as $service => $subscribed) {
+                        $var_name = "notif_".$module."_".$operation."_".$service;
+
+                        if ($subscribed==='Y') {
+                            $defaults[$var_name] = 'on';
+                        }
+                    }
                 }
             }
         }
@@ -322,6 +339,50 @@ class NDB_Form_User_Accounts extends NDB_Form
         unset($values['examiner_pending']);
         unset($values['examiner_radiologist']);
         //END EXAMINER UPDATE
+
+        // START NOTIFICATIONS UPDATE
+        // get current notifications for user
+        $curr_sub = NDB_Notifier::getUserNotificationModuleServices(
+                $user->getData("ID")
+        );
+
+        // get notification details
+        foreach ($curr_sub as $module=>$operations) {
+            foreach ($operations as $operation=>$services) {
+                $module_id=NDB_Notifier::getNotificationModuleID($module,$operation);
+                unset($services['desc']);
+                foreach ($services as $service=>$subscribed) {
+                    $service_id=NDB_Notifier::getNotificationServiceID($service);
+                    $var_name = "notif_".$module."_".$operation."_".$service;
+
+                    if ($values[$var_name] === 'on') {
+                        if ($subscribed==='N') {
+                            $DB->insert(
+                                'users_notifications_rel',
+                                array(
+                                "module_id" => $module_id,
+                                "service_id" => $service_id,
+                                "user_id"  => $user->getData("ID")
+                                )
+                            );
+                        }
+                    } else {
+                        $DB->delete(
+                            'users_notifications_rel',
+                            array(
+                                "module_id" => $module_id,
+                                "service_id" => $service_id,
+                                "user_id"  => $user->getData("ID")
+                            )
+                        );
+                    }
+                    unset($values[$var_name]);
+                }
+            }
+        }
+        // END NOTIFICATIONS UPDATE
+
+
 
         // make the set
         foreach ($values as $key => $value) {
@@ -760,6 +821,9 @@ class NDB_Form_User_Accounts extends NDB_Form
         $config = NDB_Config::singleton();
         $additional_user_info = $config->getSetting('additional_user_info');
 
+        //get notification details
+        $notifier_list = NDB_Notifier::getNotificationModuleServices();
+        $notifier_services=NDB_Notifier::getNotificationServices();
         //------------------------------------------------------------
 
         // user name
@@ -855,6 +919,51 @@ class NDB_Form_User_Accounts extends NDB_Form
                 );
         }
 
+        // Notification headers
+        $nGroup[] = &$this->createLabel("Module");
+        $nGroup[] = &$this->createLabel("Operation");
+        $nGroup[] = &$this->createLabel("Description");
+
+        foreach ($notifier_services as $id=>$serv) {
+            $nGroup[] = &$this->createLabel($serv);
+        }
+
+        $this->addGroup(
+            $nGroup,
+            "notification_headers",
+            null,
+            $this->_GUIDelimiter,
+            false
+        );
+        unset($nGroup);
+
+        // Notification rows
+        $notification_rows=array();
+        foreach ($notifier_list as $module=>$operation_services) {
+            foreach ($operation_services as $operation=>$services) {
+                $nGroup[] = &$this->createLabel($module);
+                $nGroup[] = &$this->createLabel($operation);
+                $nGroup[] = &$this->createLabel($services['desc']);
+                unset($services['desc']);
+                foreach ($services as $service=>$avail) {
+                    $nGroup[] = &$this->createCheckbox(
+                        "notif_".$module."_".$operation."_".$service,
+                        ""
+                    );
+                }
+
+                $this->addGroup(
+                    $nGroup,
+                    "row_".$module."_".$operation,
+                    null,
+                    $this->_GUIDelimiter,
+                    false
+                );
+                $notification_rows[]="row_".$module."_".$operation;
+                unset($nGroup);
+            }
+        }
+        $this->tpl_data['notification_rows'] = $notification_rows;
         //------------------------------------------------------------
 
         // unique key and password rules

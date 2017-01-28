@@ -274,4 +274,174 @@ abstract class NDB_Notifier_Abstract
      */
     abstract function notify();
 
+
+    /**
+     * Static Getter for list of modules, operations and services for the study
+     *
+     * @return array    associative 3D array grouped by module then operation
+     *                  then description/services
+     */
+    public static function getNotificationModuleServices()
+    {
+        $DB = Database::singleton();
+
+        $query  = "
+            SELECT 
+                nm.*, 
+                ns.*, 
+                CASE 
+                    WHEN ms.module_id IS NULL AND ms.service_id IS NULL THEN 'N' 
+                    ELSE 'Y' 
+                END AS avail 
+            FROM notification_modules nm 
+              JOIN notification_services ns
+              LEFT JOIN notification_modules_services_rel ms 
+                      ON (ms.module_id=nm.id AND ms.service_id=ns.id)
+                      ";
+        $params = array();
+        $result = $DB->pselect($query, $params);
+
+        $n_list =array();
+        foreach ($result as $k=>$row) {
+            $n_list[$row['module_name']][$row['operation_type']]['desc']
+                = $row['description'];
+            $n_list[$row['module_name']][$row['operation_type']][$row['service']]
+                = $row['avail'];
+        }
+        return $n_list;
+    }
+
+    /**
+     * Static Getter for list of services for the study
+     *
+     * @return array    associative array of id=>services
+     */
+    public static function getNotificationServices()
+    {
+        $DB = Database::singleton();
+
+        $query  = "SELECT *
+                  FROM notification_services
+                    ";
+        $params = array();
+        $result = $DB->pselect($query, $params);
+
+        $n_services =array();
+        foreach ($result as $k=>$row) {
+            $n_services[$row['id']] = $row['service'];
+        }
+        return $n_services;
+    }
+
+
+    /**
+     * Static Getter for list of services for the study
+     *
+     * @return array    associative array of id=>module/operation/description
+     */
+    public static function getNotificationModules()
+    {
+        $DB = Database::singleton();
+
+        $query  = "SELECT *
+                  FROM notification_modules
+                    ";
+        $params = array();
+        $result = $DB->pselect($query, $params);
+
+        $n_modules =array();
+        foreach ($result as $k=>$row) {
+            $n_modules[$row['id']]['module_name']    = $row['module_name'];
+            $n_modules[$row['id']]['operation_type'] = $row['operation_type'];
+            $n_modules[$row['id']]['description']    = $row['description'];
+        }
+        return $n_modules;
+    }
+
+    /**
+     * Static Getter for id given module_name and operation_type
+     *
+     * @param string   $module name for which id is required
+     * @param string   $operation_type for the given module
+     *
+     * @return int    ID of the module/operation combination
+     */
+    public static function getNotificationModuleID($module,$operation_type)
+    {
+        $DB = Database::singleton();
+
+        $query  = "SELECT id
+                  FROM notification_modules
+                  WHERE module_name=:mn
+                      AND operation_type=:ot
+                    ";
+        $params = array(
+            "mn" => $module,
+            "ot" => $operation_type
+        );
+        $result = $DB->pselectOne($query, $params);
+
+        return $result;
+    }
+
+    /**
+     * Static Getter for id given service
+     *
+     * @param string   $service for which id is required
+     *
+     * @return int    ID of the module/operation combination
+     */
+    public static function getNotificationServiceID($service)
+    {
+        $DB = Database::singleton();
+
+        $query  = "SELECT id
+                  FROM notification_services
+                  WHERE service=:serv
+                    ";
+        $params = array(
+            "serv" => $service
+        );
+        $result = $DB->pselectOne($query, $params);
+
+        return $result;
+    }
+
+    /**
+     * Static Getter for list of services for a specific user
+     *
+     * @param int  $uid User ID from the users table
+     *
+     * @return array    associative array of id=>services
+     */
+    public static function getUserNotificationModuleServices($uid)
+    {
+        $DB = Database::singleton();
+
+        $query  = "
+             SELECT 
+                nm.*, 
+                ns.*,
+                un.*,
+                CASE 
+                    WHEN un.module_id IS NULL AND un.service_id IS NULL THEN 'N' 
+                    ELSE 'Y' 
+                END AS subscribed 
+            FROM notification_modules nm 
+              JOIN notification_services ns
+              LEFT JOIN users_notifications_rel un 
+                      ON (un.module_id=nm.id AND un.service_id=ns.id AND un.user_id=:uid)
+                      ";
+        $params = array("uid"=>$uid);
+        $result = $DB->pselect($query, $params);
+
+        $user_n_list =array();
+        foreach ($result as $k=>$row) {
+            $user_n_list[$row['module_name']][$row['operation_type']]['desc']
+                = $row['description'];
+            $user_n_list[$row['module_name']][$row['operation_type']][$row['service']]
+                = $row['subscribed'];
+        }
+        return $user_n_list;
+    }
 }

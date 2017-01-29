@@ -11,33 +11,39 @@
 
 
 /**
- * A class allowing to issue notification using several services including sms,
- * phone, email and loris in-site notifications.
+ * Abstract class serving as base for project notification system implementation.
  *
- * @category Imaging
- * @package  Imaging
- * @author   Loris Team <loris.mni@bic.mni.mcgill.ca>
+ * @category Notification
+ * @package  Notification
+ * @author   Rida Abou-Haidar <rida.loris@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
 abstract class NDB_Notifier_Abstract
 {
     /**
-     * Get the current logged in user issuing the notification.
+     * Current logged in user issuing the notification.
      *
      * @var array [ID,name,email]
      */
     protected $notifier;
 
     /**
-     * Get the admin user issuing the notification.
+     * Boolean for notification being issue as administrator.
+     *
+     * @var bool
+     */
+    private $asAdmin;
+
+    /**
+     * Admin user issuing the notification (if applicable).
      *
      * @var string
      */
-    protected $adminNotifier;
+    private $_adminNotifier;
 
     /**
-     * Get list of users to be notified and notification methods.
+     * List of users to be notified and notification methods.
      *
      * @var array
      */
@@ -77,6 +83,9 @@ abstract class NDB_Notifier_Abstract
      * @param string $module_name    module issuing notification
      * @param string $operation_type operation triggering notification
      * @param array  $extra_tpl_data additional variables to be sent to the tpl.
+     * @param bool   $asAdmin        when true, sends notification as if
+     *                               triggered by administrator not user. Emails
+     *                               are not restricted to sites or permissions
      *
      * @throws LorisException Exception thrown if module is not supported
      *                        by the notifier.
@@ -84,19 +93,25 @@ abstract class NDB_Notifier_Abstract
     public function __construct(
         $module_name,
         $operation_type,
-        $extra_tpl_data=array()
+        $extra_tpl_data=array(),
+        $asAdmin=false
     ) {
         $config =& NDB_Config::singleton();
 
         $this->module        =$module_name;
         $this->operation     =$operation_type;
+        $this->asAdmin       =$asAdmin;
         $this->notified      =$this->_get2DListToNotify();
         $this->notifier      =$this->_getLoggedInUser();
-        $this->adminNotifier =$this->getAdminUser();
+        $this->_adminNotifier =$this->_getAdminUser();
         $this->tpl_data      = $this->tpl_data + $extra_tpl_data;
         $this->tpl_data['study_logo'] = $config->getSetting('studylogo');
         $this->tpl_data['baseurl']    = $config->getSetting('url');
         $this->tpl_data['study_name'] = $config->getSetting('title');
+
+        if ($asAdmin) {
+            $this->notifier =$this->_adminNotifier;
+        }
 
         switch ($module_name) {
         case 'media':
@@ -171,15 +186,18 @@ abstract class NDB_Notifier_Abstract
      *
      * @return string   string in the form `First Last <email@domain.com>`
      */
-    protected function getAdminUser()
+    private function _getAdminUser()
     {
         $DB          = Database::singleton();
         $result      = $DB->pselectRow(
-            "SELECT Real_name, Email FROM users WHERE UserID='admin'",
+            "SELECT ID, Real_name, Email FROM users WHERE UserID='admin'",
             array()
         );
-        $concat_name = $result['Real_name'].' <'.$result['Email'].'>';
-        return $concat_name;
+        $info_array =array();
+        $info_array['ID']    = $result['ID'];
+        $info_array['name']  = $result['Real_name'];
+        $info_array['email'] = $result['Email'];
+        return $info_array;
     }
 
     /**
@@ -210,16 +228,22 @@ abstract class NDB_Notifier_Abstract
                     JOIN user_perm_rel upr ON (u.ID=upr.UserID)
                   WHERE nm.module_name=:nm
                     AND nm.operation_type=:ot
-                    AND (u.CenterID=:cid OR upr.permID=(SELECT permID 
+                    ";
+        $params = array(
+            "nm"  => $this->module,
+            "ot"  => $this->operation,
+        );
+
+        if (!$this->asAdmin) {
+            $query.=" AND (u.CenterID=:cid OR upr.permID=(SELECT permID 
                                     FROM permissions 
                                     WHERE code='access_all_profiles')
                         )
                     ";
-        $params = array(
-                   "nm"  => $this->module,
-                   "ot"  => $this->operation,
-                   "cid" => $site_concerned,
-                  );
+            $params["cid"]= $site_concerned;
+
+        }
+
         $result = $DB->pselect($query, $params);
 
         //parse $result and create 2D array
@@ -303,10 +327,8 @@ abstract class NDB_Notifier_Abstract
 
         $n_list =array();
         foreach ($result as $k=>$row) {
-            $n_list[$row['module_name']][$row['operation_type']]['desc']
-                = $row['description'];
-            $n_list[$row['module_name']][$row['operation_type']][$row['service']]
-                = $row['avail'];
+            $n_list[$row['module_name']][$row['operation_type']]['desc']          = $row['description'];
+            $n_list[$row['module_name']][$row['operation_type']][$row['service']] = $row['avail'];
         }
         return $n_list;
     }
@@ -361,8 +383,8 @@ abstract class NDB_Notifier_Abstract
     /**
      * Static Getter for id given module_name and operation_type
      *
-     * @param string   $module name for which id is required
-     * @param string   $operation_type for the given module
+     * @param string $module         name for which id is required
+     * @param string $operation_type for the given module
      *
      * @return int    ID of the module/operation combination
      */
@@ -376,9 +398,9 @@ abstract class NDB_Notifier_Abstract
                       AND operation_type=:ot
                     ";
         $params = array(
-            "mn" => $module,
-            "ot" => $operation_type
-        );
+                   "mn" => $module,
+                   "ot" => $operation_type,
+                  );
         $result = $DB->pselectOne($query, $params);
 
         return $result;
@@ -387,7 +409,7 @@ abstract class NDB_Notifier_Abstract
     /**
      * Static Getter for id given service
      *
-     * @param string   $service for which id is required
+     * @param string $service for which id is required
      *
      * @return int    ID of the module/operation combination
      */
@@ -399,9 +421,7 @@ abstract class NDB_Notifier_Abstract
                   FROM notification_services
                   WHERE service=:serv
                     ";
-        $params = array(
-            "serv" => $service
-        );
+        $params = array("serv" => $service);
         $result = $DB->pselectOne($query, $params);
 
         return $result;
@@ -410,7 +430,7 @@ abstract class NDB_Notifier_Abstract
     /**
      * Static Getter for list of services for a specific user
      *
-     * @param int  $uid User ID from the users table
+     * @param int $uid User ID from the users table
      *
      * @return array    associative array of id=>services
      */
@@ -429,18 +449,18 @@ abstract class NDB_Notifier_Abstract
                 END AS subscribed 
             FROM notification_modules nm 
               JOIN notification_services ns
-              LEFT JOIN users_notifications_rel un 
-                      ON (un.module_id=nm.id AND un.service_id=ns.id AND un.user_id=:uid)
+              LEFT JOIN users_notifications_rel un ON (un.module_id=nm.id 
+                                                        AND un.service_id=ns.id 
+                                                        AND un.user_id=:uid
+                                                      )
                       ";
-        $params = array("uid"=>$uid);
+        $params = array("uid" => $uid);
         $result = $DB->pselect($query, $params);
 
         $user_n_list =array();
         foreach ($result as $k=>$row) {
-            $user_n_list[$row['module_name']][$row['operation_type']]['desc']
-                = $row['description'];
-            $user_n_list[$row['module_name']][$row['operation_type']][$row['service']]
-                = $row['subscribed'];
+            $user_n_list[$row['module_name']][$row['operation_type']]['desc'] = $row['description'];
+            $user_n_list[$row['module_name']][$row['operation_type']][$row['service']] = $row['subscribed'];
         }
         return $user_n_list;
     }

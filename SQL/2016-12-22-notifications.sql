@@ -45,5 +45,19 @@ CREATE TABLE `users_notifications_rel` (
       CONSTRAINT `FK_notifications_users_rel_3` FOREIGN KEY (`service_id`) REFERENCES `notification_services` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET='utf8';
 
+-- basic notification service
+INSERT INTO notification_services (service) VALUES
+('email_text');
+
+-- Pre-implemented notifications
+INSERT INTO notification_modules (module_name, operation_type, description) VALUES
+('media', 'upload', 'Media: new file uploaded'),
+('media', 'download', 'Media: file downloaded'),
+('document_repository', 'new_category', 'Document Repository: new category'),
+('document_repository', 'delete', 'Document Repository: document deleted'),
+('document_repository', 'edit', 'Document Repository: document edited');
+
+-- Transfer Document repository notifications to new system
+INSERT INTO users_notifications_rel SELECT u.ID, nm.id, ns.id FROM users u JOIN notification_modules nm JOIN notification_services ns WHERE nm.module_name='document_repository' AND ns.service='email_text' AND u.Doc_Repo_Notifications='Y';
 
 

@@ -12,12 +12,12 @@
 require_once "Email.class.inc";
 
 /**
- * A class allowing to issue notification using several services including sms,
+ * A class allowing to issue notifications using several services including sms,
  * phone, email and loris in-site notifications.
  *
- * @category Imaging
- * @package  Imaging
- * @author   Loris Team <loris.mni@bic.mni.mcgill.ca>
+ * @category Notification
+ * @package  Notification
+ * @author   Rida Abou-Haidar <rida.loris@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
@@ -28,7 +28,10 @@ class NDB_Notifier extends NDB_Notifier_Abstract
      *
      * @param string $module_name    module issuing notification
      * @param string $operation_type operation triggering notification
-     * @param array  $extra_tpl_data additional variables to be sent to the tpl.
+     * @param array  $extra_tpl_data additional variables to be sent to the tpl
+     * @param bool   $asAdmin        when true, sends notification as if
+     *                               triggered by administrator not user. Emails
+     *                               are not restricted to sites or permissions
      *
      * @throws LorisException Exception thrown if module is not supported
      *                        by the notifier.
@@ -36,12 +39,14 @@ class NDB_Notifier extends NDB_Notifier_Abstract
     public function __construct(
         $module_name,
         $operation_type,
-        $extra_tpl_data=array()
+        $extra_tpl_data=array(),
+        $asAdmin=false
     ) {
         parent::__construct(
             $module_name,
             $operation_type,
-            $extra_tpl_data = array()
+            $extra_tpl_data = array(),
+            $asAdmin=false
         );
     }
 
@@ -49,15 +54,12 @@ class NDB_Notifier extends NDB_Notifier_Abstract
      * Function to be overridden by module using the notification system
      *
      * @param string $custom_message message overriding module-defined message
-     * @param bool   $adminNotifier  when true, sends notification as if
-     *                  triggered by administrator not user.
      * @param array  $extra_tpl_data additional variables to be sent to the template.
      *
      * @return void
      */
     public function notify(
         $custom_message=null,
-        $adminNotifier=false,
         $extra_tpl_data=array()
     ) {
         $this->tpl_data = $this->tpl_data + $extra_tpl_data;
@@ -65,9 +67,6 @@ class NDB_Notifier extends NDB_Notifier_Abstract
         if (!empty($custom_message)) {
             $this->template ="notifier_custom.tpl";
             $this->tpl_data['custom_message'] =$custom_message;
-        }
-        if ($adminNotifier) {
-            $this->notifier =$this->adminNotifier;
         }
 
         // Basic email handler

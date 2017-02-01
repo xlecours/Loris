@@ -46,7 +46,7 @@ class NDB_Notifier extends NDB_Notifier_Abstract
             $module_name,
             $operation_type,
             $extra_tpl_data = array(),
-            $asAdmin=false
+            $asAdmin        = false
         );
     }
 

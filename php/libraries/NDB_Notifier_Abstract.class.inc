@@ -33,7 +33,7 @@ abstract class NDB_Notifier_Abstract
      *
      * @var bool
      */
-    private $asAdmin;
+    private $_asAdmin;
 
     /**
      * Admin user issuing the notification (if applicable).
@@ -98,13 +98,13 @@ abstract class NDB_Notifier_Abstract
     ) {
         $config =& NDB_Config::singleton();
 
-        $this->module        =$module_name;
-        $this->operation     =$operation_type;
-        $this->asAdmin       =$asAdmin;
-        $this->notified      =$this->_get2DListToNotify();
-        $this->notifier      =$this->_getLoggedInUser();
+        $this->module         =$module_name;
+        $this->operation      =$operation_type;
+        $this->_asAdmin       =$asAdmin;
+        $this->notified       =$this->_get2DListToNotify();
+        $this->notifier       =$this->_getLoggedInUser();
         $this->_adminNotifier =$this->_getAdminUser();
-        $this->tpl_data      = $this->tpl_data + $extra_tpl_data;
+        $this->tpl_data       = $this->tpl_data + $extra_tpl_data;
         $this->tpl_data['study_logo'] = $config->getSetting('studylogo');
         $this->tpl_data['baseurl']    = $config->getSetting('url');
         $this->tpl_data['study_name'] = $config->getSetting('title');
@@ -114,54 +114,54 @@ abstract class NDB_Notifier_Abstract
         }
 
         switch ($module_name) {
-            case 'media':
-                if ($operation_type==='download') {
-                    $this->template ="notifier_media_download.tpl";
-                    break;
-                } elseif ($operation_type==='upload') {
-                    $this->template ="notifier_media_upload.tpl";
-                    break;
-                } else {
-                    throw new LorisException(
-                        "Notifications have not been defined for the ".
-                        "$module_name $operation_type operation."
-                    );
-                    break;
-                }
-            case 'document_repository':
-                if ($operation_type==='new_category') {
-                    $this->template ="notifier_document_repository_new_category.tpl";
-                    break;
-                } elseif ($operation_type==='upload') {
-                    $this->template ="notifier_document_repository_upload.tpl";
-                    break;
-                } elseif ($operation_type==='delete') {
-                    $this->template ="notifier_document_repository_delete.tpl";
-                    break;
-                } elseif ($operation_type==='edit') {
-                    $this->template ="notifier_document_repository_edit.tpl";
-                    break;
-                } else {
-                    throw new LorisException(
-                        "Notifications have not been defined for the ".
-                        "$module_name $operation_type operation."
-                    );
-                    break;
-                }
-            case 'bvl_feedback':
-                if ($operation_type==='newTicket') {
-                    break;
-                } else {
-                    throw new LorisException(
-                        "Notifications have not been defined for the ".
-                        "$module_name $operation_type operation."
-                    );
-                    break;
-                }
-            default:
+        case 'media':
+            if ($operation_type==='download') {
+                $this->template ="notifier_media_download.tpl";
+                break;
+            } elseif ($operation_type==='upload') {
+                $this->template ="notifier_media_upload.tpl";
+                break;
+            } else {
                 throw new LorisException(
-                    "Notifications have not been defined for this module and operation."
+                    "Notifications have not been defined for the ".
+                    "$module_name $operation_type operation."
                 );
+                break;
+            }
+        case 'document_repository':
+            if ($operation_type==='new_category') {
+                $this->template ="notifier_document_repository_new_category.tpl";
+                break;
+            } elseif ($operation_type==='upload') {
+                $this->template ="notifier_document_repository_upload.tpl";
+                break;
+            } elseif ($operation_type==='delete') {
+                $this->template ="notifier_document_repository_delete.tpl";
+                break;
+            } elseif ($operation_type==='edit') {
+                $this->template ="notifier_document_repository_edit.tpl";
+                break;
+            } else {
+                throw new LorisException(
+                    "Notifications have not been defined for the ".
+                    "$module_name $operation_type operation."
+                );
+                break;
+            }
+        case 'bvl_feedback':
+            if ($operation_type==='newTicket') {
+                break;
+            } else {
+                throw new LorisException(
+                    "Notifications have not been defined for the ".
+                    "$module_name $operation_type operation."
+                );
+                break;
+            }
+        default:
+            throw new LorisException(
+                "Notifications have not been defined for this module and operation."
+            );
                 break;
         }
     }
@@ -208,8 +208,8 @@ abstract class NDB_Notifier_Abstract
      */
     private function _getAdminUser()
     {
-        $DB          = Database::singleton();
-        $result      = $DB->pselectRow(
+        $DB         = Database::singleton();
+        $result     = $DB->pselectRow(
             "SELECT ID, Real_name, Email FROM users WHERE UserID='admin'",
             array()
         );
@@ -250,17 +250,17 @@ abstract class NDB_Notifier_Abstract
                     AND nm.operation_type=:ot
                     ";
         $params = array(
-            "nm"  => $this->module,
-            "ot"  => $this->operation,
-        );
+                   "nm" => $this->module,
+                   "ot" => $this->operation,
+                  );
 
-        if (!$this->asAdmin) {
-            $query.=" AND (u.CenterID=:cid OR upr.permID=(SELECT permID 
+        if (!$this->_asAdmin) {
+            $query        .=" AND (u.CenterID=:cid OR upr.permID=(SELECT permID 
                                     FROM permissions 
                                     WHERE code='access_all_profiles')
                         )
                     ";
-            $params["cid"]= $site_concerned;
+            $params["cid"] = $site_concerned;
 
         }
 
@@ -479,7 +479,7 @@ abstract class NDB_Notifier_Abstract
 
         $user_n_list =array();
         foreach ($result as $k=>$row) {
-            $user_n_list[$row['module_name']][$row['operation_type']]['desc'] = $row['description'];
+            $user_n_list[$row['module_name']][$row['operation_type']]['desc']          = $row['description'];
             $user_n_list[$row['module_name']][$row['operation_type']][$row['service']] = $row['subscribed'];
         }
         return $user_n_list;

@@ -114,34 +114,54 @@ abstract class NDB_Notifier_Abstract
         }
 
         switch ($module_name) {
-        case 'media':
-            if ($operation_type==='download') {
-                $this->template ="notifier_media_download.tpl";
-                break;
-            } elseif ($operation_type==='upload') {
-                $this->template ="notifier_media_upload.tpl";
-                break;
-            } else {
+            case 'media':
+                if ($operation_type==='download') {
+                    $this->template ="notifier_media_download.tpl";
+                    break;
+                } elseif ($operation_type==='upload') {
+                    $this->template ="notifier_media_upload.tpl";
+                    break;
+                } else {
+                    throw new LorisException(
+                        "Notifications have not been defined for the ".
+                        "$module_name $operation_type operation."
+                    );
+                    break;
+                }
+            case 'document_repository':
+                if ($operation_type==='new_category') {
+                    $this->template ="notifier_document_repository_new_category.tpl";
+                    break;
+                } elseif ($operation_type==='upload') {
+                    $this->template ="notifier_document_repository_upload.tpl";
+                    break;
+                } elseif ($operation_type==='delete') {
+                    $this->template ="notifier_document_repository_delete.tpl";
+                    break;
+                } elseif ($operation_type==='edit') {
+                    $this->template ="notifier_document_repository_edit.tpl";
+                    break;
+                } else {
+                    throw new LorisException(
+                        "Notifications have not been defined for the ".
+                        "$module_name $operation_type operation."
+                    );
+                    break;
+                }
+            case 'bvl_feedback':
+                if ($operation_type==='newTicket') {
+                    break;
+                } else {
+                    throw new LorisException(
+                        "Notifications have not been defined for the ".
+                        "$module_name $operation_type operation."
+                    );
+                    break;
+                }
+            default:
                 throw new LorisException(
-                    "Notifications have not been defined for the ".
-                    "$module_name $operation_type operation."
+                    "Notifications have not been defined for this module and operation."
                 );
-                break;
-            }
-        case 'bvl_feedback':
-            if ($operation_type==='newTicket') {
-                break;
-            } else {
-                throw new LorisException(
-                    "Notifications have not been defined for the ".
-                    "$module_name $operation_type operation."
-                );
-                break;
-            }
-        default:
-            throw new LorisException(
-                "Notifications have not been defined for this module and operation."
-            );
                 break;
         }
     }

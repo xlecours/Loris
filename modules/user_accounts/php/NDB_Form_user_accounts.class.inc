@@ -904,20 +904,6 @@ class NDB_Form_User_Accounts extends NDB_Form
 
         // document repository notifications
         $editor = User::singleton();
-        if ($editor->hasPermission('document_repository_view')
-            || $editor->hasPermission('document_repository_delete')
-        ) {
-                $doc_Repo_Notifications_Options
-                    = array(
-                       'N' => 'No',
-                       'Y' => 'Yes',
-                      );
-                $this->addSelect(
-                    'Doc_Repo_Notifications',
-                    'Receive Document Repository email notifications',
-                    $doc_Repo_Notifications_Options
-                );
-        }
 
         // Notification headers
         $nGroup[] = &$this->createLabel("Module");
@@ -946,10 +932,17 @@ class NDB_Form_User_Accounts extends NDB_Form
                 $nGroup[] = &$this->createLabel($services['desc']);
                 unset($services['desc']);
                 foreach ($services as $service=>$avail) {
-                    $nGroup[] = &$this->createCheckbox(
-                        "notif_".$module."_".$operation."_".$service,
-                        ""
-                    );
+                    if ($avail==='Y'){
+                        $nGroup[] = &$this->createCheckbox(
+                            "notif_".$module."_".$operation."_".$service,
+                            ""
+                        );
+                    } else {
+                        $nGroup[] = &$this->createLabel(
+                            "N/A"
+                        );
+                    }
+
                 }
 
                 $this->addGroup(

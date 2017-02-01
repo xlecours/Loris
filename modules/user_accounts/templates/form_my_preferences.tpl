@@ -62,14 +62,6 @@
             {$form.__Confirm.html}
         </div>
     </div>
-    <div class="row form-group">
-        <label class="col-sm-2">
-            {$form.Doc_Repo_Notifications.label}
-        </label>
-        <div class="col-sm-10">
-            {$form.Doc_Repo_Notifications.html}
-        </div>
-    </div>
     <br><br>
     <h3>Notifications</h3>
     <table class="table table-instrument" >

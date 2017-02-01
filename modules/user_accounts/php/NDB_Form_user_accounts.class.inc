@@ -270,6 +270,7 @@ class NDB_Form_User_Accounts extends NDB_Form
              "fn" => $values['Real_name'],
             )
         );
+
         foreach ($prev_sites as $row=>$center) {
             array_push($ex_prev_sites, $center['centerID']);
         }
@@ -343,46 +344,54 @@ class NDB_Form_User_Accounts extends NDB_Form
         // START NOTIFICATIONS UPDATE
         // get current notifications for user
         $curr_sub = NDB_Notifier::getUserNotificationModuleServices(
-                $user->getData("ID")
+            $user->getData("ID")
         );
 
-        // get notification details
-        foreach ($curr_sub as $module=>$operations) {
-            foreach ($operations as $operation=>$services) {
-                $module_id=NDB_Notifier::getNotificationModuleID($module,$operation);
-                unset($services['desc']);
-                foreach ($services as $service=>$subscribed) {
-                    $service_id=NDB_Notifier::getNotificationServiceID($service);
-                    $var_name = "notif_".$module."_".$operation."_".$service;
-
-                    if ($values[$var_name] === 'on') {
-                        if ($subscribed==='N') {
-                            $DB->insert(
-                                'users_notifications_rel',
-                                array(
-                                "module_id" => $module_id,
-                                "service_id" => $service_id,
-                                "user_id"  => $user->getData("ID")
-                                )
-                            );
-                        }
-                    } else {
-                        $DB->delete(
-                            'users_notifications_rel',
-                            array(
-                                "module_id" => $module_id,
-                                "service_id" => $service_id,
-                                "user_id"  => $user->getData("ID")
-                            )
+        if (!$this->isCreatingNewUser()) {
+            // get notification details
+            foreach ($curr_sub as $module => $operations) {
+                foreach ($operations as $operation => $services) {
+                    $module_id = NDB_Notifier::getNotificationModuleID(
+                        $module,
+                        $operation
+                    );
+                    unset($services['desc']);
+                    foreach ($services as $service => $subscribed) {
+                        $service_id = NDB_Notifier::getNotificationServiceID(
+                            $service
                         );
+                        $var_name   = "notif_" . $module . "_"
+                            . $operation . "_" . $service;
+
+                        if ($values[$var_name] === 'on') {
+                            if ($subscribed === 'N') {
+                                $DB->insert(
+                                    'users_notifications_rel',
+                                    array(
+                                     "module_id"  => $module_id,
+                                     "service_id" => $service_id,
+                                     "user_id"    => $user->getData("ID"),
+                                    )
+                                );
+                            }
+                        } else {
+                            if ($subscribed === 'Y') {
+                                $DB->delete(
+                                    'users_notifications_rel',
+                                    array(
+                                     "module_id"  => $module_id,
+                                     "service_id" => $service_id,
+                                     "user_id"    => $user->getData("ID"),
+                                    )
+                                );
+                            }
+                        }
+                        unset($values[$var_name]);
                     }
-                    unset($values[$var_name]);
                 }
             }
         }
         // END NOTIFICATIONS UPDATE
-
-
 
         // make the set
         foreach ($values as $key => $value) {
@@ -822,8 +831,8 @@ class NDB_Form_User_Accounts extends NDB_Form
         $additional_user_info = $config->getSetting('additional_user_info');
 
         //get notification details
-        $notifier_list = NDB_Notifier::getNotificationModuleServices();
-        $notifier_services=NDB_Notifier::getNotificationServices();
+        $notifier_list     = NDB_Notifier::getNotificationModuleServices();
+        $notifier_services =NDB_Notifier::getNotificationServices();
         //------------------------------------------------------------
 
         // user name
@@ -924,7 +933,7 @@ class NDB_Form_User_Accounts extends NDB_Form
         unset($nGroup);
 
         // Notification rows
-        $notification_rows=array();
+        $notification_rows =array();
         foreach ($notifier_list as $module=>$operation_services) {
             foreach ($operation_services as $operation=>$services) {
                 $nGroup[] = &$this->createLabel($module);
@@ -932,7 +941,7 @@ class NDB_Form_User_Accounts extends NDB_Form
                 $nGroup[] = &$this->createLabel($services['desc']);
                 unset($services['desc']);
                 foreach ($services as $service=>$avail) {
-                    if ($avail==='Y'){
+                    if ($avail==='Y') {
                         $nGroup[] = &$this->createCheckbox(
                             "notif_".$module."_".$operation."_".$service,
                             ""
@@ -952,7 +961,7 @@ class NDB_Form_User_Accounts extends NDB_Form
                     $this->_GUIDelimiter,
                     false
                 );
-                $notification_rows[]="row_".$module."_".$operation;
+                $notification_rows[] ="row_".$module."_".$operation;
                 unset($nGroup);
             }
         }

@@ -347,8 +347,10 @@ abstract class NDB_Notifier_Abstract
 
         $n_list =array();
         foreach ($result as $k=>$row) {
-            $n_list[$row['module_name']][$row['operation_type']]['desc']          = $row['description'];
-            $n_list[$row['module_name']][$row['operation_type']][$row['service']] = $row['avail'];
+            $mn = $row['module_name'];
+            $ot = $row['operation_type'];
+            $n_list[$mn][$ot]['desc']          = $row['description'];
+            $n_list[$mn][$ot][$row['service']] = $row['avail'];
         }
         return $n_list;
     }
@@ -479,8 +481,10 @@ abstract class NDB_Notifier_Abstract
 
         $user_n_list =array();
         foreach ($result as $k=>$row) {
-            $user_n_list[$row['module_name']][$row['operation_type']]['desc']          = $row['description'];
-            $user_n_list[$row['module_name']][$row['operation_type']][$row['service']] = $row['subscribed'];
+            $mn = $row['module_name'];
+            $ot = $row['operation_type'];
+            $user_n_list[$mn][$ot]['desc']          = $row['description'];
+            $user_n_list[$mn][$ot][$row['service']] = $row['subscribed'];
         }
         return $user_n_list;
     }

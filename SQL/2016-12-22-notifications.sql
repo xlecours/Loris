@@ -1,6 +1,5 @@
--- PRE-REQS
+-- ad phone to users
 ALTER TABLE users ADD COLUMN `Phone` varchar(15) default NULL;
-
 
 -- Associates modules with the service available for each
 DROP TABLE IF EXISTS `notification_modules`;
@@ -57,6 +56,9 @@ INSERT INTO notification_modules (module_name, operation_type, description) VALU
 ('document_repository', 'upload', 'Document Repository: New Document Uploaded'),
 ('document_repository', 'delete', 'Document Repository: Document Deleted'),
 ('document_repository', 'edit', 'Document Repository: Document Edited');
+
+-- enable doc repo basic text emails
+INSERT INTO notification_modules_services_rel SELECT nm.id, ns.id FROM notification_modules nm JOIN notification_services ns WHERE nm.module_name='document_repository' AND ns.service='email_text';
 
 -- Transfer Document repository notifications to new system
 INSERT INTO users_notifications_rel SELECT u.ID, nm.id, ns.id FROM users u JOIN notification_modules nm JOIN notification_services ns WHERE nm.module_name='document_repository' AND ns.service='email_text' AND u.Doc_Repo_Notifications='Y';

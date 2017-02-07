@@ -11,6 +11,7 @@ CREATE TABLE `user_psc_rel` (
 --
 -- Dumping data for table `user_psc_site`
 --
+
 INSERT IGNORE INTO `user_psc_rel` (UserID, CenterID) SELECT ID, CenterID FROM users;
 -- Add admin to the user_psc_rel
 INSERT IGNORE INTO `user_psc_rel` (UserID, CenterID) SELECT 1, CenterID FROM psc;

@@ -69,10 +69,12 @@ class NDB_Notifier extends NDB_Notifier_Abstract
             $this->tpl_data['custom_message'] =$custom_message;
         }
 
+
         // Basic email handler
-        if (!empty($this->notified['basic_email'])) {
+        if (!empty($this->notified['email_text'])) {
             $this->_sendEmails();
         }
+
     }
 
     /**
@@ -84,7 +86,7 @@ class NDB_Notifier extends NDB_Notifier_Abstract
      */
     private function _sendEmails()
     {
-        foreach ($this->notified['basic_email'] as $name=>$uid) {
+        foreach ($this->notified['email_text'] as $name=>$uid) {
             $this->tpl_data['notified_user'] = $name;
             $this->tpl_data['notifier_user']
                 = $this->notifier['name'].' <'.$this->notifier['email'].'>';

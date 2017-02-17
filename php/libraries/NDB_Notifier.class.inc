@@ -69,7 +69,6 @@ class NDB_Notifier extends NDB_Notifier_Abstract
             $this->tpl_data['custom_message'] =$custom_message;
         }
 
-
         // Basic email handler
         if (!empty($this->notified['email_text'])) {
             $this->_sendEmails();

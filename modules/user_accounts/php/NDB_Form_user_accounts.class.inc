@@ -826,13 +826,15 @@ class NDB_Form_User_Accounts extends NDB_Form
     // @codingStandardsIgnoreEnd
         $this->identifier = $_SESSION['State']->getUsername();
 
+        $user =& User::singleton($this->identifier);
+
         ///get the value for additional_user_info flag
         $config = NDB_Config::singleton();
         $additional_user_info = $config->getSetting('additional_user_info');
 
         //get notification details
         $notifier_list     = NDB_Notifier::getNotificationModuleServices();
-        $notifier_services =NDB_Notifier::getNotificationServices();
+        $notifier_services = NDB_Notifier::getNotificationServices();
         //------------------------------------------------------------
 
         // user name
@@ -940,8 +942,19 @@ class NDB_Form_User_Accounts extends NDB_Form
                 $nGroup[] = &$this->createLabel($operation);
                 $nGroup[] = &$this->createLabel($services['desc']);
                 unset($services['desc']);
+
+                // Check for permissions
+                $display=true;
+                foreach ($services['perm'] as $k=>$permission) {
+                    if (!$user->hasPermission($permission)) {
+                        $display=false;
+                        break;
+                    }
+                }
+                unset($services['perm']);
+
                 foreach ($services as $service=>$avail) {
-                    if ($avail==='Y') {
+                    if ($avail==='Y' && $display) {
                         $nGroup[] = &$this->createCheckbox(
                             "notif_".$module."_".$operation."_".$service,
                             ""

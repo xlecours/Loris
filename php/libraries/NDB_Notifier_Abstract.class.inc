@@ -268,11 +268,56 @@ abstract class NDB_Notifier_Abstract
 
         //parse $result and create 2D array
         $notification_list =array();
-
         foreach ($result as $k=>$row) {
-            $notification_list[$row['service']][$row['Real_name']] = $row['user'];
+            if ($this->_hasNotificationPermission($row['user'])) {
+                $notification_list[$row['service']][$row['Real_name']] = $row['user'];
+            }
+
         }
         return $notification_list;
+    }
+
+    /**
+     * Function asserting if given user should receive a notification
+     * for this operation given his permissions.
+     *
+     * @param int  $uid   containing the userID
+     *
+     * @return bool   permissions sufficient for notification
+     */
+    private function _hasNotificationPermission($uid) {
+        $DB   = Database::singleton();
+        $current= $DB->pselect(
+            "SELECT * FROM user_perm_rel WHERE userID=:uid",
+            array("uid"=>$uid)
+        );
+
+        $necessary = $DB->pselect(
+            "SELECT * 
+             FROM notification_modules_perm_rel mp
+                  JOIN notification_modules nm ON (nm.id=mp.notification_module_id)
+             WHERE nm.module_name=:mid
+                  AND nm.operation_type=:ot",
+            array("mid"=>$this->module,"ot"=>$this->operation)
+        );
+
+        $reqPerm=array();
+        $userPerm=array();
+        //Build and compare arrays
+        foreach ($necessary as $k=>$row) {
+            $reqPerm[]=$row['perm_id'];
+        }
+
+        foreach ($current as $k=>$row) {
+            $userPerm[]=$row['permID'];
+        }
+
+        $diff = array_diff($reqPerm,$userPerm);
+
+        if (empty($diff)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -333,6 +378,7 @@ abstract class NDB_Notifier_Abstract
             SELECT 
                 nm.*, 
                 ns.*, 
+                p.code,
                 CASE 
                     WHEN ms.module_id IS NULL AND ms.service_id IS NULL THEN 'N' 
                     ELSE 'Y' 
@@ -341,6 +387,9 @@ abstract class NDB_Notifier_Abstract
               JOIN notification_services ns
               LEFT JOIN notification_modules_services_rel ms 
                       ON (ms.module_id=nm.id AND ms.service_id=ns.id)
+              LEFT JOIN notification_modules_perm_rel mp
+                      ON (mp.notification_module_id=nm.id)
+              LEFT JOIN permissions p ON (p.permID=mp.perm_id)
                       ";
         $params = array();
         $result = $DB->pselect($query, $params);
@@ -349,8 +398,12 @@ abstract class NDB_Notifier_Abstract
         foreach ($result as $k=>$row) {
             $mn = $row['module_name'];
             $ot = $row['operation_type'];
+            $perm= $row['code'];
             $n_list[$mn][$ot]['desc']          = $row['description'];
             $n_list[$mn][$ot][$row['service']] = $row['avail'];
+            if (!empty($perm)) {
+                $n_list[$mn][$ot]['perm'][]        = $perm;
+            }
         }
         return $n_list;
     }

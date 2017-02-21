@@ -63,4 +63,16 @@ INSERT INTO notification_modules_services_rel SELECT nm.id, ns.id FROM notificat
 -- Transfer Document repository notifications to new system
 INSERT INTO users_notifications_rel SELECT u.ID, nm.id, ns.id FROM users u JOIN notification_modules nm JOIN notification_services ns WHERE nm.module_name='document_repository' AND ns.service='email_text' AND u.Doc_Repo_Notifications='Y';
 
+-- permissions for each notification module
+DROP TABLE IF EXISTS `notification_modules_perm_rel`;
+CREATE TABLE `notification_modules_perm_rel` (
+      `notification_module_id` int(10) unsigned NOT NULL,
+      `perm_id` int(10) unsigned NOT NULL default '0',
+      CONSTRAINT `FK_notification_modules_perm_rel_1` FOREIGN KEY (`notification_module_id`) REFERENCES `notification_modules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT `FK_notification_modules_perm_rel_2` FOREIGN KEY (`perm_id`) REFERENCES `permissions` (`permID`) ON DELETE CASCADE ON UPDATE CASCADE,
+      PRIMARY KEY (`notification_module_id`,`perm_id`)
+) ENGINE=InnoDB DEFAULT CHARSET='utf8';
 
+-- populate notification perm table
+INSERT INTO notification_modules_perm_rel SELECT nm.id, p.permID FROM notification_modules nm JOIN permissions p WHERE nm.module_name='media' AND (p.code='media_write' OR p.code='media_read');
+INSERT INTO notification_modules_perm_rel SELECT nm.id, p.permID FROM notification_modules nm JOIN permissions p WHERE nm.module_name='document_repository' AND (p.code='document_repository_view' OR p.code='document_repository_delete');

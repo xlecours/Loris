@@ -267,29 +267,30 @@ abstract class NDB_Notifier_Abstract
         $result = $DB->pselect($query, $params);
 
         //parse $result and create 2D array
-        $notification_list =array();
+        $n_list =array();
         foreach ($result as $k=>$row) {
             if ($this->_hasNotificationPermission($row['user'])) {
-                $notification_list[$row['service']][$row['Real_name']] = $row['user'];
+                $n_list[$row['service']][$row['Real_name']] = $row['user'];
             }
 
         }
-        return $notification_list;
+        return $n_list;
     }
 
     /**
      * Function asserting if given user should receive a notification
      * for this operation given his permissions.
      *
-     * @param int  $uid   containing the userID
+     * @param int $uid containing the userID
      *
      * @return bool   permissions sufficient for notification
      */
-    private function _hasNotificationPermission($uid) {
-        $DB   = Database::singleton();
-        $current= $DB->pselect(
+    private function _hasNotificationPermission($uid)
+    {
+        $DB      = Database::singleton();
+        $current = $DB->pselect(
             "SELECT * FROM user_perm_rel WHERE userID=:uid",
-            array("uid"=>$uid)
+            array("uid" => $uid)
         );
 
         $necessary = $DB->pselect(
@@ -298,21 +299,24 @@ abstract class NDB_Notifier_Abstract
                   JOIN notification_modules nm ON (nm.id=mp.notification_module_id)
              WHERE nm.module_name=:mid
                   AND nm.operation_type=:ot",
-            array("mid"=>$this->module,"ot"=>$this->operation)
+            array(
+             "mid" => $this->module,
+             "ot"  => $this->operation,
+            )
         );
 
-        $reqPerm=array();
-        $userPerm=array();
+        $reqPerm  =array();
+        $userPerm =array();
         //Build and compare arrays
         foreach ($necessary as $k=>$row) {
-            $reqPerm[]=$row['perm_id'];
+            $reqPerm[] =$row['perm_id'];
         }
 
         foreach ($current as $k=>$row) {
-            $userPerm[]=$row['permID'];
+            $userPerm[] =$row['permID'];
         }
 
-        $diff = array_diff($reqPerm,$userPerm);
+        $diff = array_diff($reqPerm, $userPerm);
 
         if (empty($diff)) {
             return true;
@@ -396,13 +400,13 @@ abstract class NDB_Notifier_Abstract
 
         $n_list =array();
         foreach ($result as $k=>$row) {
-            $mn = $row['module_name'];
-            $ot = $row['operation_type'];
-            $perm= $row['code'];
+            $mn   = $row['module_name'];
+            $ot   = $row['operation_type'];
+            $perm = $row['code'];
             $n_list[$mn][$ot]['desc']          = $row['description'];
             $n_list[$mn][$ot][$row['service']] = $row['avail'];
             if (!empty($perm)) {
-                $n_list[$mn][$ot]['perm'][]        = $perm;
+                $n_list[$mn][$ot]['perm'][] = $perm;
             }
         }
         return $n_list;

@@ -16,7 +16,6 @@
 
 
 ### Structure
-
  #### SQL
    
    - Table `notification_modules`:
@@ -31,10 +30,18 @@
      - Map of permissions necessary for each module/operation combination. Only users with the complete set of permissions will receive the concerned notifications.
    
  #### PHP 
-   The ***NDB_Notifier_Abstract.class.inc*** implements the entire notification logic with the exception of the `notify()` function. In order to use the Notifier system, the project must choose to implement its own extension of the notifier class or use the basic model provided by loris. The abstract parent provides, upon instanciation of the child object, a list of users which will be notified by this specific event. A set of Static helper functions allows programmers to query different characteristics of the current state of the system (modules enabled, services, services per module, ...).
+   The ***NDB_Notifier_Abstract.class.inc*** implements the entire notification logic with the exception of the `notify()` function. In order to use the Notifier system, the project must choose to implement its own extension of the notifier class or use the basic model provided by loris. The abstract parent provides, upon instantiation of the child object, a list of users which will be notified by this specific event. A set of Static helper functions allows programmers to query different characteristics of the current state of the system (modules enabled, services, services per module, ...).
    
    The ***NDB_Notifier.class.inc*** implements the `abstract notify()` function to manage the behaviour of the notifications being issued. If project uses different services then the basic text emails, it is within there capacity to modify and implement the procedure for each service independently. An example implementation is available on loris and used in the media and document-repository modules. 
    
  #### TPL
    Email templates are located in the `smarty/templates/email` directory on the loris root. These templates can be in text or html format (examples of each formats are available).
+ 
+### Getting Started
+
+ - Populate the `notification_modules`, `notification_services` and `notification_modules_services_rel` tables from the back-end.
+ - Make sure the user-emails are valid (if testing this module, make sure users are not real but emails are still valid).
+ - Make sure the php mail server is properly setup (postfix).
+ - All module/operations in the `notification_modules` table should be instantiating and calling the `notify()` function with the proper parameters.
+ - Unless the *asAdmin* flag is used, outputted notifications will contain the target user email and the trigger user information as well.
  

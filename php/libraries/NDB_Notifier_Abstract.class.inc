@@ -231,9 +231,12 @@ abstract class NDB_Notifier_Abstract
     {
         $DB   = Database::singleton();
         $user =& User::singleton();
-        $site_concerned =  $user->getCenterID();
-        // query needs to take into account the notified user permissions.
 
+        //array of sites concerned
+        $sites_concerned =  $user->getCenterID();
+        $sql_sites=implode(",",$sites_concerned);
+
+        // query needs to take into account the notified user permissions.
         $query  = "SELECT DISTINCT 
                     u.ID as user,
                     u.Real_name, 
@@ -246,6 +249,7 @@ abstract class NDB_Notifier_Abstract
                     JOIN notification_modules nm ON (nm.id = unr.module_id)
                     JOIN notification_services ns ON (ns.id = unr.service_id)
                     JOIN user_perm_rel upr ON (u.ID=upr.UserID)
+                    JOIN user_psc_rel upsc ON (u.ID=upsc.UserID)
                   WHERE nm.module_name=:nm
                     AND nm.operation_type=:ot
                     ";
@@ -255,12 +259,12 @@ abstract class NDB_Notifier_Abstract
                   );
 
         if (!$this->_asAdmin) {
-            $query        .=" AND (u.CenterID=:cid OR upr.permID=(SELECT permID 
+            $query        .=" AND (FIND_IN_SET(upsc.CenterID,:cid) > 0 OR upr.permID=(SELECT permID 
                                     FROM permissions 
                                     WHERE code='access_all_profiles')
                         )
                     ";
-            $params["cid"] = $site_concerned;
+            $params["cid"] = $sql_sites;
 
         }
 

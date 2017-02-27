@@ -1318,11 +1318,7 @@ CREATE TABLE `users` (
   `Country` varchar(255) default NULL,
   `Fax` varchar(255) default NULL,
   `Email` varchar(255) NOT NULL default '',
-<<<<<<< e6f7396fe574a1687c641060b21f6fd8c35bf07f
-=======
   `Phone` varchar(15) default NULL,
-  `CenterID` tinyint(2) unsigned default NULL,
->>>>>>> Schema changes
   `Privilege` tinyint(1) NOT NULL default '0',
   `PSCPI` enum('Y','N') NOT NULL default 'N',
   `DBAccess` varchar(10) NOT NULL default '',

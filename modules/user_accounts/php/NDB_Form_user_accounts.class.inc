@@ -944,10 +944,10 @@ class NDB_Form_User_Accounts extends NDB_Form
                 unset($services['desc']);
 
                 // Check for permissions
-                $display=true;
+                $display =true;
                 foreach ($services['perm'] as $k=>$permission) {
                     if (!$user->hasPermission($permission)) {
-                        $display=false;
+                        $display =false;
                         break;
                     }
                 }

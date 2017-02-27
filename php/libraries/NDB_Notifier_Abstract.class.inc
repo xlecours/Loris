@@ -234,7 +234,7 @@ abstract class NDB_Notifier_Abstract
 
         //array of sites concerned
         $sites_concerned =  $user->getCenterID();
-        $sql_sites=implode(",",$sites_concerned);
+        $sql_sites       =implode(",", $sites_concerned);
 
         // query needs to take into account the notified user permissions.
         $query  = "SELECT DISTINCT 
@@ -259,9 +259,10 @@ abstract class NDB_Notifier_Abstract
                   );
 
         if (!$this->_asAdmin) {
-            $query        .=" AND (FIND_IN_SET(upsc.CenterID,:cid) > 0 OR upr.permID=(SELECT permID 
-                                    FROM permissions 
-                                    WHERE code='access_all_profiles')
+            $query        .=" AND (FIND_IN_SET(upsc.CenterID,:cid) > 0 
+                            OR upr.permID=(SELECT permID 
+                                            FROM permissions 
+                                            WHERE code='access_all_profiles')
                         )
                     ";
             $params["cid"] = $sql_sites;

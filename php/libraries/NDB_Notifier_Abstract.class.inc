@@ -372,6 +372,34 @@ abstract class NDB_Notifier_Abstract
      */
     abstract function notify();
 
+    /**
+     * Logs in the history table the notifications that have been sent
+     *
+     * @param int    $trigger_user user that triggered the notification system
+     * @param int    $target_user  user that receives a notification from the system
+     * @param string $service      notification service used for this message
+     *
+     * @return void
+     */
+    protected function log($trigger_user, $target_user, $service)
+    {
+        $DB     = Database::singleton();
+        $result = $DB->insert(
+            'notification_history',
+            array(
+             "module_id"    => $this->getNotificationModuleID(
+                 $this->module,
+                 $this->operation
+             ),
+             "service_id"   => $this->getNotificationServiceID(
+                 $service
+             ),
+             "trigger_user" => $trigger_user,
+             "target_user"  => $target_user,
+            )
+        );
+
+    }
 
     /**
      * Static Getter for list of modules, operations and services for the study

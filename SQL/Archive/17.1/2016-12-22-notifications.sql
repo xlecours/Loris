@@ -44,6 +44,22 @@ CREATE TABLE `users_notifications_rel` (
       CONSTRAINT `FK_notifications_users_rel_3` FOREIGN KEY (`service_id`) REFERENCES `notification_services` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET='utf8';
 
+-- history log
+DROP TABLE IF EXISTS `notification_history`;
+CREATE TABLE `notification_history` (
+      `id` int(10) unsigned auto_increment NOT NULL,
+      `module_id` int(10) unsigned NOT NULL,
+      `service_id` int(10) unsigned NOT NULL,
+      `date_sent` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `trigger_user` int(10) unsigned NOT NULL,
+      `target_user` int(10) unsigned NOT NULL,
+      PRIMARY KEY (`id`),
+--      CONSTRAINT `FK_notification_history_1` FOREIGN KEY (`module_id`) REFERENCES `notification_modules` (`id`),
+--      CONSTRAINT `FK_notification_history_2` FOREIGN KEY (`service_id`) REFERENCES `notification_services` (`id`),
+      CONSTRAINT `FK_notification_history_3` FOREIGN KEY (`trigger_user`) REFERENCES `users` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE ,
+      CONSTRAINT `FK_notification_history_4` FOREIGN KEY (`target_user`) REFERENCES `users` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE ,
+) ENGINE=InnoDB DEFAULT CHARSET='utf8';
+
 -- basic notification service
 INSERT INTO notification_services (service) VALUES
 ('email_text');

@@ -2422,8 +2422,8 @@ CREATE TABLE `notification_history` (
 --      CONSTRAINT `FK_notification_history_1` FOREIGN KEY (`module_id`) REFERENCES `notification_modules` (`id`),
 --      CONSTRAINT `FK_notification_history_2` FOREIGN KEY (`service_id`) REFERENCES `notification_services` (`id`),
       CONSTRAINT `FK_notification_history_3` FOREIGN KEY (`trigger_user`) REFERENCES `users` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE ,
-      CONSTRAINT `FK_notification_history_4` FOREIGN KEY (`target_user`) REFERENCES `users` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE ,
-) ENGINE=InnoDB DEFAULT CHARSET='utf8';
+      CONSTRAINT `FK_notification_history_4` FOREIGN KEY (`target_user`) REFERENCES `users` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- basic notification service
 INSERT INTO notification_services (service) VALUES

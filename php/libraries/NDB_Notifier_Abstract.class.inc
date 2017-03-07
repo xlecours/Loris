@@ -29,7 +29,8 @@ abstract class NDB_Notifier_Abstract
     protected $notifier;
 
     /**
-     * Boolean for notification being issue as administrator.
+     * Boolean for notification being issue as administrator. Comes from DB
+     * notification_modules table but can be overwritten in construct()
      *
      * @var bool
      */
@@ -93,77 +94,52 @@ abstract class NDB_Notifier_Abstract
     public function __construct(
         $module_name,
         $operation_type,
-        $extra_tpl_data=array(),
-        $asAdmin=false
+        $extra_tpl_data,
+        $asAdmin
     ) {
         $config =& NDB_Config::singleton();
 
-        $this->module         =$module_name;
-        $this->operation      =$operation_type;
-        $this->_asAdmin       =$asAdmin;
-        $this->notified       =$this->_get2DListToNotify();
-        $this->notifier       =$this->_getLoggedInUser();
-        $this->_adminNotifier =$this->_getAdminUser();
-        $this->tpl_data       = $this->tpl_data + $extra_tpl_data;
+        $this->module         = $module_name;
+        $this->operation      = $operation_type;
+        $this->notified       = $this->_get2DListToNotify();
+        $this->notifier       = $this->_getLoggedInUser();
+        $this->_adminNotifier = $this->_getAdminUser();
         $this->tpl_data['study_logo'] = $config->getSetting('studylogo');
         $this->tpl_data['baseurl']    = $config->getSetting('url');
         $this->tpl_data['study_name'] = $config->getSetting('title');
 
-        if ($asAdmin) {
+        if (!is_null($extra_tpl_data)) {
+            $this->tpl_data = $this->tpl_data + $extra_tpl_data;
+        }
+
+        // Notification Module information from DB
+        $nmDetails = NDB_Notifier::getNotificationModules();
+        $nmID      = NDB_Notifier::getNotificationModuleID(
+            $module_name,
+            $operation_type
+        );
+        $nmInfo    = $nmDetails[$nmID];
+
+        if (empty($nmInfo)) {
+            throw new LorisException(
+                "Notifications have not been set-up for module: $module_name and ".
+                "operation: $operation_type."
+            );
+        }
+
+        // ADMIN Logic
+        // asAdmin boolean in the code takes precedence over DB value
+        if (!is_null($asAdmin)) {
+            $this->_asAdmin = $asAdmin;
+        } else {
+            $this->_asAdmin = ($nmInfo['as_admin'] === 'N') ? false : true;
+        }
+        if ($this->_asAdmin) {
             $this->notifier =$this->_adminNotifier;
         }
 
-        switch ($module_name) {
-        case 'media':
-            if ($operation_type==='download') {
-                $this->template ="notifier_media_download.tpl";
-                break;
-            } elseif ($operation_type==='upload') {
-                $this->template ="notifier_media_upload.tpl";
-                break;
-            } else {
-                throw new LorisException(
-                    "Notifications have not been defined for the ".
-                    "$module_name $operation_type operation."
-                );
-                break;
-            }
-        case 'document_repository':
-            if ($operation_type==='new_category') {
-                $this->template ="notifier_document_repository_new_category.tpl";
-                break;
-            } elseif ($operation_type==='upload') {
-                $this->template ="notifier_document_repository_upload.tpl";
-                break;
-            } elseif ($operation_type==='delete') {
-                $this->template ="notifier_document_repository_delete.tpl";
-                break;
-            } elseif ($operation_type==='edit') {
-                $this->template ="notifier_document_repository_edit.tpl";
-                break;
-            } else {
-                throw new LorisException(
-                    "Notifications have not been defined for the ".
-                    "$module_name $operation_type operation."
-                );
-                break;
-            }
-        case 'bvl_feedback':
-            if ($operation_type==='newTicket') {
-                break;
-            } else {
-                throw new LorisException(
-                    "Notifications have not been defined for the ".
-                    "$module_name $operation_type operation."
-                );
-                break;
-            }
-        default:
-            throw new LorisException(
-                "Notifications have not been defined for this module and operation."
-            );
-                break;
-        }
+        //TEMPLATE File
+        $this->template = $nmInfo['template_file'];
     }
 
     /**
@@ -488,6 +464,7 @@ abstract class NDB_Notifier_Abstract
             $n_modules[$row['id']]['module_name']    = $row['module_name'];
             $n_modules[$row['id']]['operation_type'] = $row['operation_type'];
             $n_modules[$row['id']]['description']    = $row['description'];
+            $n_modules[$row['id']]['as_admin']       = $row['as_admin'];
         }
         return $n_modules;
     }

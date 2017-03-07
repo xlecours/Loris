@@ -7,6 +7,8 @@ CREATE TABLE `notification_modules` (
       `id` int(10) unsigned auto_increment NOT NULL,
       `module_name` varchar(100) NOT NULL,
       `operation_type` varchar(100) NOT NULL,
+      `as_admin` enum('Y','N') NOT NULL DEFAULT 'N',
+      `template_file` varchar(100) NOT NULL,
       `description` varchar(255) DEFAULT NULL,
       PRIMARY KEY (`id`),
       KEY (`module_name`),
@@ -65,13 +67,13 @@ INSERT INTO notification_services (service) VALUES
 ('email_text');
 
 -- Pre-implemented notifications
-INSERT INTO notification_modules (module_name, operation_type, description) VALUES
-('media', 'upload', 'Media: New File Uploaded'),
-('media', 'download', 'Media: File Downloaded'),
-('document_repository', 'new_category', 'Document Repository: New Category'),
-('document_repository', 'upload', 'Document Repository: New Document Uploaded'),
-('document_repository', 'delete', 'Document Repository: Document Deleted'),
-('document_repository', 'edit', 'Document Repository: Document Edited');
+INSERT INTO notification_modules (module_name, operation_type, as_admin, template_file, description) VALUES
+  ('media', 'upload', 'N', 'notifier_media_upload.tpl', 'Media: New File Uploaded'),
+  ('media', 'download', 'N', 'notifier_media_download.tpl', 'Media: File Downloaded'),
+  ('document_repository', 'new_category', 'N', 'notifier_document_repository_new_category.tpl', 'Document Repository: New Category'),
+  ('document_repository', 'upload', 'N', 'notifier_document_repository_upload.tpl', 'Document Repository: New Document Uploaded'),
+  ('document_repository', 'delete', 'N', 'notifier_document_repository_delete.tpl', 'Document Repository: Document Deleted'),
+  ('document_repository', 'edit', 'N', 'notifier_document_repository_edit.tpl', 'Document Repository: Document Edited');
 
 -- enable doc repo basic text emails
 INSERT INTO notification_modules_services_rel SELECT nm.id, ns.id FROM notification_modules nm JOIN notification_services ns WHERE nm.module_name='document_repository' AND ns.service='email_text';

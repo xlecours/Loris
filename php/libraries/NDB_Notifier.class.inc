@@ -39,14 +39,14 @@ class NDB_Notifier extends NDB_Notifier_Abstract
     public function __construct(
         $module_name,
         $operation_type,
-        $extra_tpl_data=array(),
-        $asAdmin=false
+        $extra_tpl_data,
+        $asAdmin
     ) {
         parent::__construct(
             $module_name,
             $operation_type,
-            $extra_tpl_data = array(),
-            $asAdmin        = false
+            $extra_tpl_data,
+            $asAdmin
         );
     }
 

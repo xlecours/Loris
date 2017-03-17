@@ -4,6 +4,12 @@ SET SQL_NOTES=1;
 -- ********************************
 -- DROP TABLE (ORDER MATTERS)
 -- ********************************
+DROP TABLE IF EXISTS `notification_history`;
+DROP TABLE IF EXISTS `users_notifications_rel`;
+DROP TABLE IF EXISTS `notification_modules_services_rel`;
+DROP TABLE IF EXISTS `notification_services`;
+DROP TABLE IF EXISTS `notification_modules`;
+
 DROP TABLE IF EXISTS `acknowledgements`;
 
 DROP TABLE IF EXISTS `data_release_permissions`;
@@ -206,10 +212,12 @@ CREATE TABLE `users` (
   `Country` varchar(255) default NULL,
   `Fax` varchar(255) default NULL,
   `Email` varchar(255) NOT NULL default '',
+  `Phone` varchar(15) DEFAULT NULL,
   `Privilege` tinyint(1) NOT NULL default '0',
   `PSCPI` enum('Y','N') NOT NULL default 'N',
   `DBAccess` varchar(10) NOT NULL default '',
   `Active` enum('Y','N') NOT NULL default 'Y',
+  `Password_md5` varchar(34) default NULL,
   `Password_hash` varchar(255) default NULL,
   `Password_expiry` date NOT NULL default '1990-04-01',
   `Pending_approval` enum('Y','N') default 'Y',
@@ -220,9 +228,8 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 SELECT 'Admin user' as 'Important INSERT statement';
-
-INSERT INTO `users` (ID,UserID,Real_name,First_name,Last_name,Email,Privilege,PSCPI,DBAccess,Active,Pending_approval,Password_expiry) 
-VALUES (1,'admin','Admin account','Admin','account','admin@example.com',0,'N','','Y','N','2016-03-30');
+INSERT INTO `users` (UserID,Real_name,First_name,Last_name,Email,Password_md5,Pending_approval)
+VALUES ('admin','Admin account','Admin','account','admin@localhost','4817577f267cc8bb20c3e58b48a311b9f6','N');
 
 CREATE TABLE `user_psc_rel` (
   `UserID` int(10) unsigned NOT NULL,
@@ -1921,5 +1928,89 @@ CREATE TABLE `feedback_mri_comments` (
   CONSTRAINT `FK_feedback_mri_comments_2` FOREIGN KEY (`PredefinedCommentID`) REFERENCES `feedback_mri_predefined_comments` (`PredefinedCommentID`),
   CONSTRAINT `FK_feedback_mri_comments_3` FOREIGN KEY (`FileID`) REFERENCES `files` (`FileID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ********************************
+-- notification modules
+-- ********************************
+SELECT 'notification modules' as 'Tables for';
+
+CREATE TABLE `notification_modules` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `module_name` varchar(100) NOT NULL,
+  `operation_type` varchar(100) NOT NULL,
+  `as_admin` enum('Y','N') NOT NULL DEFAULT 'N',
+  `template_file` varchar(100) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `module_name_2` (`module_name`,`operation_type`),
+  KEY `module_name` (`module_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `notification_services` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `service` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `service` (`service`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `notification_modules_services_rel` (
+  `module_id` int(10) unsigned NOT NULL,
+  `service_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`module_id`,`service_id`),
+  KEY `FK_notification_modules_services_rel_2` (`service_id`),
+  CONSTRAINT `FK_notification_modules_services_rel_1` FOREIGN KEY (`module_id`) REFERENCES `notification_modules` (`id`),
+  CONSTRAINT `FK_notification_modules_services_rel_2` FOREIGN KEY (`service_id`) REFERENCES `notification_services` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `users_notifications_rel` (
+  `user_id` int(10) unsigned NOT NULL,
+  `module_id` int(10) unsigned NOT NULL,
+  `service_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`user_id`,`module_id`,`service_id`),
+  KEY `FK_notifications_users_rel_2` (`module_id`),
+  KEY `FK_notifications_users_rel_3` (`service_id`),
+  CONSTRAINT `FK_notifications_users_rel_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID`),
+  CONSTRAINT `FK_notifications_users_rel_2` FOREIGN KEY (`module_id`) REFERENCES `notification_modules` (`id`),
+  CONSTRAINT `FK_notifications_users_rel_3` FOREIGN KEY (`service_id`) REFERENCES `notification_services` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `notification_history` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `module_id` int(10) unsigned NOT NULL,
+  `service_id` int(10) unsigned NOT NULL,
+  `date_sent` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `trigger_user` int(10) unsigned NOT NULL,
+  `target_user` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_notification_history_3` (`trigger_user`),
+  KEY `FK_notification_history_4` (`target_user`),
+  CONSTRAINT `FK_notification_history_3` FOREIGN KEY (`trigger_user`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_notification_history_4` FOREIGN KEY (`target_user`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+SELECT 'Default values for notification modules' as 'Important INSERT statement';
+INSERT INTO notification_modules (module_name, operation_type, as_admin, template_file, description) VALUES
+  ('media', 'upload', 'N', 'notifier_media_upload.tpl', 'Media: New File Uploaded'),
+  ('media', 'download', 'N', 'notifier_media_download.tpl', 'Media: File Downloaded'),
+  ('document_repository', 'new_category', 'N', 'notifier_document_repository_new_category.tpl', 'Document Repository: New Category'),
+  ('document_repository', 'upload', 'N', 'notifier_document_repository_upload.tpl', 'Document Repository: New Document Uploaded'),
+  ('document_repository', 'delete', 'N', 'notifier_document_repository_delete.tpl', 'Document Repository: Document Deleted'),
+  ('document_repository', 'edit', 'N', 'notifier_document_repository_edit.tpl', 'Document Repository: Document Edited');
+
+INSERT INTO notification_services (service) VALUES
+  ('email_text');
+
+INSERT INTO notification_modules_services_rel
+  SELECT nm.id, ns.id
+  FROM notification_modules nm
+  JOIN notification_services ns
+  WHERE nm.module_name='document_repository' AND ns.service='email_text';
+
+INSERT INTO users_notifications_rel
+  SELECT u.ID, nm.id, ns.id
+  FROM users u
+  JOIN notification_modules nm
+  JOIN notification_services ns
+  WHERE nm.module_name='document_repository' AND ns.service='email_text' AND u.Doc_Repo_Notifications='Y';
 
 SELECT 'Schema import completed' as 'Status';

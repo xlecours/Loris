@@ -12,6 +12,9 @@ DROP TABLE IF EXISTS `permissions_category`;
 SELECT 'user_perm_rel' as 'DROP table';
 DROP TABLE IF EXISTS `user_perm_rel`;
 
+SELECT 'notification_modules_perm_rel' as 'DROP table';
+DROP TABLE IF EXISTS `notification_modules_perm_rel`;
+
 SET FOREIGN_KEY_CHECKS=1;
 --
 -- Table structure for table `permissions_category`
@@ -61,6 +64,16 @@ CREATE TABLE `user_perm_rel` (
     REFERENCES `users` (`ID`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+SELECT 'notification_modules_perm_rel' as 'CREATE table';
+CREATE TABLE `notification_modules_perm_rel` (
+  `notification_module_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `perm_id` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`notification_module_id`,`perm_id`),
+  KEY `FK_notification_modules_perm_rel_2` (`perm_id`),
+  CONSTRAINT `FK_notification_modules_perm_rel_1` FOREIGN KEY (`notification_module_id`) REFERENCES `notification_modules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_notification_modules_perm_rel_2` FOREIGN KEY (`perm_id`) REFERENCES `permissions` (`permID`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 SELECT 'permissions' as 'Inserting data';
@@ -122,4 +135,13 @@ INSERT INTO `user_perm_rel` (userID, permID)
   WHERE u.userid = 'admin' 
   ORDER BY p.permID;
 
+SELECT 'notification_modules_perm_rel' as 'Inserting data';
+INSERT INTO notification_modules_perm_rel (notification_module_id, perm_id) 
+  SELECT nm.id, p.permID
+  FROM notification_modules nm
+  JOIN permissions p
+  WHERE ( nm.module_name='media' AND (p.code='media_write' OR p.code='media_read'))
+  OR (nm.module_name='document_repository' AND (p.code='document_repository_view' OR p.code='document_repository_delete'));
+
 SELECT 'Menu import completed' as 'Status';
+

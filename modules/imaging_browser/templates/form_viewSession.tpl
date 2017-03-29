@@ -19,7 +19,7 @@
       {section name=file loop=$files}
           <div id="image-{$files[file].FileID}"></div>
           <script>
-          React.render(
+          ReactDOM.render(
                   RImagePanel({
                       'BaseURL' : "{$baseurl}",
 
@@ -31,7 +31,6 @@
                       'HasQCPerm': {if $has_qc_permission}true{else}false{/if},
                       'FileNew'  : {if $files[file].New}true{else}false{/if},
                       "Selected" : "{if $files[file].Selected}{$files[file].Selected}{/if}",
-                      "SelectedOptions" : {$selected_options|json_encode},
 
                       "Caveat" : "{$files[file].Caveat}",
                       "SNR" : "{if $files[file].SNR}{$files[file].SNR}{/if}",

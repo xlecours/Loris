@@ -8,7 +8,7 @@
     "jquery": true
   },
   "parserOptions": {
-    "sourceType": "script",
+    "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true,
       "globalReturn": false
@@ -19,10 +19,18 @@
     "react/jsx-uses-vars": "error",
     "no-alert": 0,
     "no-implicit-globals": 0,
-    "array-callback-return": 0
+    "array-callback-return": 0,
+    "new-cap": ["error", {
+        "capIsNewExceptions": ["DynamicTable"]
+    }],
+    "no-console": ["error", {
+      "allow": ["info", "warn", "error"]
+    }]
   },
   "globals": {
     "React": true,
-    "loris": true
+    "loris": true,
+    "QueryString": true,
+    "swal": true
   }
 }

@@ -572,18 +572,26 @@ class NDB_Page
         $baseurl = $www['url'];
         $min     = ($config->getSetting("sandbox") === '1') ? '' : '.min';
 
+        // Currently jquery-ui is required for dialogs and datepickers to work.
+        // In the future release, dialogs should be replaced with bootstrap dialogs
+        // and datepickers only created by modernizr
+
         $files = array(
                   $baseurl . '/js/jquery/jquery-1.11.0.min.js',
                   $baseurl . '/js/helpHandler.js',
-                  $baseurl . '/js/modernizr.min.js',
-                  $baseurl . "/js/react-with-addons-0.13.3$min.js",
+                  $baseurl . '/js/modernizr/modernizr.min.js',
+                  // Only load minified file on production, not sandboxes
+                  $baseurl . '/js/react/react-with-addons' . $min . '.js',
+                  $baseurl . '/js/react/react-dom' . $min . '.js',
                   $baseurl . '/js/jquery/jquery-ui-1.10.4.custom.min.js',
                   $baseurl . '/js/jquery.dynamictable.js',
                   $baseurl . '/js/jquery.fileupload.js',
-                  $baseurl . '/js/polyfiller.js',
                   $baseurl . '/bootstrap/js/bootstrap.min.js',
-                  $baseurl . '/js/components/react.breadcrumb.js',
+                  $baseurl . '/js/components/Breadcrumbs.js',
+                  $baseurl . '/vendor/sweetalert/sweetalert' . $min . '.js',
+                  $baseurl . "/js/util/queryString.js",
                   $baseurl . '/js/components/Form.js',
+                  $baseurl . '/js/components/Markdown.js',
                  );
         return $files;
     }
@@ -607,9 +615,42 @@ class NDB_Page
         $files = array(
                   $baseurl . "/bootstrap/css/bootstrap.min.css",
                   $baseurl . "/bootstrap/css/custom-css.css",
+                  $baseurl . "/js/jquery/datepicker/datepicker.css",
+                  $baseurl . '/vendor/sweetalert/sweetalert.css',
                  );
         return $files;
     }
 
+    /**
+     * Does any setup required for this page. This is generally overridden
+     * by NDB_Page subtypes.
+     *
+     * @return none, but may have side-effects
+     */
+    function setup()
+    {
+    }
+
+    /**
+     * Returns false if user does not have access to page.
+     *
+     * Usage: the hasAccess() function in a child class should contain
+     * something like:
+     *
+     *     // create user object
+     *     $user =& User::singleton();
+     *
+     *     return $user->hasPermission('superuser');
+     *
+     * You do not need to overload hasAccess() if there are no access restrictions
+     *
+     * @note   overloaded function
+     * @return bool
+     * @access private
+     */
+    function _hasAccess()
+    {
+        return true;
+    }
 }
 ?>

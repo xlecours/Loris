@@ -32,7 +32,7 @@ var DatasetTab = React.createClass({
           newState['errorText'] = 'Can\'t get variable types: '.concat(xhttp.statusText);
         }
       }
-      newState['queryString'] = new QueryString();
+      newState['queryString'] = QueryString;
       that.setState(newState);
     };
     var url = loris.BaseURL.concat('/genomic_browser/ajax/get_datasets.php');

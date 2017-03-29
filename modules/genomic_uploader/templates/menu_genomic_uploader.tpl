@@ -122,13 +122,13 @@
         "freezeColumn" : "file_name"
     });
  
-    React.render(table, document.getElementById("datatable"));
+    ReactDOM.render(table, document.getElementById("datatable"));
 
 {if $upload_allowed}
     var uploadModal = RGenomicFileUploadModal({
             baseURL : "{$baseurl}"
     });
-    React.render(uploadModal, document.getElementById("modalContainer"));
+    ReactDOM.render(uploadModal, document.getElementById("modalContainer"));
 {/if}
 </script>
 

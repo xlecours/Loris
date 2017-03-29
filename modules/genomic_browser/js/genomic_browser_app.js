@@ -43,14 +43,14 @@ var GenomicBrowserApp = React.createClass({
             newState['variableTypes'] = variableTypes;
           }
 
-          newState['filter'] = new QueryString().get();
+          newState['filter'] = QueryString.get();
         } else {
           newState['error'] = true;
           newState['errorCode'] = xhttp.status;
           newState['errorText'] = 'Can\'t get variable types: '.concat(xhttp.statusText);
         }
       }
-      newState['queryString'] = new QueryString();
+      newState['queryString'] = QueryString;
       that.setState(newState);
     };
     var url = loris.BaseURL.concat('/genomic_browser/ajax/get_variable_type.php');
@@ -99,7 +99,7 @@ var GenomicBrowserApp = React.createClass({
   },
   render: function render() {
     var activeTab = {};
-    var message = {};
+    var message;
     if (this.state.error) {
       message = React.createElement(
         'div',
@@ -128,7 +128,7 @@ var GenomicBrowserApp = React.createClass({
       var tabLabel = tabName;
       return React.createElement(
         'li',
-        { role: 'presentation', className: className, onClick: this.changeTab.bind(tabLabel) },
+        { role: 'presentation', className: className, onClick: this.changeTab },
         React.createElement(
           'a',
           { href: '#'.concat(tabName), 'data-toggle': 'tab' },

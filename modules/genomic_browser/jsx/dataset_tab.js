@@ -30,7 +30,7 @@ var DatasetTab = React.createClass({
           );
         }
       }
-      newState['queryString'] = new QueryString();
+      newState['queryString'] = QueryString;
       that.setState(newState);
     };
     var url = loris.BaseURL.concat(

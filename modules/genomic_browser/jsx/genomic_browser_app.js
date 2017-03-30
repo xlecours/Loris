@@ -39,7 +39,7 @@ var GenomicBrowserApp = React.createClass({
             newState['variableTypes'] = variableTypes;
           }
 
-          newState['filter'] = new QueryString().get();
+          newState['filter'] = QueryString.get();
 
         } else {
           newState['error'] = true;
@@ -49,7 +49,7 @@ var GenomicBrowserApp = React.createClass({
           );
         }
       }
-      newState['queryString'] = new QueryString();
+      newState['queryString'] = QueryString;
       that.setState(newState);
     };
     var url = loris.BaseURL.concat(

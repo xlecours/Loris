@@ -23,7 +23,7 @@ var VariableTab = React.createClass({
     }
   },
   getfiltersList: function() {
-    var queryString = new QueryString();
+    var queryString = QueryString;
     var queryStringObj = queryString.get();
 
     var that = this;
@@ -33,7 +33,7 @@ var VariableTab = React.createClass({
     xhttp.onreadystatechange = function() {
       var newState = {};
 
-      var queryString = new QueryString();
+      var queryString = QueryString;
 
       newState['queryString'] = queryString;
 

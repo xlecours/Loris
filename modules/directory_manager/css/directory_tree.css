@@ -1,0 +1,15 @@
+ul {
+    list-style-type: none;
+}
+
+.directory-tree {
+    padding: 1em;
+}
+
+.file-item {
+    padding: 1em;
+}
+
+span + text  {
+    padding-left: 1em;
+}

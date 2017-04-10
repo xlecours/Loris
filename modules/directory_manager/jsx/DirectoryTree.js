@@ -32,6 +32,7 @@ class DirectoryTree extends React.Component {
   }
 
   render() {
+    let glyph = 'glyphicon glyphicon-folder-close';
     let nodes;
     let leaves;
 
@@ -46,16 +47,15 @@ class DirectoryTree extends React.Component {
           <FileItem key={index} name={file} />
         );
       });
+      glyph = 'glyphicon glyphicon-folder-open';
     }
 
     return (
-        <ul className="directory-tree">
-          <span 
-            className="directory-label"
-            onClick={this.onClickHandler}
-          >
-            {this.props.tree.name}
-          </span>
+        <ul className="directory-tree" >
+          <div className="click-handler" onClick={this.onClickHandler}>
+            <span className={glyph} />
+            <text>{this.props.tree.name}</text>
+          </div>
           {nodes}
           {leaves}
         </ul>

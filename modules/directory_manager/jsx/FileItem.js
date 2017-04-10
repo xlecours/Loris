@@ -24,6 +24,7 @@ class FileItem extends React.Component {
   render() {
     return (
       <li className="file-item">
+        <span className="glyphicon glyphicon-file"></span>
         <text>{this.props.name}</text>
       </li>
     );

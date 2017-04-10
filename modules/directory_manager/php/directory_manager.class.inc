@@ -107,4 +107,21 @@ class Directory_Manager extends \NDB_Page
             )
         );
     }
+
+    /**
+     * Include additional CSS files:
+     *
+     * @return array of javascript to be inserted
+     */
+    function getCSSDependencies()
+    {
+        $factory = \NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
+        $deps    = parent::getCSSDependencies();
+        return array_merge(
+            $deps,
+            array($baseURL . "/directory_manager/css/directory_tree.css")
+        );
+    }
+
 }

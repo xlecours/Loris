@@ -14,7 +14,7 @@ class DirectoryManager extends React.Component {
     super(props);
 
     this.state = {
-      data: null,
+      data: {},
       isLoaded: false,
       formData: {}
     };
@@ -52,12 +52,17 @@ class DirectoryManager extends React.Component {
   }
 
   render() {
-console.log('DirectoryManager::render');
-console.log(this.state.data);
+    let tree = null;
+    console.log(this.state.isLoaded);
+    if (this.state.isLoaded) {
+      tree = (
+        <DirectoryTree tree={this.state.data} />
+      );
+    }
     return (
-        <div>
-          <DirectoryTree />
-        </div>
+      <div>
+      {tree}
+      </div>
     );
   }
 }

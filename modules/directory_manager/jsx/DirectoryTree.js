@@ -51,14 +51,14 @@ class DirectoryTree extends React.Component {
     }
 
     return (
-        <ul className="directory-tree" >
+        <div className="directory-tree" >
           <div className="click-handler" onClick={this.onClickHandler}>
             <span className={glyph} />
             <text>{this.props.tree.name}</text>
           </div>
           {nodes}
           {leaves}
-        </ul>
+        </div>
     );
   }
 }

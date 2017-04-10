@@ -13,3 +13,15 @@ ul {
 span + text  {
     padding-left: 1em;
 }
+
+.glyphicon .green {
+    color: green;
+}
+
+.glyphicon .orange {
+    color: orange;
+}
+
+.glyphicon-folder-close, .glyphicon-folder-open {
+    color: #064785;
+}

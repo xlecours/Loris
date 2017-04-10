@@ -1,0 +1,27 @@
+ul {
+    list-style-type: none;
+}
+
+.directory-tree {
+    padding: 1em;
+}
+
+.file-item {
+    padding: 1em;
+}
+
+span + text  {
+    padding-left: 1em;
+}
+
+.glyphicon .green {
+    color: green;
+}
+
+.glyphicon .orange {
+    color: orange;
+}
+
+.glyphicon-folder-close, .glyphicon-folder-open {
+    color: #064785;
+}

@@ -60,7 +60,7 @@ class DirectoryManager extends React.Component {
       );
     }
     return (
-      <div>
+      <div className="panel panel-primary">
       {tree}
       </div>
     );

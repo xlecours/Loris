@@ -29,16 +29,17 @@ abstract class Directory_Tree
 {
 
     /**
-     * Used to store and provide instances for the getInstance() method
+     * Used to store and provide instances used by getInstance()
      */ 
     private static $instances = array();
 
+    /**
+     * Each DirectoryTree need a root directory to scan.
+     */
     protected $root_dir;
 
     private function __construct()
     {
-        // Get path from configs
-        $this->root_dir = '/data/loris/data';
     }
 
     public static function getInstance($path_name)
@@ -96,16 +97,5 @@ abstract class Directory_Tree
             closedir($handle);
         } 
         return $tree;
-    }
-}
-
-class Dataprovider extends Directory_Tree
-{
-    private $cbrain_api;
-
-    protected function __construct()
-    {
-        // Get path from configs
-        $this->root_dir = '/data/loris/data';
     }
 }

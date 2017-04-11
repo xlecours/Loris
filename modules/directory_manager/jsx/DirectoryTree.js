@@ -52,9 +52,11 @@ class DirectoryTree extends React.Component {
 
     return (
         <div className="directory-tree" >
-          <div className="click-handler" onClick={this.onClickHandler}>
-            <span className={glyph} />
-            <text>{this.props.tree.name}</text>
+          <div className="click-handler flex-container-directory" onClick={this.onClickHandler}>
+            <div className="flex-item-directory">
+              <span className={glyph} />
+              <text>{this.props.tree.name}</text>
+            </div>
           </div>
           {nodes}
           {leaves}

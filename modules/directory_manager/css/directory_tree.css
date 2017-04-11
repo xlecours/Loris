@@ -1,25 +1,16 @@
-ul {
-    list-style-type: none;
-}
-
 .directory-tree {
     padding: 1em;
 }
 
-.file-item {
-    padding: 1em;
+.flex-container-directory {
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: row;
 }
 
-span + text  {
-    padding-left: 1em;
-}
-
-.glyphicon .green {
-    color: green;
-}
-
-.glyphicon .orange {
-    color: orange;
+.flex-item-directory > * {
+    padding-right: 1em;
+    
 }
 
 .glyphicon-folder-close, .glyphicon-folder-open {

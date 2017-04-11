@@ -2,17 +2,28 @@
     padding: 1em;
 }
 
-.flex-container-directory {
-    display: -webkit-flex;
+.container-directory {
     display: flex;
+    flex-flow: row;
     flex-direction: row;
+    flex-wrap: nowrap;
 }
 
-.flex-item-directory > * {
+.item-directory > * {
     padding-right: 1em;
-    
 }
 
 .glyphicon-folder-close, .glyphicon-folder-open {
     color: #064785;
+}
+
+.module-warnings {
+    background-color: #f2dede;
+    border-color: #b94a48;
+    border: 1px solid;
+    border-radius: 4px;
+    color: #b94a48;
+    float: right;
+    margin-bottom: 2px;
+    padding: 2px;
 }

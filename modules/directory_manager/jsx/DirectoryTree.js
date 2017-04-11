@@ -35,8 +35,14 @@ class DirectoryTree extends React.Component {
     let glyph = 'glyphicon glyphicon-folder-close';
     let nodes;
     let leaves;
+    let warnings;
 
-    if ( this.state.expended ) {
+    if (!this.props.tree.isReadable) {
+      warnings = (
+        <div className="module-warnings">Permission denied...</div>
+      );
+
+    } else if ( this.state.expended ) {
       nodes  = this.props.tree.directories.map(function (dir, index) {
         return (
           <DirectoryTree key={index} tree={dir} /> 
@@ -48,14 +54,16 @@ class DirectoryTree extends React.Component {
         );
       });
       glyph = 'glyphicon glyphicon-folder-open';
+
     }
 
     return (
         <div className="directory-tree" >
-          <div className="click-handler flex-container-directory" onClick={this.onClickHandler}>
-            <div className="flex-item-directory">
+          <div className="click-handler container-directory" onClick={this.onClickHandler}>
+            <div className="item-directory">
               <span className={glyph} />
               <text>{this.props.tree.name}</text>
+              {warnings}
             </div>
           </div>
           {nodes}
@@ -68,6 +76,7 @@ class DirectoryTree extends React.Component {
 DirectoryTree.propTypes = {
   tree: React.PropTypes.shape({
     name: React.PropTypes.string.isRequired,
+    isReadable: React.PropTypes.bool,
     files: React.PropTypes.array.isRequired,
     directories: React.PropTypes.array.isRequired
   })

@@ -5,7 +5,7 @@ import DirectoryManager from './DirectoryManager';
  * Renders directory_manager on page load
  */
 $(function() {
-  const dataURL = loris.BaseURL + "/directory_manager?format=json";
+  const dataURL = loris.BaseURL + "/directory_manager/?format=json";
   const appContainer = (
     <div id="page-directory-manager">
       <DirectoryManager

@@ -74,7 +74,7 @@ abstract class Directory_Tree
         return json_encode($tree);
     }
 
-    private function _listDirectoryRecurcive($path)
+    protected function _listDirectoryRecurcive($path)
     {
         $tree = array(
             'name' => basename($path),

@@ -1,9 +1,13 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+
+namespace LORIS\directory_manager;
+
+require_once __DIR__ . '/../SwaggerClient-php/vendor/autoload.php';
+// TODO :: There is probably a better way...
 
 final class CBRAIN_API
 {
-    private $instance = null;
+    private static $instance = null;
 
     private $cbrain_user;
     private $session_api;
@@ -16,14 +20,14 @@ final class CBRAIN_API
     {
         $config_array = parse_ini_file(__DIR__ . '/cbrain_api_config.ini', true);
 
-        $this->cbrain_user = new Swagger\Client\Model\User();
+        $this->cbrain_user = new \Swagger\Client\Model\User();
         $this->cbrain_user->setLogin($config_array['credential']['username']);
         $this->cbrain_user->setPassword($config_array['credential']['password']);
 
-        $this->session_api = new Swagger\Client\Api\SessionsApi();
+        $this->session_api = new \Swagger\Client\Api\SessionsApi();
         $this->session_api->getApiClient()->getConfig()->setHost($config_array['host']['hostname']);
 
-        $this->dataprovider_api = new Swagger\Client\Api\DataProvidersApi();
+        $this->dataprovider_api = new \Swagger\Client\Api\DataProvidersApi();
     }
 
     

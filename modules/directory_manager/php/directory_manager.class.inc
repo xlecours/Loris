@@ -58,8 +58,10 @@ class Directory_Manager extends \NDB_Page
     {
         switch($_SERVER['REQUEST_METHOD']) {
             case 'GET':
-                $directoryTree = \LORIS\directory_manager\Directory_Tree::getInstance('Dataprovider');
-                return $directoryTree->toJSON();
+                if ($_REQUEST['format'] == 'json') {
+                    $directoryTree = \LORIS\directory_manager\Directory_Tree::getInstance('Dataprovider');
+                    return $directoryTree->toJSON();
+                }
                 break;
             case 'POST':
             // If POST request received, process it as a form submission
@@ -78,9 +80,9 @@ class Directory_Manager extends \NDB_Page
      * @return void
      * @access private
      */
-    function _processPostRequest($req)
+    private function _processPostRequest($req)
     {
-        var_dump("_processPostRequest");
+        error_log("_processPostRequest");
         return;
     }
 
@@ -95,10 +97,7 @@ class Directory_Manager extends \NDB_Page
     {
         $factory = \NDB_Factory::singleton();
         $baseURL = $factory->settings()->getBaseURL();
-        $deps    = array_filter(parent::getJSDependencies(), function ($dep) {
-           //return !(strpos($dep, 'react') !== false);
-           return true;
-        });
+        $deps    = parent::getJSDependencies();
 
         return array_merge(
             $deps,

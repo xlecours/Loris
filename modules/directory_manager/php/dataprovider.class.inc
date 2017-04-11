@@ -1,9 +1,5 @@
 <?php
 /**
- * Dataprovider is a Directory_Tree extention class
- *
- * PHP Version 5
- *
  * @category Module
  * @package  Directory_Manager
  * @author   Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
@@ -14,10 +10,6 @@
 namespace LORIS\directory_manager;
 
 /**
- * Used by directory_manager module
- *
- * PHP Version 5
- *
  * @category Module
  * @package  Directory_Manager
  * @author   Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
@@ -32,8 +24,21 @@ class Dataprovider extends Directory_Tree
     protected function __construct()
     {
         // Get path from configs
-        $this->root_dir = '/data/loris/data';
-        //$this->cbrain_api = new CbrainAPI();
+        $this->root_dir = '/data/data_provider';
+        $this->cbrain_api = \LORIS\directory_manager\CBRAIN_API::getInstance();
+    }
+
+    // Add sync status
+    public function toJSON()
+    {
+        $tree        = $this->_listDirectoryRecurcive($this->getRootDir());
+
+        $this->cbrain_api->connect();
+        $this->cbrain_api->selectDataProviderByName('Epigenomics');
+
+        $cbrain_tree = $this->cbrain_api->listDataProviderFile();
+        return json_encode($tree);
+
     }
 
 /*

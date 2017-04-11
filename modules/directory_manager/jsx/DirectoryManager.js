@@ -19,9 +19,6 @@ class DirectoryManager extends React.Component {
       formData: {}
     };
 
-    // Bind component instance to custom methods
-    this.folderClickHandler = this.folderClickHandler.bind(this);
-    this.fileClickHandler = this.fileClickHandler.bind(this);
   }
 
   componentDidMount() {
@@ -42,21 +39,15 @@ class DirectoryManager extends React.Component {
     });
   }
 
-  fileClickHandler (file) {
-    console.log(file)
-    this.setState({ selectedFile: file.path })
-  }
- 
-  folderClickHandler (folderName) {
-    console.log(folderName)
-  }
-
   render() {
     let tree = null;
-    console.log(this.state.isLoaded);
     if (this.state.isLoaded) {
       tree = (
         <DirectoryTree tree={this.state.data} />
+      );
+    } else {
+      tree = (
+        <text>Loading...</text>
       );
     }
     return (

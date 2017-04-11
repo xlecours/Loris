@@ -58,7 +58,7 @@ class Directory_Manager extends \NDB_Page
     {
         switch($_SERVER['REQUEST_METHOD']) {
             case 'GET':
-                $directoryTree = \LORIS\directory_manager\Directory_Tree::getInstance('dataprovider');
+                $directoryTree = \LORIS\directory_manager\Directory_Tree::getInstance('Dataprovider');
                 return $directoryTree->toJSON();
                 break;
             case 'POST':

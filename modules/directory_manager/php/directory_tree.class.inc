@@ -25,7 +25,7 @@ namespace LORIS\directory_manager;
  * @link     https://github.com/aces/Loris
  */
 
-class Directory_Tree
+abstract class Directory_Tree
 {
 
     /**
@@ -33,14 +33,7 @@ class Directory_Tree
      */ 
     private static $instances = array();
 
-    /**
-     * Used to store the valid paths for instanciation
-     */ 
-    private static $valid_paths = array(
-        'dataprovider'
-    );
-
-    private $root_dir;
+    protected $root_dir;
 
     private function __construct()
     {
@@ -50,9 +43,10 @@ class Directory_Tree
 
     public static function getInstance($path_name)
     {
-        if (array_search($path_name, self::$valid_paths) !== false) {
+        $class_name = "LORIS\directory_manager\\" . $path_name ;
+        if (class_exists($class_name)) {
             if (!array_key_exists($path_name, self::$instances)) {
-                self::$instances[$path_name] = new self();
+                self::$instances[$path_name] = new $class_name();
             }
             return self::$instances[$path_name];
         } else {
@@ -68,9 +62,14 @@ class Directory_Tree
     {
     }
 
+    public function getRootDir()
+    {
+        return $this->root_dir;
+    }
+
     public function toJSON()
     {
-        $tree = $this->_listDirectoryRecurcive($this->root_dir);
+        $tree = $this->_listDirectoryRecurcive($this->getRootDir());
         return json_encode($tree);
     }
 
@@ -78,6 +77,7 @@ class Directory_Tree
     {
         $tree = array(
             'name' => basename($path),
+            'isReadable' => is_readable($path),
             'files' => array(),
             'directories' => array()
         );
@@ -94,7 +94,18 @@ class Directory_Tree
                 }
             }
             closedir($handle);
-        }
+        } 
         return $tree;
+    }
+}
+
+class Dataprovider extends Directory_Tree
+{
+    private $cbrain_api;
+
+    protected function __construct()
+    {
+        // Get path from configs
+        $this->root_dir = '/data/loris/data';
     }
 }

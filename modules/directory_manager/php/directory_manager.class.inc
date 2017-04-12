@@ -51,6 +51,8 @@ class Directory_Manager extends \NDB_Page
     /**
      * Displays the menu page
      *
+     * @note This is not how thing should be done. But it is working...
+     *
      * @return void
      * @access public
      */
@@ -58,16 +60,17 @@ class Directory_Manager extends \NDB_Page
     {
         switch($_SERVER['REQUEST_METHOD']) {
             case 'GET':
-                if ($_REQUEST['format'] == 'json') {
+                if (!empty($_REQUEST['format']) && $_REQUEST['format'] == 'json') {
                     $directoryTree = \LORIS\directory_manager\Directory_Tree::getInstance('Dataprovider');
                     return $directoryTree->toJSON();
                 }
                 break;
+
             case 'POST':
-            // If POST request received, process it as a form submission
+                // If POST request received, process it as a form submission
                 $stdin = file_get_contents('php://input');
                 $req   = json_decode($stdin, true);
-                $this->_processPostRequest($req);
+                return $this->_processPostRequest($req);
                 break;
         }
     }
@@ -82,8 +85,18 @@ class Directory_Manager extends \NDB_Page
      */
     private function _processPostRequest($req)
     {
-        error_log("_processPostRequest");
-        return;
+        // Make sure that the requested className is a subclass of Directory_Tree
+        if (class_exists($req['className'])) {
+            $chunks = explode('\\', $req['className']);
+            $subclass_name = $chunks[count($chunks) -1 ];
+            $directoryTree = \LORIS\directory_manager\Directory_Tree::getInstance($subclass_name);
+
+            if (!method_exists($directoryTree, $req['action'])) {
+              error_log('Method not implemented');
+              throw new \LorisException('Method not implemented');
+            }
+            return $directoryTree->$req['action']($req['fullpath']);
+        }
     }
 
     /**

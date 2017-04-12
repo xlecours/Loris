@@ -13,12 +13,24 @@ class FileItem extends React.Component {
     super(props);
 
     this.state = {
+      isLoaded: false,
+      additionnalElements: []
     };
 
     // Bind component instance to custom methods
+    this.addElements = this.addElements.bind(this);
   }
 
   componentDidMount() {
+    if (this.props.getAdditionalElements) {
+      this.props.getAdditionalElements(this.props.name, this.addElements);
+    }
+  }
+
+  addElements(elements) {
+    this.setState({
+      additionnalElements: elements
+    });
   }
 
   render() {
@@ -26,9 +38,15 @@ class FileItem extends React.Component {
       <div className="file-item">
         <span className="glyphicon glyphicon-file"></span>
         <text>{this.props.name}</text>
+        {this.state.additionnalElements}
       </div>
     );
   }
 }
+
+FileItem.propTypes = {
+  name: React.PropTypes.string.isRequired,
+  getAdditionalElements: React.PropTypes.func
+};
 
 export default FileItem;

@@ -30,11 +30,14 @@ abstract class Directory_Tree
 
     /**
      * Used to store and provide instances used by getInstance()
+     * This class variable ensure that there is only one instance
+     * of each subclass that extends this class.
      */ 
     private static $instances = array();
 
     /**
      * Each DirectoryTree need a root directory to scan.
+     * This should be set in the contructor.
      */
     protected $root_dir;
 
@@ -63,16 +66,12 @@ abstract class Directory_Tree
     {
     }
 
-    public function getRootDir()
+    protected function getRootDir()
     {
         return $this->root_dir;
     }
 
-    public function toJSON()
-    {
-        $tree = $this->_listDirectoryRecurcive($this->getRootDir());
-        return json_encode($tree);
-    }
+    abstract protected function toJSON();
 
     protected function _listDirectoryRecurcive($path)
     {

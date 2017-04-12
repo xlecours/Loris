@@ -14,11 +14,14 @@ class DirectoryTree extends React.Component {
     super(props);
 
     this.state = {
-      expended: false
+      expended: false,
+      additionnalElements: []
     };
 
     // Bind component instance to custom methods
     this.onClickHandler = this.onClickHandler.bind(this);
+    this.getAdditionalElements = this.getAdditionalElements.bind(this);
+    this.addElements = this.addElements.bind(this);
   }
 
   onClickHandler() {
@@ -28,10 +31,29 @@ class DirectoryTree extends React.Component {
     });
   }
 
+  addElements(elements) {
+    this.setState({
+      additionnalElements: elements
+    });
+  }
+
+  // Concatenate the name of this directory with the calling child name
+  // to build the relative path.
+  getAdditionalElements(name, callback) {
+    if (this.props.getAdditionalElements) {
+      const fullname = this.props.tree.name.concat('/', name);
+      return this.props.getAdditionalElements(fullname, callback);
+    }
+  }
+
   componentDidMount() {
+    if (this.props.getAdditionalElements) {
+      this.props.getAdditionalElements(this.props.tree.name, this.addElements);
+    }
   }
 
   render() {
+    let directoryClassName = 'directory-tree';
     let glyph = 'glyphicon glyphicon-folder-close';
     let nodes;
     let leaves;
@@ -43,14 +65,21 @@ class DirectoryTree extends React.Component {
       );
 
     } else if ( this.state.expended ) {
+      const getAdditionalElements = this.getAdditionalElements;
+
+      directoryClassName = directoryClassName.concat(' expended');
       nodes  = this.props.tree.directories.map(function (dir, index) {
         return (
-          <DirectoryTree key={index} tree={dir} /> 
+          <DirectoryTree 
+            key={index}
+            tree={dir}
+            getAdditionalElements={getAdditionalElements}
+          /> 
         );
       });
       leaves = this.props.tree.files.map(function (file, index) {
         return (
-          <FileItem key={index} name={file} />
+          <FileItem key={index} name={file} getAdditionalElements={getAdditionalElements} />
         );
       });
       glyph = 'glyphicon glyphicon-folder-open';
@@ -58,12 +87,13 @@ class DirectoryTree extends React.Component {
     }
 
     return (
-        <div className="directory-tree" >
+        <div className={directoryClassName} >
           <div className="click-handler container-directory" onClick={this.onClickHandler}>
             <div className="item-directory">
               <span className={glyph} />
               <text>{this.props.tree.name}</text>
               {warnings}
+              {this.state.additionnalElements}
             </div>
           </div>
           {nodes}
@@ -79,7 +109,8 @@ DirectoryTree.propTypes = {
     isReadable: React.PropTypes.bool,
     files: React.PropTypes.array.isRequired,
     directories: React.PropTypes.array.isRequired
-  })
+  }),
+  getAdditionalElements: React.PropTypes.func
 }; 
 
 export default DirectoryTree;

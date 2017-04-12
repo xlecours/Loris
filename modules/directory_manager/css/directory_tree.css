@@ -2,6 +2,11 @@
     padding: 1em;
 }
 
+.directory-tree.expended .directory-tree, .directory-tree.expended .file-item {
+    border-left: 1px solid black;
+    transform:translateX(5px);
+}
+
 .container-directory {
     display: flex;
     flex-flow: row;
@@ -11,6 +16,10 @@
 
 .item-directory > * {
     padding-right: 1em;
+}
+
+.file-item {
+    padding-left: 1em;
 }
 
 .glyphicon-folder-close, .glyphicon-folder-open {

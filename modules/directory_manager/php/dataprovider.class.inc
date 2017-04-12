@@ -31,16 +31,64 @@ class Dataprovider extends Directory_Tree
     // Add sync status
     public function toJSON()
     {
-        $tree        = $this->_listDirectoryRecurcive($this->getRootDir());
+        $tree = $this->_listDirectoryRecurcive($this->getRootDir());
 
-        $this->cbrain_api->connect();
-        $this->cbrain_api->selectDataProviderByName('Epigenomics');
-
-        $cbrain_tree = $this->cbrain_api->listDataProviderFile();
+        $tree['className'] = __CLASS__;
         return json_encode($tree);
 
     }
 
+    private function _getRegistrationStatus($relative_path)
+    {
+        // Caching of 10 seconds 
+        if (empty($_SESSION['cbrain_tree']) || time() - $_SESSION['cbrain_tree_last_update'] > 10) {
+            $this->cbrain_api->connect();
+            $this->cbrain_api->selectDataProviderByName('Epigenomics');
+            $_SESSION['cbrain_tree'] = json_encode($this->cbrain_api->listDataProviderFile());
+            $_SESSION['cbrain_tree_last_update'] = time();
+        }
+        $cbrain_tree = json_decode($_SESSION['cbrain_tree']);
+
+        $find = function($path, $tree) use (&$find) {
+          $chunks = explode('/',$path, 2);
+
+          $subtree = array_reduce($tree, function($carry, $item) use ($chunks) {
+              if (!empty($carry)) {
+                  // already found
+                  return $carry;
+              }
+              if ($item->name == $chunks[0]) {
+                  return $item;
+              }
+          }, array()); 
+
+          if (empty($subtree)) {
+              return 'Not found...';
+          }
+
+          if (count($chunks) > 1) {
+              return $find($chunks[1], $subtree);
+          }
+          return $subtree;
+        };
+        
+        return $find($relative_path, $cbrain_tree);
+    }
+
+    public function getAdditionnalElements($fullpath) {
+        $chunks = explode('/',$fullpath, 2);
+
+        if (basename($this->getRootDir()) !== $chunks[0]) {
+            error_log('Wrong path');
+            throw new \LorisException('Root directory do not match');
+        }
+
+        $status = null;
+        if (count($chunks) > 1) {
+            $status = $this-> _getRegistrationStatus($chunks[1]);
+        }
+        return json_encode(array('cbrain_file_item' => $status));
+    }
 /*
 
 $app = new CbrainAPI();

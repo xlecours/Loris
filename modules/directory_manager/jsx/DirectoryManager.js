@@ -15,20 +15,22 @@ class DirectoryManager extends React.Component {
 
     this.state = {
       data: {},
-      isLoaded: false,
-      formData: {}
+      isLoaded: false
     };
+
+    this.getTree = this.getTree.bind(this);
+    this.getAdditionalElements = this.getAdditionalElements.bind(this);
 
   }
 
   componentDidMount() {
-    this.getNameTree();
+    this.getTree();
   }
 
   /**
    * Retrive data from the provided URL and save it in state
    */
-  getNameTree() {
+  getTree() {
     $.getJSON(this.props.dataURL, data => {
       this.setState({
         data: data,
@@ -39,11 +41,50 @@ class DirectoryManager extends React.Component {
     });
   }
 
+  getAdditionalElements(fullpath, callback) {
+    const postData = {
+      className: this.state.data.className,
+      fullpath: fullpath,
+      action: 'getAdditionnalElements'
+    };
+   console.log(callback); 
+    return $.ajax({
+      type: 'POST',
+      url: this.props.dataURL,
+      data: JSON.stringify(postData),
+      cache: false,
+      contentType: false,
+      processData: false,
+      success: function(data) {
+        
+        const obj = JSON.parse(data);
+        const elements = Object.keys(obj['cbrain_file_item']).map(function(key) {
+          const text = key.concat(': ', obj['cbrain_file_item'][key]);
+          return (
+              <text>{text}</text>
+          );
+        });
+        callback(elements);
+      }.bind(this),
+      error: function(err) {
+        console.error(err);
+        swal({
+          title: "Error!",
+          type: "error",
+          content: err.statusText
+        });
+      }
+    });
+  }
+
   render() {
     let tree = null;
     if (this.state.isLoaded) {
       tree = (
-        <DirectoryTree tree={this.state.data} />
+        <DirectoryTree 
+          tree={this.state.data}
+          getAdditionalElements={this.getAdditionalElements}
+        />
       );
     } else {
       tree = (

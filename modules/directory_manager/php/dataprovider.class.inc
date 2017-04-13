@@ -49,6 +49,7 @@ class Dataprovider extends Directory_Tree
         }
         $cbrain_tree = json_decode($_SESSION['cbrain_tree']);
 
+        // Custom recursive function that walk down the tree for the requested file
         $find = function($path, $tree) use (&$find) {
           $chunks = explode('/',$path, 2);
 
@@ -69,7 +70,7 @@ class Dataprovider extends Directory_Tree
           if (count($chunks) > 1) {
               return $find($chunks[1], $subtree);
           }
-          return $subtree;
+          return $subtree->userfile_id;
         };
         
         return $find($relative_path, $cbrain_tree);
@@ -83,11 +84,20 @@ class Dataprovider extends Directory_Tree
             throw new \LorisException('Root directory do not match');
         }
 
-        $status = null;
+        $status = 'online';
         if (count($chunks) > 1) {
             $status = $this-> _getRegistrationStatus($chunks[1]);
         }
-        return json_encode(array('cbrain_file_item' => $status));
+        return json_encode(array('registration_status' => $status));
+    }
+
+    public function registerFile($file_ids) {
+        
+        $file_list = array_map(function ($file_id) {
+            $cbrain_file = new Swagger\Client\Model\Userfile();
+        }, $file_ids);
+
+        $this->cbrain_api->registerFiles($file_list);
     }
 /*
 

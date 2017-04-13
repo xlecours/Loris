@@ -1,6 +1,6 @@
 import DirectoryTree from './DirectoryTree';
  /**
-  * Directory Manager
+  * Dataprovider
   *
   * Main module component rendering the directory manager
   *
@@ -8,7 +8,7 @@ import DirectoryTree from './DirectoryTree';
   * @version 1.0.0
   *
   * */
-class DirectoryManager extends React.Component {
+class Dataprovider extends React.Component {
 
   constructor(props) {
     super(props);
@@ -42,12 +42,44 @@ class DirectoryManager extends React.Component {
   }
 
   getAdditionalElements(fullpath, callback) {
+
     const postData = {
       className: this.state.data.className,
       fullpath: fullpath,
       action: 'getAdditionnalElements'
     };
-   console.log(callback); 
+
+    const success = function(data) {
+      const obj = JSON.parse(data);
+      const elements = Object.keys(obj).map(function(key, index) {
+        let element;
+        switch(key) {
+          case 'registration_status':
+            let text;
+            let className; 
+            let userfile_id;
+
+            if (!obj[key]) {
+              className = 'glyphicon glyphicon-remove';
+              text = 'Not registered';
+            } else if (obj[key] == 'Not found...') {
+              className = 'glyphicon glyphicon-question-sign';
+              text = obj[key];
+            } else if (typeof obj[key] === 'number') {
+              className = 'glyphicon glyphicon-ok';
+              text = 'Registered';
+            }
+
+            element = (
+              <span className={className} userfile={userfile_id} data-toggle="tooltip" title={text} />
+            );
+          break;
+        }
+        return element;
+      });
+      callback(elements);
+    }.bind(this);
+
     return $.ajax({
       type: 'POST',
       url: this.props.dataURL,
@@ -55,17 +87,7 @@ class DirectoryManager extends React.Component {
       cache: false,
       contentType: false,
       processData: false,
-      success: function(data) {
-        
-        const obj = JSON.parse(data);
-        const elements = Object.keys(obj['cbrain_file_item']).map(function(key) {
-          const text = key.concat(': ', obj['cbrain_file_item'][key]);
-          return (
-              <text>{text}</text>
-          );
-        });
-        callback(elements);
-      }.bind(this),
+      success: success,
       error: function(err) {
         console.error(err);
         swal({
@@ -75,6 +97,10 @@ class DirectoryManager extends React.Component {
         });
       }
     });
+  }
+
+  addToSelection($path) {
+
   }
 
   render() {
@@ -99,4 +125,4 @@ class DirectoryManager extends React.Component {
   }
 }
 
-export default DirectoryManager;
+export default Dataprovider;

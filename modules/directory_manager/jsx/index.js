@@ -1,4 +1,4 @@
-import DirectoryManager from './DirectoryManager';
+import Dataprovider from './Dataprovider';
 
 /**
  * Entry point of the module.
@@ -8,7 +8,7 @@ $(function() {
   const dataURL = loris.BaseURL + "/directory_manager/?format=json";
   const appContainer = (
     <div id="page-directory-manager">
-      <DirectoryManager
+      <Dataprovider
         dataURL={dataURL}
         module="directory_manager"
       />

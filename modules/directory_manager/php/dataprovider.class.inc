@@ -24,7 +24,7 @@ class Dataprovider extends Directory_Tree
     protected function __construct()
     {
         // Get path from configs
-        $this->root_dir = '/data/data_provider';
+        $this->root_dir = '/data/data-provider';
         $this->cbrain_api = \LORIS\directory_manager\CBRAIN_API::getInstance();
     }
 

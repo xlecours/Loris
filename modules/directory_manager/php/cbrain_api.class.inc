@@ -2,7 +2,7 @@
 
 namespace LORIS\directory_manager;
 
-require_once __DIR__ . '/../SwaggerClient-php/vendor/autoload.php';
+require_once __DIR__ . '/../cbrain-php-api/vendor/autoload.php';
 // TODO :: There is probably a better way...
 
 final class CBRAIN_API
@@ -45,6 +45,7 @@ final class CBRAIN_API
     {
         $login    = $this->cbrain_user->getLogin(); // string | The username of the User trying to connect.
         $password = $this->cbrain_user->getPassword(); // string | The CBRAIN User's password
+
         $this->session_token = json_decode($this->session_api->sessionNewGet(), true)['authenticity_token'];
 
         try {
@@ -104,7 +105,7 @@ final class CBRAIN_API
     public function registerFiles($file_array)
     {
         if ($this->_dataProviderReady()) {
-            $params = new Swagger\Client\Model\Params4();
+            $params = new \Swagger\Client\Model\Params4();
             $params->setBasenames(
                 array_map(
                     function ($f) {
@@ -136,7 +137,7 @@ final class CBRAIN_API
     // Unregister files
     public function unregisterFiles()
     {
-        $params = new Swagger\Client\Model\Params5();
+        $params = new \Swagger\Client\Model\Params5();
         $params->setBasenames(['a.csv','b.csv']);
         $params->setAuthenticityToken($this->session_token);
 

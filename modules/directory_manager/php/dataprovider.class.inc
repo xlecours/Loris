@@ -41,7 +41,7 @@ class Dataprovider extends Directory_Tree
     private function _getRegistrationStatus($relative_path)
     {
         // Caching of 10 seconds 
-        if (empty($_SESSION['cbrain_tree']) || time() - $_SESSION['cbrain_tree_last_update'] > 10) {
+        if (empty($_SESSION['cbrain_tree']) || time() - $_SESSION['cbrain_tree_last_update'] > 120) {
             $this->cbrain_api->connect();
             $this->cbrain_api->selectDataProviderByName('Epigenomics');
             $_SESSION['cbrain_tree'] = json_encode($this->cbrain_api->listDataProviderFile());

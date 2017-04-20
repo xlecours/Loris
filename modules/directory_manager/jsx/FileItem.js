@@ -35,10 +35,14 @@ class FileItem extends React.Component {
 
   render() {
     return (
-      <div className="file-item">
-        <span className="glyphicon glyphicon-file"></span>
-        <text>{this.props.name}</text>
-        {this.state.additionnalElements}
+      <div className="item file-item">
+        <div className="mandatory-elements">
+          <span className="glyphicon glyphicon-file"></span>
+          <text>{this.props.name}</text>
+        </div>
+        <div className="additionnal-elements">
+          {this.state.additionnalElements}
+        </div>
       </div>
     );
   }

@@ -1,29 +1,51 @@
-.directory-tree {
-    padding: 1em;
-}
-
-.directory-tree.expended .directory-tree, .directory-tree.expended .file-item {
-    border-left: 1px solid black;
-    transform:translateX(5px);
-}
-
-.container-directory {
-    display: flex;
-    flex-flow: row;
-    flex-direction: row;
-    flex-wrap: nowrap;
-}
-
-.item-directory > * {
+/*
+  Directory
+*/
+.panel > div.directory-tree {
     padding-right: 1em;
-}
-
-.file-item {
-    padding-left: 1em;
 }
 
 .glyphicon-folder-close, .glyphicon-folder-open {
     color: #064785;
+}
+
+.directory-tree {
+    display: flex;
+    flex-direction: column;
+    padding: 1em 0em 1em 1em;
+}
+.directory-content {
+    display: flex;
+    flex-direction: row;
+}
+.left-line {
+    width: 6px;
+    border-right: 1px solid #efefef;
+}
+.nodes {
+    width: 100%;
+    border-left: 1px solid #a0a0a0;
+}
+.item {
+    display: flex;
+    flex-direction: row;
+}
+.file-item {
+    padding: 1em 0em 1em 1em;
+}
+
+.mandatory-elements {
+    flex: 1;
+}
+.mandatory-elements > * {
+    padding-right: 1em;
+}
+
+.additionnal-elements {
+    flex: 3;
+}
+.additionnal-elements > * {
+    float: right;
 }
 
 .module-warnings {

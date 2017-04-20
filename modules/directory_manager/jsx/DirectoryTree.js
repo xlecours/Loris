@@ -53,7 +53,6 @@ class DirectoryTree extends React.Component {
   }
 
   render() {
-    let directoryClassName = 'directory-tree';
     let glyph = 'glyphicon glyphicon-folder-close';
     let nodes;
     let leaves;
@@ -67,7 +66,6 @@ class DirectoryTree extends React.Component {
     } else if ( this.state.expended ) {
       const getAdditionalElements = this.getAdditionalElements;
 
-      directoryClassName = directoryClassName.concat(' expended');
       nodes  = this.props.tree.directories.map(function (dir, index) {
         return (
           <DirectoryTree 
@@ -87,17 +85,26 @@ class DirectoryTree extends React.Component {
     }
 
     return (
-        <div className={directoryClassName} >
-          <div className="click-handler container-directory" onClick={this.onClickHandler}>
-            <div className="item-directory">
-              <span className={glyph} />
-              <text>{this.props.tree.name}</text>
-              {warnings}
-              {this.state.additionnalElements}
+        <div className="directory-tree" >
+          <div className="click-handler" onClick={this.onClickHandler}>
+            <div className="item">
+              <div className="mandatory-elements">
+                <span className={glyph} />
+                <text>{this.props.tree.name}</text>
+                {warnings}
+              </div>
+              <div className="additionnal-elements">
+                {this.state.additionnalElements}
+              </div>
             </div>
           </div>
-          {nodes}
-          {leaves}
+          <div className="directory-content">
+            <div className="left-line" />
+            <div className="nodes">
+              {nodes}
+              {leaves}
+            </div>
+          </div>
         </div>
     );
   }

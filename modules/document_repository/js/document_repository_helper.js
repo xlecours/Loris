@@ -194,6 +194,7 @@ function uploadForm() {
 
 function renderTree() {
   var fileDir = JSON.parse($("#json_data").html());
+console.log(fileDir);
   var filtered = JSON.parse($("#isFiltered").html()).filtered;
 
   for (var i in fileDir) {

@@ -24,6 +24,18 @@ class DirectoryTree extends React.Component {
     this.addElements = this.addElements.bind(this);
   }
 
+  componentDidMount() {
+    if (this.props.getAdditionalElements) {
+      this.props.getAdditionalElements(this.props.tree.name, this.addElements);
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log(this.props);
+    console.log(nextProps);
+    return true;
+  }
+
   onClickHandler() {
     let newVal = (this.state.expended !== true);
     this.setState({
@@ -46,12 +58,6 @@ class DirectoryTree extends React.Component {
     }
   }
 
-  componentDidMount() {
-    if (this.props.getAdditionalElements) {
-      this.props.getAdditionalElements(this.props.tree.name, this.addElements);
-    }
-  }
-
   render() {
     let glyph = 'glyphicon glyphicon-folder-close';
     let nodes;
@@ -69,7 +75,7 @@ class DirectoryTree extends React.Component {
       nodes  = this.props.tree.directories.map(function (dir, index) {
         return (
           <DirectoryTree 
-            key={index}
+            key={'tree-' + index}
             tree={dir}
             getAdditionalElements={getAdditionalElements}
           /> 
@@ -77,7 +83,7 @@ class DirectoryTree extends React.Component {
       });
       leaves = this.props.tree.files.map(function (file, index) {
         return (
-          <FileItem key={index} name={file} getAdditionalElements={getAdditionalElements} />
+          <FileItem key={'file-' + index} name={file} getAdditionalElements={getAdditionalElements} />
         );
       });
       glyph = 'glyphicon glyphicon-folder-open';

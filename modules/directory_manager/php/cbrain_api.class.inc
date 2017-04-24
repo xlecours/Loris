@@ -12,6 +12,7 @@ final class CBRAIN_API
     private $cbrain_user;
     private $session_api;
     private $dataprovider_api;
+    private $userfile_api;
 
     private $session_token;
     private $selected_dataprovider_id;
@@ -28,6 +29,7 @@ final class CBRAIN_API
         $this->session_api->getApiClient()->getConfig()->setHost($config_array['host']['hostname']);
 
         $this->dataprovider_api = new \Swagger\Client\Api\DataProvidersApi();
+        $this->userfile_api = new \Swagger\Client\Api\UserfilesApi();
     }
 
     
@@ -51,6 +53,7 @@ final class CBRAIN_API
         try {
             $result = json_decode($this->session_api->sessionPost($login, $password, $this->session_token), true);
         } catch (Exception $e) {
+// TODO :: something better than var_dump
             var_dump($e);
         }
     }
@@ -100,51 +103,43 @@ final class CBRAIN_API
         return $result;
     }
 
-    // register each of the files to the selected dataprovider
-    // params $file_array an array of Swagger\Client\Model\Userfile
-    public function registerFiles($file_array)
+    public function registerFiles($file_tuples)
     {
-        if ($this->_dataProviderReady()) {
             $params = new \Swagger\Client\Model\Params4();
             $params->setBasenames(
                 array_map(
                     function ($f) {
-                        return $f->getName();
+                        return $f->file_name;
                     },
-                    $file_array
+                    $file_tuples
                 )
             );
             $params->setFiletypes(
                 array_map(
                     function ($f) {
-                        return 'CSVFile-' . $f->getName();
+                        return $f->file_type;
                     },
-                    $file_array
+                    $file_tuples
                 )
             );
             $params->setAuthenticityToken($this->session_token);
-
             $this->dataprovider_api->dataProvidersIdRegisterPost(
                 $this->selected_dataprovider_id,
                 $params
             );
-        } else {
-            error_log("dataprovider is not ready. id : $this->selected_dataprovider_id");
-        }
     }
 
 
     // Unregister files
-    public function unregisterFiles()
+    public function unregisterFiles($filenames)
     {
         $params = new \Swagger\Client\Model\Params5();
-        $params->setBasenames(['a.csv','b.csv']);
+        $params->setBasenames($filenames);
+        $params->setDelete(false);
         $params->setAuthenticityToken($this->session_token);
-
-        $this->dataprovider_api->dataProvidersIdUnregisterPost(
+        $x = $this->dataprovider_api->dataProvidersIdUnregisterPost(
             $this->selected_dataprovider_id,
             $params
-       );
-
+        );
     }
 }

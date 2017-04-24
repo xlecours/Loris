@@ -27,6 +27,10 @@ class FileItem extends React.Component {
     }
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextState !== this.state;
+  }
+
   addElements(elements) {
     this.setState({
       additionnalElements: elements

@@ -38,10 +38,10 @@ class Dataprovider extends Directory_Tree
 
     }
 
-    private function _getRegistrationStatus($relative_path)
+    private function _getRegistrationStatus($relative_path, $force_update=false)
     {
-        // Caching of 10 seconds 
-        if (empty($_SESSION['cbrain_tree']) || time() - $_SESSION['cbrain_tree_last_update'] > 120) {
+        // Caching of 20 seconds 
+        if ($force_update || empty($_SESSION['cbrain_tree']) || time() - $_SESSION['cbrain_tree_last_update'] > 20 ) {
             $this->cbrain_api->connect();
             $this->cbrain_api->selectDataProviderByName('Epigenomics');
             $_SESSION['cbrain_tree'] = json_encode($this->cbrain_api->listDataProviderFile());
@@ -72,11 +72,12 @@ class Dataprovider extends Directory_Tree
           }
           return $subtree->userfile_id;
         };
-        
         return $find($relative_path, $cbrain_tree);
     }
 
-    public function getAdditionnalElements($fullpath) {
+    public function getAdditionnalElements($request) 
+    {
+        $fullpath = $request['fullpath']; 
         $chunks = explode('/',$fullpath, 2);
 
         if (basename($this->getRootDir()) !== $chunks[0]) {
@@ -91,35 +92,31 @@ class Dataprovider extends Directory_Tree
         return json_encode(array('registration_status' => $status));
     }
 
-    public function registerFile($file_ids) {
+    public function registerFile($request) {
+        $this->cbrain_api->connect();
+        $this->cbrain_api->selectDataProviderByName('Epigenomics');
+        $file_tuples = array_map(function ($relative_path) {
+            $file_name = basename($relative_path);
+            $full_path = $this->root_dir . '/' . $file_name; 
+            $file_type = is_dir($full_path) ? 'FileCollection' : 'SingleFile';
+            
+            return (object) array (
+                'file_name' => $file_name,
+                'file_type' => $file_type . '-' . $file_name
+            );
+        }, $request['filenames']);
         
-        $file_list = array_map(function ($file_id) {
-            $cbrain_file = new Swagger\Client\Model\Userfile();
-        }, $file_ids);
-
-        $this->cbrain_api->registerFiles($file_list);
+        $this->cbrain_api->registerFiles($file_tuples);
+        $this->_getRegistrationStatus($this->root_dir, true);
     }
-/*
 
-$app = new CbrainAPI();
-$app->connect();
-$app->selectDataProviderByName('Epigenomics');
-
-// Get file list
-// var_dump($app->listDataProviderFile());
-
-// Register files
-//$f1 = new Swagger\Client\Model\Userfile();
-//$f1->setName('a.csv');
-//$f1->setType('CSVFile');
-//$f2 = new Swagger\Client\Model\Userfile();
-//$f2->setName('b.csv');
-//$f2->setType('CSVFile');
-//$app->registerFiles([$f1, $f2]);
-
-// unregister files
-$app->unregisterFiles()
-
-*/
-
+    public function unregisterFile($request) {
+        $this->cbrain_api->connect();
+        $this->cbrain_api->selectDataProviderByName('Epigenomics');
+        $basenames = array_map(function ($filename) {
+            return basename($filename);
+        }, $request['filenames']);
+        $this->cbrain_api->unregisterFiles($basenames);
+        $this->_getRegistrationStatus($this->root_dir, true);
+    }
 }

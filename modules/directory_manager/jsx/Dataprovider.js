@@ -20,7 +20,8 @@ class Dataprovider extends React.Component {
 
     this.getTree = this.getTree.bind(this);
     this.getAdditionalElements = this.getAdditionalElements.bind(this);
-
+    this.registerFile = this.registerFile.bind(this);
+    this.unregisterFile = this.unregisterFile.bind(this);
   }
 
   componentDidMount() {
@@ -57,26 +58,30 @@ class Dataprovider extends React.Component {
           case 'registration_status':
             let text;
             let className; 
-            let userfile_id;
 
             if (!obj[key]) {
+              element = (
+                <div key={index} className="action-item">
+                  <button className="not-registered" onClick={this.registerFile} data-relative-path={postData.fullpath}><span>Not registered</span></button>
+                </div>
+              );
               className = 'glyphicon glyphicon-remove';
               text = 'Not registered';
             } else if (obj[key] == 'Not found...') {
               className = 'glyphicon glyphicon-question-sign';
               text = obj[key];
             } else if (typeof obj[key] === 'number') {
-              className = 'glyphicon glyphicon-ok';
-              text = 'Registered';
+              element = (
+                <div key={index} className="action-item">
+                  <button className="registered" onClick={this.unregisterFile} data-relative-path={postData.fullpath}><span>Registered</span></button>
+                </div>
+              );
             }
 
-            element = (
-              <span className={className} userfile={userfile_id} data-toggle="tooltip" title={text} />
-            );
           break;
         }
         return element;
-      });
+      }.bind(this));
       callback(elements);
     }.bind(this);
 
@@ -99,7 +104,70 @@ class Dataprovider extends React.Component {
     });
   }
 
-  addToSelection($path) {
+  unregisterFile(event) {
+
+    const self = this;
+    const target = event.target;
+    const postData = {
+      className: this.state.data.className,
+      action: 'unregisterFile',
+      filenames: [
+        target.dataset.relativePath
+      ]
+    };
+
+    $.ajax({
+      type: 'POST',
+      url: this.props.dataURL,
+      data: JSON.stringify(postData),
+      cache: false,
+      contentType: false,
+      processData: false,
+      success: function () {
+        self.getTree();
+      },
+      error: function(err) {
+        console.error(err);
+        swal({
+          title: "Error!",
+          type: "error",
+          content: err.statusText
+        });
+      }
+    });
+
+  }
+
+  registerFile(event) {
+
+    const self = this;
+    const target = event.target;
+    const postData = {
+      className: this.state.data.className,
+      action: 'registerFile',
+      filenames: [
+        target.dataset.relativePath
+      ]
+    };
+
+    $.ajax({
+      type: 'POST',
+      url: this.props.dataURL,
+      data: JSON.stringify(postData),
+      cache: false,
+      contentType: false,
+      processData: false,
+      success: function () {
+      },
+      error: function(err) {
+        console.error(err);
+        swal({
+          title: "Error!",
+          type: "error",
+          content: err.statusText
+        });
+      }
+    });
 
   }
 
@@ -119,7 +187,8 @@ class Dataprovider extends React.Component {
     }
     return (
       <div className="panel panel-primary">
-      {tree}
+        <h1>Tool config 457 : myChecksum</h1>
+        {tree}
       </div>
     );
   }

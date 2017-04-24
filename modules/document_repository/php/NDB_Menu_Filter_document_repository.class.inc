@@ -412,7 +412,7 @@ class NDB_Menu_Filter_Document_Repository extends NDB_Menu_Filter
             }
 
         }
-
+var_dump($FileCategory);
         return true;
     }
 

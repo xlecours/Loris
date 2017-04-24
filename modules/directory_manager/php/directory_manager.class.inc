@@ -96,7 +96,7 @@ class Directory_Manager extends \NDB_Page
               throw new \LorisException('Method not implemented');
             }
             $function_name = $req['action'];
-            return $directoryTree->$function_name($req['fullpath']);
+            return $directoryTree->$function_name($req);
         }
     }
 

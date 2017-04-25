@@ -105,28 +105,28 @@ final class CBRAIN_API
 
     public function registerFiles($file_tuples)
     {
-            $params = new \Swagger\Client\Model\Params4();
-            $params->setBasenames(
-                array_map(
-                    function ($f) {
-                        return $f->file_name;
-                    },
-                    $file_tuples
-                )
-            );
-            $params->setFiletypes(
-                array_map(
-                    function ($f) {
-                        return $f->file_type;
-                    },
-                    $file_tuples
-                )
-            );
-            $params->setAuthenticityToken($this->session_token);
-            $this->dataprovider_api->dataProvidersIdRegisterPost(
-                $this->selected_dataprovider_id,
-                $params
-            );
+        $params = new \Swagger\Client\Model\Params4();
+        $params->setBasenames(
+            array_map(
+                function ($f) {
+                    return $f->file_name;
+                },
+                $file_tuples
+            )
+        );
+        $params->setFiletypes(
+            array_map(
+                function ($f) {
+                    return $f->file_type;
+                },
+                $file_tuples
+            )
+        );
+        $params->setAuthenticityToken($this->session_token);
+        $this->dataprovider_api->dataProvidersIdRegisterPost(
+            $this->selected_dataprovider_id,
+            $params
+        );
     }
 
 
@@ -141,5 +141,43 @@ final class CBRAIN_API
             $this->selected_dataprovider_id,
             $params
         );
+    }
+
+    public function myCheckSum()
+    {
+        $tool_config_id = 457;
+
+        $tool_api = new \Swagger\Client\Api\ToolsApi();
+        $tool = array_reduce($tool_api->toolsGet(), function ($carry, $item) {
+            if (empty($carry) && $item->getName() == 'MyCksum')  {
+                $carry = $item;
+            }
+            return $carry;
+        }, null);
+
+        $params   = new \Swagger\Client\Model\Params19();
+        $params->setToolConfigId($tool_config_id);
+
+        $task = new \Swagger\Client\Model\CbrainTask();
+        $task->setToolConfigId($tool_config_id);
+
+        $task_input_params = array(
+            "interface_userfile_ids" => array(
+                "927529"
+            ),
+            "output_file_prefix" =>"ck_",
+            "struct_with_day_and_month" => array(
+                "day" => "3",
+                "month" => "Jan"
+            ),
+            "an_odd_number" => "3"
+        );
+
+
+        $task->setParams($task_input_params);
+        $params->setCbrainTask($task);
+        $params->setAuthenticityToken($this->session_token);
+        $task_api = new \Swagger\Client\Api\TasksApi();
+        $task_api->tasksPost($params);
     }
 }

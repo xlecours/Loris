@@ -22,6 +22,7 @@ class Dataprovider extends React.Component {
     this.getAdditionalElements = this.getAdditionalElements.bind(this);
     this.registerFile = this.registerFile.bind(this);
     this.unregisterFile = this.unregisterFile.bind(this);
+    this.checkSum = this.checkSum.bind(this);
   }
 
   componentDidMount() {
@@ -73,6 +74,7 @@ class Dataprovider extends React.Component {
             } else if (typeof obj[key] === 'number') {
               element = (
                 <div key={index} className="action-item">
+                  <button className="task" onClick={this.checkSum} data-userfile-id={obj[key]}><span>Registered</span></button>
                   <button className="registered" onClick={this.unregisterFile} data-relative-path={postData.fullpath}><span>Registered</span></button>
                 </div>
               );
@@ -169,6 +171,37 @@ class Dataprovider extends React.Component {
       }
     });
 
+  }
+
+  checkSum(event) {
+    const target = event.target;
+
+    const postData = {
+      className: this.state.data.className,
+      action: 'checkSum',
+      userfiles: [
+        target.dataset.userfileId
+      ]
+    };
+
+    $.ajax({
+      type: 'POST',
+      url: this.props.dataURL,
+      data: JSON.stringify(postData),
+      cache: false,
+      contentType: false,
+      processData: false,
+      success: function () {
+      },
+      error: function(err) {
+        console.error(err);
+        swal({
+          title: "Error!",
+          type: "error",
+          content: err.statusText
+        });
+      }
+    });
   }
 
   render() {

@@ -119,4 +119,9 @@ class Dataprovider extends Directory_Tree
         $this->cbrain_api->unregisterFiles($basenames);
         $this->_getRegistrationStatus($this->root_dir, true);
     }
+
+    public function checkSum($request) {
+        $this->cbrain_api->connect();
+        $this->cbrain_api->myCheckSum();
+    }
 }

@@ -1,4 +1,4 @@
-import Dataprovider from './Dataprovider';
+import DirectoryManager from './DirectoryManager';
 
 /**
  * Entry point of the module.
@@ -6,13 +6,13 @@ import Dataprovider from './Dataprovider';
  */
 $(function() {
   const dataURL = loris.BaseURL + "/directory_manager/?format=json";
-  const appContainer = (
-    <div id="page-directory-manager">
-      <Dataprovider
-        dataURL={dataURL}
-        module="directory_manager"
-      />
+  const app = (
+    <div>
+    <DirectoryManager
+      dataURL={dataURL}
+      module="directory_manager"
+    />
     </div>
   );
-  ReactDOM.render(appContainer, document.getElementById("lorisworkspace"));
+  ReactDOM.render(app, document.getElementById("lorisworkspace"));
 });

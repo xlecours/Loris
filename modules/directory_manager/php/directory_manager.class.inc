@@ -61,8 +61,9 @@ class Directory_Manager extends \NDB_Page
         switch($_SERVER['REQUEST_METHOD']) {
             case 'GET':
                 if (!empty($_REQUEST['format']) && $_REQUEST['format'] == 'json') {
-                    $directoryTree = \LORIS\directory_manager\Directory_Tree::getInstance('Dataprovider');
-                    return $directoryTree->toJSON();
+                    if (!empty($_REQUEST['tabName'])) {
+                      return \LORIS\directory_manager\Directory_Tree::getInstance($_REQUEST['tabName'])->toJSON();
+                    }
                 }
                 break;
 
@@ -116,6 +117,7 @@ class Directory_Manager extends \NDB_Page
         return array_merge(
             $deps,
             array(
+             $baseURL . "/js/components/Tabs.js",
              $baseURL . "/directory_manager/js/index.js",
             )
         );

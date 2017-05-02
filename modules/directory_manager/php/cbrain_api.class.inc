@@ -15,6 +15,8 @@ final class CBRAIN_API
     private $userfile_api;
 
     private $session_token;
+    private $session_id;
+    private $user_id;
     private $selected_dataprovider_id;
 
     private function __construct()
@@ -32,8 +34,6 @@ final class CBRAIN_API
         $this->userfile_api = new \Swagger\Client\Api\UserfilesApi();
     }
 
-    
-
     public static function getInstance()
     {
         if (!isset(self::$instance)) {
@@ -48,13 +48,23 @@ final class CBRAIN_API
         $login    = $this->cbrain_user->getLogin(); // string | The username of the User trying to connect.
         $password = $this->cbrain_user->getPassword(); // string | The CBRAIN User's password
 
-        $this->session_token = json_decode($this->session_api->sessionNewGet(), true)['authenticity_token'];
-
+         
         try {
-            $result = json_decode($this->session_api->sessionPost($login, $password, $this->session_token), true);
+
+            if (empty($_SESSION['cbrain_token']) || true) {
+                $token = json_decode($this->session_api->sessionNewGet(), true)['authenticity_token'];
+error_log($token);
+                $this->session_api->sessionPost($login, $password, $token);
+                $_SESSION['cbrain_token'] = $token;
+            } 
+            $this->session_token = $_SESSION['cbrain_token'];
+            
+        } catch (ApiException $e) {
+            unset($_SESSION['cbrain_token']);
+            error_log(print_r($e,true));
         } catch (Exception $e) {
-// TODO :: something better than var_dump
-            var_dump($e);
+            unset($_SESSION['cbrain_token']);
+            error_log(print_r($e,true));
         }
     }
 

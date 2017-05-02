@@ -142,7 +142,6 @@ class Dataprovider extends React.Component {
 
   registerFile(event) {
 
-    const self = this;
     const target = event.target;
     const postData = {
       className: this.state.data.className,
@@ -215,16 +214,25 @@ class Dataprovider extends React.Component {
       );
     } else {
       tree = (
-        <text>Loading...</text>
+        <button className="btn-info has-spinner">
+          Loading
+          <span
+            className="glyphicon
+            glyphicon-refresh glyphicon-refresh-animate">
+          </span>
+        </button>
       );
     }
     return (
       <div className="panel panel-primary">
-        <h1>Tool config 457 : myChecksum</h1>
         {tree}
       </div>
     );
   }
 }
+
+Dataprovider.propTypes = {
+  dataURL: React.PropTypes.string.isRequired
+};
 
 export default Dataprovider;

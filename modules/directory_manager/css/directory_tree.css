@@ -1,6 +1,9 @@
 /*
   Directory
 */
+.panel.panel-primary{
+    border-top-color: white;
+}
 .panel > div.directory-tree {
     padding-right: 1em;
 }
@@ -27,8 +30,16 @@
     border-left: 1px solid #c0c0c0;
 }
 .item {
+    align-items: center;
+    border: 1px solid #ffffff;
     display: flex;
     flex-direction: row;
+    justify-content: center;
+}
+.item:hover {
+    background-color: #dfdfdf;
+    border: 1px solid #dfdfdf;
+    border-radius: 4px;
 }
 .file-item {
     padding: 1em 0em 1em 1em;

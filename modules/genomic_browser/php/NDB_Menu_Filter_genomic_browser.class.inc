@@ -77,9 +77,9 @@ class NDB_Menu_Filter_Genomic_Browser extends NDB_Menu_Filter
                           'DATE_FORMAT(candidate.DoB,\'%Y-%m-%d\') AS DoB',
                           'candidate.ExternalID as externalID',
                           'F.FileCount as Files',
-                          'S.SNPCount as SNPs',
-                          'C.CNVCount as CNVs',
-                          'M.CPGCount as CPGs',
+                          'COALESCE(S.SNPCount,0) as SNPs',
+                          'COALESCE(C.CNVCount,0) as CNVs',
+                          'COALESCE(M.CPGCount,0) as CPGs',
                          );
 
         // This variable will be used by the columnFormatter javascript

@@ -77,9 +77,7 @@ abstract class Directory_Tree
     {
         $tree = array(
             'name' => basename($path),
-            'isReadable' => is_readable($path),
-            'files' => array(),
-            'directories' => array()
+            'content' => array()
         );
 
         if ($handle = opendir($path)) {
@@ -87,9 +85,19 @@ abstract class Directory_Tree
                 $full_path = $path . '/' . $entry;
                 if ($entry != "." && $entry != "..") {
                     if (is_dir($path . '/' . $entry)) {
-                        array_push($tree['directories'], $this->_listDirectoryRecurcive($full_path));
+                        array_push(
+                          $tree['content'], 
+                          $this->_listDirectoryRecurcive($full_path)
+                        );
                     } else {
-                        array_push($tree['files'], $entry);
+                        array_push(
+                            $tree['content'],
+                            array( 
+                                'name' => $entry,
+                                'isFile' => true,
+                                'content' => ''
+                            )
+                        );
                     }
                 }
             }

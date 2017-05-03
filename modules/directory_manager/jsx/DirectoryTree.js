@@ -5,7 +5,7 @@ import FileItem from './FileItem';
   * Main module component rendering the directory tree for directory manager
   *
   * @author Xavier Lecours Boucher
-  * @version 1.0.0
+  * @version 1.0.1
   *
   * */
 class DirectoryTree extends React.Component {
@@ -14,26 +14,15 @@ class DirectoryTree extends React.Component {
     super(props);
 
     this.state = {
-      expended: false,
-      additionnalElements: []
+      expended: false
     };
 
     // Bind component instance to custom methods
     this.onClickHandler = this.onClickHandler.bind(this);
-    this.getAdditionalElements = this.getAdditionalElements.bind(this);
-    this.addElements = this.addElements.bind(this);
+    this.contentSelectionHandler = this.contentSelectionHandler.bind(this);
   }
 
   componentDidMount() {
-    if (this.props.getAdditionalElements) {
-      this.props.getAdditionalElements(this.props.tree.name, this.addElements);
-    }
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    console.log(this.props);
-    console.log(nextProps);
-    return true;
   }
 
   onClickHandler() {
@@ -43,72 +32,61 @@ class DirectoryTree extends React.Component {
     });
   }
 
-  addElements(elements) {
-    this.setState({
-      additionnalElements: elements
-    });
-  }
-
-  // Concatenate the name of this directory with the calling child name
-  // to build the relative path.
-  getAdditionalElements(name, callback) {
-    if (this.props.getAdditionalElements) {
-      const fullname = this.props.tree.name.concat('/', name);
-      return this.props.getAdditionalElements(fullname, callback);
+  contentSelectionHandler(event) {
+    event.stopPropagation();
+    let classList = event.target.classList;
+    if (classList.contains('glyphicon-unchecked')) {
+      classList.replace('glyphicon-unchecked', 'glyphicon-check');
+    } else {
+      classList.replace('glyphicon-check', 'glyphicon-unchecked');
     }
   }
 
   render() {
     let glyph = 'glyphicon glyphicon-folder-close';
-    let nodes;
-    let leaves;
-    let warnings;
+    let content;
 
-    if (!this.props.tree.isReadable) {
-      warnings = (
-        <div className="module-warnings">Permission denied...</div>
-      );
-
-    } else if ( this.state.expended ) {
-      const getAdditionalElements = this.getAdditionalElements;
-
-      nodes  = this.props.tree.directories.map(function (dir, index) {
-        return (
-          <DirectoryTree 
+    if ( this.state.expended ) {
+      content  = this.props.tree.content.map(function (item, index) {
+console.log(item);
+        let element;
+        if (!item.isFile) {
+         element = (
+          <DirectoryTree
             key={'tree-' + index}
-            tree={dir}
-            getAdditionalElements={getAdditionalElements}
-          /> 
-        );
-      });
-      leaves = this.props.tree.files.map(function (file, index) {
-        return (
-          <FileItem key={'file-' + index} name={file} getAdditionalElements={getAdditionalElements} />
-        );
+            tree={item}
+          />
+         );
+        } else {
+          element = (
+            <FileItem 
+              key={'file-' + index}
+              name={item.name}
+            />
+          );
+        }
+        return element;
       });
       glyph = 'glyphicon glyphicon-folder-open';
-
     }
 
+    const checkboxClasses = "selection-item glyphicon glyphicon-unchecked";
+      
     return (
         <div className="directory-tree" >
           <div className="click-handler" onClick={this.onClickHandler}>
             <div className="item">
               <div className="mandatory-elements">
+                <span className={checkboxClasses} onClick={this.contentSelectionHandler}/>
                 <span className={glyph} />
                 <text>{this.props.tree.name}</text>
-                {warnings}
-              </div>
-              <div className="additionnal-elements">
-                {this.state.additionnalElements}
               </div>
             </div>
           </div>
           <div className="directory-content">
             <div className="left-line" />
             <div className="nodes">
-              {nodes}
-              {leaves}
+              {content}
             </div>
           </div>
         </div>
@@ -119,11 +97,9 @@ class DirectoryTree extends React.Component {
 DirectoryTree.propTypes = {
   tree: React.PropTypes.shape({
     name: React.PropTypes.string.isRequired,
-    isReadable: React.PropTypes.bool,
-    files: React.PropTypes.array.isRequired,
-    directories: React.PropTypes.array.isRequired
+    isFile: React.PropTypes.bool,
+    content: React.PropTypes.array.isRequired
   }),
-  getAdditionalElements: React.PropTypes.func
 }; 
 
 export default DirectoryTree;

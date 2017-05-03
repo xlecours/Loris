@@ -14,12 +14,11 @@ class DirectoryTree extends React.Component {
     super(props);
 
     this.state = {
-      expended: false
+      expended: true
     };
 
     // Bind component instance to custom methods
     this.onClickHandler = this.onClickHandler.bind(this);
-    this.contentSelectionHandler = this.contentSelectionHandler.bind(this);
   }
 
   componentDidMount() {
@@ -32,37 +31,26 @@ class DirectoryTree extends React.Component {
     });
   }
 
-  contentSelectionHandler(event) {
-    event.stopPropagation();
-    let classList = event.target.classList;
-    if (classList.contains('glyphicon-unchecked')) {
-      classList.replace('glyphicon-unchecked', 'glyphicon-check');
-    } else {
-      classList.replace('glyphicon-check', 'glyphicon-unchecked');
-    }
-  }
-
   render() {
     let glyph = 'glyphicon glyphicon-folder-close';
     let content;
 
     if ( this.state.expended ) {
       content  = this.props.tree.content.map(function (item, index) {
-console.log(item);
         let element;
         if (!item.isFile) {
          element = (
           <DirectoryTree
             key={'tree-' + index}
             tree={item}
-          />
+          >{item.additionnalElements}</DirectoryTree>
          );
         } else {
           element = (
             <FileItem 
               key={'file-' + index}
               name={item.name}
-            />
+            >{item.additionnalElements}</FileItem>
           );
         }
         return element;
@@ -70,14 +58,11 @@ console.log(item);
       glyph = 'glyphicon glyphicon-folder-open';
     }
 
-    const checkboxClasses = "selection-item glyphicon glyphicon-unchecked";
-      
     return (
         <div className="directory-tree" >
           <div className="click-handler" onClick={this.onClickHandler}>
             <div className="item">
               <div className="mandatory-elements">
-                <span className={checkboxClasses} onClick={this.contentSelectionHandler}/>
                 <span className={glyph} />
                 <text>{this.props.tree.name}</text>
               </div>

@@ -19,6 +19,8 @@ class Dataprovider extends React.Component {
     };
 
     this.getTree = this.getTree.bind(this);
+    this.addCustomElements = this.addCustomElements.bind(this);   
+
     this.getAdditionalElements = this.getAdditionalElements.bind(this);
     this.registerFile = this.registerFile.bind(this);
     this.unregisterFile = this.unregisterFile.bind(this);
@@ -35,12 +37,29 @@ class Dataprovider extends React.Component {
   getTree() {
     $.getJSON(this.props.dataURL, data => {
       this.setState({
-        data: data,
+        data: this.addCustomElements(data),
         isLoaded: true
       });
     }).error(function(error) {
       console.error(error);
     });
+  }
+
+  addCustomElements(tree){
+    if (Array.isArray(tree.content)) {
+      tree.content = tree.content.map(function (subtree) {return this.addCustomElements(subtree)}, this);
+    } else {
+      if (tree.hasOwnProperty('cbrain_registration_status')) {
+        if (typeof tree.cbrain_registration_status == 'number') {
+          tree.additionnalElements = (
+            <h3>adkjdawdj</h3>
+          );
+        }
+      } else {
+        
+      }
+    } 
+    return tree;
   }
 
   getAdditionalElements(fullpath, callback) {
@@ -209,7 +228,6 @@ class Dataprovider extends React.Component {
       tree = (
         <DirectoryTree 
           tree={this.state.data}
-          getAdditionalElements={this.getAdditionalElements}
         />
       );
     } else {

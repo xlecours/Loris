@@ -107,6 +107,7 @@ error_log($token);
         $result = array();
         if ($this->_dataProviderReady()) {
             $result = $this->dataprovider_api->dataProvidersIdBrowseGet($this->selected_dataprovider_id);
+var_dump( $result );
         } else {
             error_log('dataprovider is not ready');
         }

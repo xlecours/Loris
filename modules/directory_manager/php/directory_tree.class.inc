@@ -77,6 +77,7 @@ abstract class Directory_Tree
     {
         $tree = array(
             'name' => basename($path),
+            'isFile' => false,
             'content' => array()
         );
 
@@ -101,6 +102,20 @@ abstract class Directory_Tree
                     }
                 }
             }
+            //sort by name
+            usort(
+                $tree['content'],
+                function ($a, $b) {
+                    return strcasecmp($a["name"], $b["name"]);
+                }
+            );
+            // sort by type
+            usort(
+                $tree['content'],
+                function ($a, $b) {
+                    return $a["isFile"] <=> $b["isFile"];
+                }
+            );
             closedir($handle);
         } 
         return $tree;

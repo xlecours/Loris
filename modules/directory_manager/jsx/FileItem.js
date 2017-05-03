@@ -18,23 +18,18 @@ class FileItem extends React.Component {
     };
 
     // Bind component instance to custom methods
-    this.addElements = this.addElements.bind(this);
+    this.select = this.select.bind(this);
   }
 
   componentDidMount() {
-    if (this.props.getAdditionalElements) {
-      this.props.getAdditionalElements(this.props.name, this.addElements);
-    }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return nextState !== this.state;
-  }
+  select(event) {
+    event.stopPropagation();
+    const classList = event.target.classList;
 
-  addElements(elements) {
-    this.setState({
-      additionnalElements: elements
-    });
+    classList.toggle('glyphicon-unchecked');
+    classList.toggle('glyphicon-check');
   }
 
   render() {
@@ -43,9 +38,10 @@ class FileItem extends React.Component {
         <div className="mandatory-elements">
           <span className="glyphicon glyphicon-file"></span>
           <text>{this.props.name}</text>
+          <span className="selection-item glyphicon glyphicon-unchecked" onClick={this.select}/>
         </div>
         <div className="additionnal-elements">
-          {this.state.additionnalElements}
+          {this.props.children}
         </div>
       </div>
     );

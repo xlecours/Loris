@@ -33,31 +33,12 @@ class Imaging extends Directory_Tree
     public function toJSON()
     {
         $fs_tree = $this->_listDirectoryRecurcive($this->getRootDir());
-        $db_tree = $this->_listDatabaseFilesAsTree();
+    //    $db_tree = $this->_listDatabaseFilesAsTree();
 
-//var_dump($fs_tree);
-//var_dump($db_tree);
-//exit;
-
-        $tree = array_merge_recursive($fsTree, $dbTree);
+    //    $tree = array_merge_recursive($fsTree, $dbTree);
         $tree['className'] = __CLASS__;
-        return json_encode($tree);
+        return json_encode($fs_tree);
 
-    }
-
-    public function getAdditionnalElements($request)
-    {
-        $fullpath = $request['fullpath'];
-        $chunks = explode('/',$fullpath, 2);
-error_log($this->getRootDir());
-error_log($chunks[0]);
-
-        if (basename($this->getRootDir()) !== $chunks[0]) {
-            error_log('Wrong path');
-            throw new \LorisException('Root directory do not match');
-        }
-        // TODO : check for database records
-        return json_encode($fullpath);
     }
 
     private function _listDatabaseFilesAsTree() {

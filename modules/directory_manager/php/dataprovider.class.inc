@@ -34,14 +34,28 @@ class Dataprovider extends Directory_Tree
     public function toJSON()
     {
         $tree = $this->_listDirectoryRecurcive($this->getRootDir());
-
         $tree['className'] = __CLASS__;
+
+        $addStatus = function ($parent_name, &$subtree) use (&$addStatus) {
+            foreach ($subtree as $index => $node) {
+                $fullname = $parent_name . '/' . $node['name'];
+                $subtree[$index]['cbrain_registration_status'] = $this->_getRegistrationStatus($fullname);
+                if (is_array($node['content'])) {
+                    $addStatus($fullname, $node['content']);
+                }
+            }
+        };
+
+        $addStatus(null, $tree['content']);
+
         return json_encode($tree);
 
     }
 
     private function _getRegistrationStatus($relative_path, $force_update=false)
     {
+return 1234;
+//TODO :: check if there can by more than a single level of files. 
         // Caching of 20 seconds 
         if ($force_update || empty($_SESSION['cbrain_tree']) || time() - $_SESSION['cbrain_tree_last_update'] > 20 ) {
             $this->cbrain_api->connect();
@@ -54,7 +68,6 @@ class Dataprovider extends Directory_Tree
         // Custom recursive function that walk down the tree for the requested file
         $find = function($path, $tree) use (&$find) {
           $chunks = explode('/',$path, 2);
-
           $subtree = array_reduce($tree, function($carry, $item) use ($chunks) {
               if (!empty($carry)) {
                   // already found
@@ -74,13 +87,14 @@ class Dataprovider extends Directory_Tree
           }
           return $subtree->userfile_id;
         };
+var_dump('YO!!');
+exit;
         return $find($relative_path, $cbrain_tree);
     }
 
-    public function getAdditionnalElements($request) 
+    private function _getAdditionnalData($relative_path) 
     {
-        $fullpath = $request['fullpath']; 
-        $chunks = explode('/',$fullpath, 2);
+        $chunks = explode('/',$relative, 2);
 
         if (basename($this->getRootDir()) !== $chunks[0]) {
             error_log('Wrong path');

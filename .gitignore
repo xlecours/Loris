@@ -25,5 +25,6 @@ htdocs/js/components/.module-cache/
 node_modules/
 modules/*/js/*.map
 htdocs/js/components/*.map
+npm-debug.log*
 modules/directory_manager/php/cbrain_api_config.ini
 modules/directory_manager/cbrain-php-api/

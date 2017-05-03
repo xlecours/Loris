@@ -9,7 +9,7 @@
 /*
  *  ...
  */
-PhenotypesPanel = React.createClass({
+const PhenotypesPanel = React.createClass({
     propTypes: {
         onQueryDocumentLoaded : React.PropTypes.func.isRequired,
     },
@@ -60,7 +60,15 @@ PhenotypesPanel = React.createClass({
         });
     },
     render: function () {
-        var queries = this.state.availableQueries.map(function (q) {return <option value={q.id} >{q.doc.Meta.name}</option>;});
+        const queries = this.state.availableQueries.map(
+          function (q) {
+            return (
+              <option value={q.id} >
+                {q.doc.Meta.name}
+              </option>
+            );
+          }
+        );
         var options = [<option value="" ></option>, ...queries];
         return (
             <select multi="true" onChange={this.onQuerySelected}>
@@ -70,7 +78,7 @@ PhenotypesPanel = React.createClass({
     }
 });
 
-GenomicDatasetsPanel = React.createClass({
+const GenomicDatasetsPanel = React.createClass({
     propTypes: {
         onDatasetSelected : React.PropTypes.func.isRequired,
         pscids : React.PropTypes.array.isRequired
@@ -137,7 +145,7 @@ GenomicDatasetsPanel = React.createClass({
     }
 });
 
-GenomicRangePanel = React.createClass({
+const GenomicRangePanel = React.createClass({
     propTypes: {
         onPreviewPressed : React.PropTypes.func.isRequired,
         onToDataproviderPressed : React.PropTypes.func.isRequired,
@@ -169,7 +177,7 @@ GenomicRangePanel = React.createClass({
     }
 });
 
-QueryPreviewPannel = React.createClass({
+const QueryPreviewPannel = React.createClass({
     render: function () {
         return (
             <textarea disable value={this.props.data}></textarea>
@@ -177,7 +185,7 @@ QueryPreviewPannel = React.createClass({
     }
 });
 
-DatasetMakerApp = React.createClass({
+const DatasetMakerApp = React.createClass({
     getInitialState: function () {
         return {
             selectedPSCIDs: [],
@@ -279,4 +287,4 @@ DatasetMakerApp = React.createClass({
     }
 });
 
-RDatasetMakerApp = React.createFactory(DatasetMakerApp);
+const RDatasetMakerApp = React.createFactory(DatasetMakerApp);

@@ -1,7 +1,8 @@
 <div id="app-container"></div>
 <script>
 (function() {
+console.log('HERE');
     var app = RDatasetMakerApp({});
-    React.render(app, document.getElementById("app-container"));
+    ReactDOM.render(app, document.getElementById("app-container"));
 })();
 </script>

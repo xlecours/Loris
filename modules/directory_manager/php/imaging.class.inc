@@ -23,8 +23,9 @@ class Imaging extends Directory_Tree
 
     protected function __construct()
     {
-        // TODO :: Get path from configs
-        $this->root_dir = '/data/loris/data/assembly/';
+        $config = \NDB_Config::singleton();
+        
+        $this->root_dir = $config->getSetting("data") . 'assembly';
         $this->cbrain_api = \LORIS\directory_manager\CBRAIN_API::getInstance();
     }
 
@@ -34,9 +35,9 @@ class Imaging extends Directory_Tree
         $fs_tree = $this->_listDirectoryRecurcive($this->getRootDir());
         $db_tree = $this->_listDatabaseFilesAsTree();
 
-var_dump($fs_tree);
-var_dump($db_tree);
-exit;
+//var_dump($fs_tree);
+//var_dump($db_tree);
+//exit;
 
         $tree = array_merge_recursive($fsTree, $dbTree);
         $tree['className'] = __CLASS__;
@@ -48,6 +49,8 @@ exit;
     {
         $fullpath = $request['fullpath'];
         $chunks = explode('/',$fullpath, 2);
+error_log($this->getRootDir());
+error_log($chunks[0]);
 
         if (basename($this->getRootDir()) !== $chunks[0]) {
             error_log('Wrong path');

@@ -28,19 +28,19 @@ function formatColumn(column, cell, rowData) {
             // but with distinctive parameters.
             case 'Files':
 		if (0 == params.length) {
-                    params = ['genomic_browser&submenu=viewGenomicFile', {'candID': rowData[1]}];
+                    params = ['genomic_browser/?submenu=viewGenomicFile', {'candID': rowData[1]}];
                 }
             case 'SNPs':
 		if (0 == params.length) {
-                    params = ['genomic_browser&submenu=snp_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
+                    params = ['genomic_browser/?submenu=snp_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
                 }
             case 'CNVs':
 		if (0 == params.length) {
-                    params = ['genomic_browser&submenu=cnv_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
+                    params = ['genomic_browser/?submenu=cnv_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
                 }
             case 'CPGs':
 		if (0 == params.length) {
-                    params = ['genomic_browser&submenu=cpg_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
+                    params = ['genomic_browser/?submenu=cpg_browser', {'DCCID': rowData[1], 'filter': "Show Data"}];
                 }
                 reactElement = React.createElement(
                     "td",

@@ -1,3 +1,7 @@
+'use strict';
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 /**
  *  ...
  *
@@ -9,57 +13,57 @@
 /*
  *  ...
  */
-PhenotypesPanel = React.createClass({
+var PhenotypesPanel = React.createClass({
     displayName: 'PhenotypesPanel',
 
     propTypes: {
         onQueryDocumentLoaded: React.PropTypes.func.isRequired
     },
-    getInitialState: function () {
+    getInitialState: function getInitialState() {
         return {
             availableQueries: []
         };
     },
-    componentDidMount: function () {
+    componentDidMount: function componentDidMount() {
         var that = this;
         $.ajax(loris.BaseURL + "/AjaxHelper.php?Module=dataset_maker&script=getSavedQueries.php", {
             dataType: 'json',
-            xhr: function () {
+            xhr: function xhr() {
                 var xhr = new window.XMLHttpRequest();
                 return xhr;
             },
-            success: function (data) {
+            success: function success(data) {
                 that.setState({ availableQueries: data.rows });
             },
-            error: function (data, error_code, error_msg) {
+            error: function error(data, error_code, error_msg) {
                 console.error(error_code + ': ' + error_msg);
                 that.setState({ error: "Error loading data" });
             }
         });
     },
-    shouldComponentUpdate: function (nextProps, nextState) {
+    shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
         return nextProps.id !== this.props.id || nextState.availableQueries != undefined;
     },
-    onQuerySelected: function (event) {
+    onQuerySelected: function onQuerySelected(event) {
         event.preventDefault();
         var id = event.target.value;
         var that = this;
         $.ajax(loris.BaseURL + "/AjaxHelper.php?Module=dataset_maker&script=GetDoc.php&DocID=" + id, {
             dataType: 'json',
-            xhr: function () {
+            xhr: function xhr() {
                 var xhr = new window.XMLHttpRequest();
                 return xhr;
             },
-            success: function (data) {
+            success: function success(data) {
                 that.props.onQueryDocumentLoaded(data);
             },
-            error: function (data, error_code, error_msg) {
+            error: function error(data, error_code, error_msg) {
                 console.error(error_code + ': ' + error_msg);
                 that.setState({ "error": "Error loading data" });
             }
         });
     },
-    render: function () {
+    render: function render() {
         var queries = this.state.availableQueries.map(function (q) {
             return React.createElement(
                 'option',
@@ -67,7 +71,7 @@ PhenotypesPanel = React.createClass({
                 q.doc.Meta.name
             );
         });
-        var options = [React.createElement('option', { value: '' }), ...queries];
+        var options = [React.createElement('option', { value: '' })].concat(_toConsumableArray(queries));
         return React.createElement(
             'select',
             { multi: 'true', onChange: this.onQuerySelected },
@@ -76,44 +80,44 @@ PhenotypesPanel = React.createClass({
     }
 });
 
-GenomicDatasetsPanel = React.createClass({
+var GenomicDatasetsPanel = React.createClass({
     displayName: 'GenomicDatasetsPanel',
 
     propTypes: {
         onDatasetSelected: React.PropTypes.func.isRequired,
         pscids: React.PropTypes.array.isRequired
     },
-    getInitialState: function () {
+    getInitialState: function getInitialState() {
         return {
             availableDatasets: []
         };
     },
-    componentDidMount: function () {
+    componentDidMount: function componentDidMount() {
         var that = this;
         $.ajax(loris.BaseURL + "/AjaxHelper.php?Module=dataset_maker&script=getAvailableDatasets.php", {
             dataType: 'json',
-            xhr: function () {
+            xhr: function xhr() {
                 var xhr = new window.XMLHttpRequest();
                 return xhr;
             },
-            success: function (data) {
+            success: function success(data) {
                 that.setState({ availableDatasets: data.rows });
             },
-            error: function (data, error_code, error_msg) {
+            error: function error(data, error_code, error_msg) {
                 console.error(error_code + ': ' + error_msg);
                 that.setState({ "error": "Error loading data" });
             }
         });
     },
-    handleChange: function (event) {
+    handleChange: function handleChange(event) {
         var selectedDataset = this.state.availableDatasets.filter(function (query) {
             return query.id == event.target.value;
         }, this);
         this.props.onDatasetSelected(selectedDataset);
     },
-    render: function () {
+    render: function render() {
 
-        var intersection = function (a, b) {
+        var intersection = function intersection(a, b) {
             if (a.length > b.length) {
                 var t = a;
                 a = b;
@@ -137,7 +141,7 @@ GenomicDatasetsPanel = React.createClass({
             );
         }, this);
 
-        var options = [React.createElement('option', { value: '' }), ...datasets];
+        var options = [React.createElement('option', { value: '' })].concat(_toConsumableArray(datasets));
         return React.createElement(
             'select',
             { onChange: this.handleChange },
@@ -146,7 +150,7 @@ GenomicDatasetsPanel = React.createClass({
     }
 });
 
-GenomicRangePanel = React.createClass({
+var GenomicRangePanel = React.createClass({
     displayName: 'GenomicRangePanel',
 
     propTypes: {
@@ -154,10 +158,10 @@ GenomicRangePanel = React.createClass({
         onToDataproviderPressed: React.PropTypes.func.isRequired,
         ready: React.PropTypes.bool.isRequired
     },
-    getDefaultProps: function () {
+    getDefaultProps: function getDefaultProps() {
         return { ready: false };
     },
-    handleSubmit: function (event) {
+    handleSubmit: function handleSubmit(event) {
         event.preventDefault();
         switch (event.nativeEvent.explicitOriginalTarget.name) {
             case "preview":
@@ -168,7 +172,7 @@ GenomicRangePanel = React.createClass({
                 break;
         }
     },
-    render: function () {
+    render: function render() {
         var disabled = this.props.ready ? '' : 'disabled';
         return React.createElement(
             'form',
@@ -188,34 +192,34 @@ GenomicRangePanel = React.createClass({
     }
 });
 
-QueryPreviewPannel = React.createClass({
+var QueryPreviewPannel = React.createClass({
     displayName: 'QueryPreviewPannel',
 
-    render: function () {
+    render: function render() {
         return React.createElement('textarea', { disable: true, value: this.props.data });
     }
 });
 
-DatasetMakerApp = React.createClass({
+var DatasetMakerApp = React.createClass({
     displayName: 'DatasetMakerApp',
 
-    getInitialState: function () {
+    getInitialState: function getInitialState() {
         return {
             selectedPSCIDs: [],
             selectedDataset: {},
             queryPreview: " "
         };
     },
-    onQueryDocumentLoaded: function (savedQueryDoc) {
+    onQueryDocumentLoaded: function onQueryDocumentLoaded(savedQueryDoc) {
         var that = this;
         fields = JSON.stringify(savedQueryDoc.Fields), conditions = JSON.stringify(savedQueryDoc.Conditions);
         $.ajax(loris.BaseURL + "/AjaxHelper.php?Module=dataset_maker&script=runQuery.php&fields=" + fields + "&conditions=" + conditions, {
             dataType: 'json',
-            xhr: function () {
+            xhr: function xhr() {
                 var xhr = new window.XMLHttpRequest();
                 return xhr;
             },
-            success: function (data) {
+            success: function success(data) {
                 var pscidsFilters = {};
                 if (Array.isArray(data.result)) {
                     data.result.forEach(function (row) {
@@ -228,19 +232,19 @@ DatasetMakerApp = React.createClass({
                         return pscidsFilters[key] == 'in';
                     }) });
             },
-            error: function (data, error_code, error_msg) {
+            error: function error(data, error_code, error_msg) {
                 console.error(error_code + ': ' + error_msg);
                 that.setState({ "error": "Error loading data" });
             }
         });
     },
-    onDatasetSelected: function (dataset) {
+    onDatasetSelected: function onDatasetSelected(dataset) {
         var dataset = dataset[0];
         this.setState({
             selectedDataset: dataset
         });
     },
-    onPreviewPressed: function (event) {
+    onPreviewPressed: function onPreviewPressed(event) {
         event.preventDefault();
         var pscidMapping = {};
         var genomic_range = event.target.getElementsByTagName('input')[0].value;
@@ -252,20 +256,20 @@ DatasetMakerApp = React.createClass({
         console.log(pscidMapping);
         $.ajax(loris.BaseURL + "/AjaxHelper.php?Module=dataset_maker&script=previewDatasetQuery.php&dataset_id=" + that.state.selectedDataset.id + "&genomic_range=" + genomic_range + "&pscids=" + JSON.stringify(pscidMapping), {
             dataType: 'text',
-            xhr: function () {
+            xhr: function xhr() {
                 var xhr = new window.XMLHttpRequest();
                 return xhr;
             },
-            success: function (data) {
+            success: function success(data) {
                 that.setState({ queryPreview: data });
             },
-            error: function (data, error_code, error_msg) {
+            error: function error(data, error_code, error_msg) {
                 console.error(error_code + ': ' + error_msg);
                 that.setState({ "error": "Error loading data" });
             }
         });
     },
-    onToDataproviderPressed: function (event) {
+    onToDataproviderPressed: function onToDataproviderPressed(event) {
         event.preventDefault();
         var pscidMapping = {};
         var genomic_range = event.target.getElementsByTagName('input')[0].value;
@@ -277,20 +281,20 @@ DatasetMakerApp = React.createClass({
         console.log(pscidMapping);
         $.ajax(loris.BaseURL + "/AjaxHelper.php?Module=dataset_maker&script=runDatasetQuery.php&dataset_id=" + that.state.selectedDataset.id + "&genomic_range=" + genomic_range + "&pscids=" + JSON.stringify(pscidMapping), {
             dataType: 'text',
-            xhr: function () {
+            xhr: function xhr() {
                 var xhr = new window.XMLHttpRequest();
                 return xhr;
             },
-            success: function (data) {
+            success: function success(data) {
                 that.setState({ saved: true });
             },
-            error: function (data, error_code, error_msg) {
+            error: function error(data, error_code, error_msg) {
                 console.error(error_code + ': ' + error_msg);
                 that.setState({ "error": "Error loading data" });
             }
         });
     },
-    render: function () {
+    render: function render() {
         return React.createElement(
             'div',
             null,
@@ -302,4 +306,4 @@ DatasetMakerApp = React.createClass({
     }
 });
 
-RDatasetMakerApp = React.createFactory(DatasetMakerApp);
+var RDatasetMakerApp = React.createFactory(DatasetMakerApp);

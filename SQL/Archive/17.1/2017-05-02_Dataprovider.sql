@@ -1,0 +1,1 @@
+INSERT INTO ConfigSettings (Name, Description, Visible, AllowMultiple, DataType, Parent, Label, OrderNumber) SELECT 'dataproviderPath', 'Path to CBRAIN sshDataprovider directory', 1, 0, 'text', ID, 'Dataprovider', 10 FROM ConfigSettings WHERE Name="paths";

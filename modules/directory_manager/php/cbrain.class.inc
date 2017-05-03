@@ -24,7 +24,7 @@ class CBRAIN extends Directory_Tree
     protected function __construct()
     {
         // TODO :: Get path from configs
-        $this->root_dir = '/data/loris/data/assembly/';
+        $this->root_dir = null;
         $this->cbrain_api = \LORIS\directory_manager\CBRAIN_API::getInstance();
     }
 
@@ -52,18 +52,19 @@ class CBRAIN extends Directory_Tree
         $DB = \Database::singleton();
         $rows = array_map(
             function ($row) {
+                error_log(print_r($row,true));
                 return $row['file'];
             },
             $DB->pselect('select file from files order by file',array())
         );
 
-      $asTree = function($tree, $file_path) use (&$asTree) {
-          $chunks = explode('/',$file_path, 2);
-          var_dump($chunks);
-      };
+        $asTree = function($tree, $file_path) use (&$asTree) {
+            $chunks = explode('/',$file_path, 2);
+            var_dump($chunks);
+        };
 
-      $tree = array_reduce($rows, $asTree, array());
+        $tree = array_reduce($rows, $asTree, array());
 
-      return $files_path;
+        return $files_path;
     }
 }

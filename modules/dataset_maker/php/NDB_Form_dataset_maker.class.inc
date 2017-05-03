@@ -59,8 +59,8 @@ class NDB_Form_dataset_maker extends NDB_Form
             )
         );
 
-        $usersavedNames = array_map($IDMapCallback, $usersaved);
-        $globalsavedNames = array_map($IDMapCallback, $globalsaved);
+        $usersavedNames = array_map(function() {}, $usersaved);
+        $globalsavedNames = array_map(function() {}, $globalsaved);
 
         $this->tpl_data['savedqueries'] = array(
             'user'   => $usersavedNames,

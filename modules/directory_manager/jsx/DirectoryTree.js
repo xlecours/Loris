@@ -14,7 +14,7 @@ class DirectoryTree extends React.Component {
     super(props);
 
     this.state = {
-      expended: true
+      expended: false
     };
 
     // Bind component instance to custom methods

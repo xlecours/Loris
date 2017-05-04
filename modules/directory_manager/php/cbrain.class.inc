@@ -23,16 +23,26 @@ class CBRAIN extends Directory_Tree
 
     protected function __construct()
     {
-        // TODO :: Get path from configs
-        $this->root_dir = null;
         $this->cbrain_api = \LORIS\directory_manager\CBRAIN_API::getInstance();
     }
 
-    // Add sync status
     public function toJSON()
     {
-        return json_encode($tree);
+        $file_list = array_map(
+            function ($file) {
+                return array(
+                    'name' => $file->getName(),
+                    'isFile' => $file->getType() !== 'FileCollection',
+                    'content' => array()
+                );
+            },
+            $this->cbrain_api->getUserFiles()
+        );
 
+        return json_encode(array(
+            'name' => 'userFiles',
+            'content' => $file_list
+        ));
     }
 
     public function getAdditionnalElements($request)

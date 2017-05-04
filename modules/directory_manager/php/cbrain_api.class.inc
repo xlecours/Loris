@@ -47,16 +47,12 @@ final class CBRAIN_API
     {
         $login    = $this->cbrain_user->getLogin(); // string | The username of the User trying to connect.
         $password = $this->cbrain_user->getPassword(); // string | The CBRAIN User's password
-
          
         try {
 
-            if (empty($_SESSION['cbrain_token']) || true) {
-                $token = json_decode($this->session_api->sessionNewGet(), true)['authenticity_token'];
-error_log($token);
-                $this->session_api->sessionPost($login, $password, $token);
-                $_SESSION['cbrain_token'] = $token;
-            } 
+            $token = json_decode($this->session_api->sessionNewGet(), true)['authenticity_token'];
+            $this->session_api->sessionPost($login, $password, $token);
+            $_SESSION['cbrain_token'] = $token;
             $this->session_token = $_SESSION['cbrain_token'];
             
         } catch (ApiException $e) {
@@ -107,7 +103,6 @@ error_log($token);
         $result = array();
         if ($this->_dataProviderReady()) {
             $result = $this->dataprovider_api->dataProvidersIdBrowseGet($this->selected_dataprovider_id);
-var_dump( $result );
         } else {
             error_log('dataprovider is not ready');
         }
@@ -190,5 +185,11 @@ var_dump( $result );
         $params->setAuthenticityToken($this->session_token);
         $task_api = new \Swagger\Client\Api\TasksApi();
         $task_api->tasksPost($params);
+    }
+
+    public function getUserFiles()
+    {
+        $this->connect();
+        return $this->userfile_api->userfilesGet();
     }
 }

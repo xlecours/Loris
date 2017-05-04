@@ -52,7 +52,11 @@ class Dataprovider extends React.Component {
       if (tree.hasOwnProperty('cbrain_registration_status')) {
         if (typeof tree.cbrain_registration_status == 'number') {
           tree.additionnalElements = (
-            <h3>adkjdawdj</h3>
+            <div className="action-item">
+              <button className="registered" onClick={this.unregisterFile} data-relative-path={tree.name} >
+                <span>Registered</span>
+              </button>
+            </div>
           );
         }
       } else {

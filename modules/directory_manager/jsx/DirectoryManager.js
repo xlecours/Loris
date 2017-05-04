@@ -60,9 +60,18 @@ class DirectoryManager extends React.Component {
       );
     }, this);
 
+    const url = this.props.dataURL;
     return (
       <Tabs tabs={tabList} defaultTab="dataprovider" updateURL={false}>
-        {tabPanes}
+        <TabPane TabId="dataprovider">
+          <Dataprovider dataURL={url.concat('&tabName=dataprovider')} />
+        </TabPane>
+        <TabPane TabId="cbrain">
+          <CBRAIN dataURL={url.concat('&tabName=cbrain')} />
+        </TabPane>
+        <TabPane TabId="imaging">
+          <Imaging dataURL={url.concat('&tabName=imaging')} />
+        </TabPane>
       </Tabs>
     );
   }

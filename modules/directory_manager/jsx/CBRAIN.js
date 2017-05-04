@@ -1,3 +1,4 @@
+import DirectoryTree from './DirectoryTree';
  /**
   * CBRAIN
   *
@@ -13,18 +14,56 @@ class CBRAIN extends React.Component {
     super(props);
 
     this.state = {
+      data: {},
+      isLoaded: false
     };
-
+    this.getTree = this.getTree.bind(this);
+    this.addCustomElements = this.addCustomElements.bind(this);
+    this.handleButton = this.handleButton.bind(this);
   }
 
   componentDidMount() {
-    
+    this.getTree();
+  }
+
+  /**
+   * Retrive data from the provided URL and save it in state
+   */
+  getTree() {
+    $.getJSON(this.props.dataURL, data => {
+      this.setState({
+        data: data,
+        isLoaded: true
+      });
+    }).error(function(error) {
+      console.error(error);
+    });
+  }
+
+  addCustomElements(tree){
+    return tree;
+  }
+
+  handleButton(event) {
+    console.log(event.target);
   }
 
   render() {
-
+    let tree;
+    if (this.state.isLoaded) {
+      tree = (
+        <DirectoryTree
+          tree={this.state.data}
+        />
+      );
+    }
     return (
-      <div>cbrain</div>
+      <div className="panel panel-primary">
+        <div className="action-panel">
+          <button onClick={this.handleButton}>Show selection</button>
+        </div>
+        {tree}
+      </div>
     );
   }
 }

@@ -50,16 +50,24 @@ class Dataprovider extends React.Component {
       tree.content = tree.content.map(function (subtree) {return this.addCustomElements(subtree)}, this);
     } else {
       if (tree.hasOwnProperty('cbrain_registration_status')) {
-        if (typeof tree.cbrain_registration_status == 'number') {
+        const userfileId = typeof tree.cbrain_registration_status;
+        if (typeof userfileId == 'number') {
           tree.additionnalElements = (
             <div className="action-item">
-              <button className="registered" onClick={this.unregisterFile} data-relative-path={tree.name} >
+              <button className="registered" onClick={this.unregisterFile} data-userfile-id={userfileId} >
                 <span>Registered</span>
               </button>
             </div>
           );
         }
       } else {
+          tree.additionnalElements = (
+            <div className="action-item">
+              <button className="not-registered" onClick={this.registerFile} data-relative-path={tree.name} >
+                <span>Registered</span>
+              </button>
+            </div>
+          );
         
       }
     } 
@@ -137,7 +145,7 @@ class Dataprovider extends React.Component {
       className: this.state.data.className,
       action: 'unregisterFile',
       filenames: [
-        target.dataset.relativePath
+        target.dataset.userfileId
       ]
     };
 

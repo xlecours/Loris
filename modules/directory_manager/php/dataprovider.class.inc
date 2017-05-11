@@ -54,7 +54,6 @@ class Dataprovider extends Directory_Tree
 
     private function _getRegistrationStatus($relative_path, $force_update=false)
     {
-return 1234;
 //TODO :: check if there can by more than a single level of files. 
         // Caching of 20 seconds 
         if ($force_update || empty($_SESSION['cbrain_tree']) || time() - $_SESSION['cbrain_tree_last_update'] > 20 ) {
@@ -87,8 +86,8 @@ return 1234;
           }
           return $subtree->userfile_id;
         };
-var_dump('YO!!');
-exit;
+        // Strip the first slash
+        $relative_path = preg_replace('/^\//', '', $relative_path);
         return $find($relative_path, $cbrain_tree);
     }
 

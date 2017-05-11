@@ -54,7 +54,7 @@ final class CBRAIN_API
             $this->session_api->sessionPost($login, $password, $token);
             $_SESSION['cbrain_token'] = $token;
             $this->session_token = $_SESSION['cbrain_token'];
-            
+            $this->session_api->getApiClient()->getConfig()->setAccessToken($_SESSION['cbrain_token']);
         } catch (ApiException $e) {
             unset($_SESSION['cbrain_token']);
             error_log(print_r($e,true));

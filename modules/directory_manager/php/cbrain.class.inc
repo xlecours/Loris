@@ -33,6 +33,7 @@ class CBRAIN extends Directory_Tree
                 return array(
                     'name' => $file->getName(),
                     'isFile' => $file->getType() !== 'FileCollection',
+                    'userfile' => json_decode($file->__toString()),
                     'content' => array()
                 );
             },

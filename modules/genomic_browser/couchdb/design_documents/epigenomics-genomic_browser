@@ -1,0 +1,25 @@
+{
+   "_id": "_design/genomic_browser",
+   "_rev": "17-1836c18da46d49686bcc6a7537485736",
+   "language": "javascript",
+   "views": {
+       "samples_by_dataset": {
+           "map": "function(doc) {\n  if (doc.meta.doctype == \"dataset\") {\n    emit(doc.meta.identifier.file_name, doc.data.samples);\n  }\n}",
+           "reduce": "function (keys, values, rereduce) {\n    return values[0].length;\n}"
+       },
+       "betavalue_by_probe_name": {
+           "map": "function(doc) {\n  if (doc.meta.doctype == \"betavalue\") {\n    var key = [doc.meta.identifier.LORIS_file_id, doc.meta.identifier.probe_name];\n    emit(key, doc.data);\n  }\n}",
+           "reduce": "function (keys, values, rereduce) {\n    return values[0].length;\n}"
+       },
+       "betavalue_by_genomic_location": {
+           "map": "function(doc) {\n  if (doc.meta.doctype == \"betavalue\") {\n    var key = [doc.meta.identifier.LORIS_file_id, doc.meta.identifier.chromosome, Number(doc.meta.identifier.location),doc.meta.identifier.probe_name];\n    emit(key, doc.data);\n  }\n}"
+       },
+       "variable_annotation": {
+           "map": "function(doc) {\n  if (doc.annotation) {\n    Object.keys(doc.annotation).forEach(function(a) {\n      var key = [ a, doc.annotation[a]];\n      var value = [doc.meta.identifier.LORIS_file_id, doc.meta.identifier.probe_name];\n      emit(key, value );\n    },this);\n  }\n}",
+           "reduce": "function(keys, values) {\n    return values;\n}"
+       }
+   },
+   "lists": {
+       "betavalue_by_sample_name": "function(head, req) {    start({'headers': {'Content-Type': 'text/plain'}}); \n    var PSCIDs = JSON.parse(req.query.PSCIDs); \n    var keys = Object.keys(PSCIDs);\n    var indexes = keys.map(function(k) {return PSCIDs[k]; });     \n\n    send(''.concat('id,',keys.toString(),'\\n'));    \n    while(row = getRow()){ \n        var filtered = row.value.filter(function(e,i,a) {\n            return (indexes.indexOf(i) != -1);\n        });    \n        send(''.concat(row.id,',',filtered,'\\n'));\n    }\n}"
+   }
+}

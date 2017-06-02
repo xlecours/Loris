@@ -20,11 +20,11 @@ if (!$userSingleton->hasPermission('genomic_browser_view_site')
     exit;
 }
 
-$couch = \NDB_Factory::singleton()->couchDB("genomics");
+$couch = \NDB_Factory::singleton()->couchDB();
+$couch->setDatabase('test_epi');
 
 $params = array('reduce' => 'false');
 $result = $couch->queryView('genomic_browser', 'datasets', $params, false);
-
 header("content-type:application/json");
 ini_set('default_charset', 'utf-8');
 echo json_encode($result);

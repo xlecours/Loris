@@ -23,7 +23,7 @@ require_once 'Utility.class.inc';
 
 /**
  *  The GenomicDatasetImporter follow the specifications described in the 
- *  modules/genomic_browser/couchdb/examples/data.frame.csv file.
+ *  modules/genomic_browser/couchdb/examples/dataframe.txt file.
  *
  *  It will import any dataset following those rules into CouchDB.
  *
@@ -196,6 +196,9 @@ abstract class Dataset
     abstract public function getDatasetDocument();
     abstract public function getNextDataVariableDocument();
 
+    /*
+     * This is skipping every rows ifrom $handle that start with a triple dash ###
+     */
     protected function _skipComments(&$handle)
     {
         $pattern = '/^###.*/';
@@ -208,6 +211,9 @@ abstract class Dataset
         fseek($handle, $offset, SEEK_SET);
     }
 
+    /*
+     * This advance the file pointer to the begining of the first row that don't start with a dash #
+     */
     protected function _moveToFirstDataRow(&$handle)
     {
         $pattern = '/^#.*/';
@@ -321,6 +327,9 @@ class Datamatrix extends Dataset
         $this->meta['variable_type'] = $analysis_modality;
     }
 
+    /*
+     * Create a JSON representation of this dataset file
+     */
     function getDatasetDocument()
     {
         if (!file_exists($this->file_name)) {
@@ -357,6 +366,9 @@ class Datamatrix extends Dataset
         return $this;
     }
 
+    /*
+     * Build a JSON representation of the next row in the file
+     */
     function getNextDataVariableDocument()
     {
        if (0 == count($this->headers)) {

@@ -49,7 +49,7 @@ class NDB_BVL_Instrument_LINST extends \NDB_BVL_Instrument
         $this->commentID = $commentID;
         $this->page      = $page;
 
-        $this->form = new \HTML_Quickform('test_form');
+        $this->form = new \LorisForm('test_form');
     }
     /**
      * Adds metadata fields (such as Examiner and Date_taken) to the
@@ -91,17 +91,10 @@ class NDB_BVL_Instrument_LINST extends \NDB_BVL_Instrument
         $examiners = $this->_getExaminerNames();
         $this->addSelect('Examiner', 'Examiner', $examiners);
 
-        $this->addGroupRule(
+        $this->addRule(
             'Date_taken',
             'Date of Administration is required',
             'required'
-        );
-
-        $this->form->registerRule('checkdate', 'callback', '_checkDateTaken');
-        $this->addRule(
-            'Date_taken',
-            'Date of Administration is invalid',
-            'checkdate'
         );
 
         $this->addRule('Examiner', 'Examiner is required', 'required');
@@ -598,21 +591,32 @@ class NDB_BVL_Instrument_LINST extends \NDB_BVL_Instrument
                                            );
                         }
 
-                        if (isset($pieces[5])) {
-                            $pieces[5] = trim($pieces[5]);
-                            if ($pieces[5] === 'MonthYear') {
+                        // Set date format
+                        $dateFormat = isset($pieces[5]) ? trim($pieces[5]) : "";
+
+                        if (isset($dateFormat) && $dateFormat != "") {
+                            if ($dateFormat === 'MonthYear') {
+                                // Shows date without day of month
                                 $this->addMonthYear(
                                     $pieces[1],
                                     $pieces[2],
                                     $dateOptions
                                 );
                             } else {
-                                $this->addDateElement(
+                                // Shows date without not answered dropdown
+                                $this->addBasicDate(
                                     $pieces[1],
                                     $pieces[2],
                                     $dateOptions
                                 );
                             }
+                        } else {
+                            // Shows standard date
+                            $this->addDateElement(
+                                $pieces[1],
+                                $pieces[2],
+                                $dateOptions
+                            );
                         }
                     }
                     $this->LinstQuestions[$pieces[1]] = array('type' => 'date');
@@ -685,7 +689,7 @@ class NDB_BVL_Instrument_LINST extends \NDB_BVL_Instrument
                                     $pieces[1],
                                     $pieces[2],
                                     $opt,
-                                    "multiple"
+                                    array("multiple" => "multiple")
                                 );
                             } else {
                                 $this->form->addElement(

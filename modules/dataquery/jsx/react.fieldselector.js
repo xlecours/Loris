@@ -11,7 +11,7 @@
  *  The following component is used for displaying individual categories in the
  *  categories list
  */
-CategoryItem = React.createClass({
+var CategoryItem = React.createClass({
     render: function() {
         var classList = "list-group-item",
             badge = '';
@@ -33,7 +33,7 @@ CategoryItem = React.createClass({
 /*
  *  The following component is used for displaying the list of availible categories
  */
-CategoryList = React.createClass({
+var CategoryList = React.createClass({
     getInitialState: function () {
         return {
             selectedCategory: ""
@@ -69,14 +69,14 @@ CategoryList = React.createClass({
         }
         return (
             <div className="list-group col-md-3 col-sm-12">{items}</div>
-            );
+        );
     }
 });
 
 /*
  *  The following component is used for displaying individual fields
  */
-FieldItem = React.createClass({
+var FieldItem = React.createClass({
     visitSelect: function(evt){
         // Selects and deselects visits
 
@@ -140,30 +140,20 @@ FieldItem = React.createClass({
  *  The following component is used for displaying the list of availible fields for
  *  the selected category
  */
-FieldList = React.createClass({
-    getInitialState: function() {
-        return {
-            PageNumber: 1
-        };
-    },
+var FieldList = React.createClass({
     onFieldClick: function(fieldName, downloadable) {
         // Wrapper function used to update field
         this.props.onFieldSelect(fieldName, this.props.category, downloadable);
-    },
-    changePage: function(i) {
-        this.setState({
-            PageNumber: i
-        });
     },
     render: function() {
         // Renders the html for the component
 
         var fields = [];
         var items = this.props.items || [];
-        var fieldName, desc, isFile;
+        var fieldName, desc, isFile, type, selected;
         var rowsPerPage = this.props.FieldsPerPage || 20;
 
-        var start = (this.state.PageNumber - 1) * rowsPerPage;
+        var start = (this.props.PageNumber - 1) * rowsPerPage;
         var filter = this.props.Filter.toLowerCase();
         var selectedFields;
         if(filter > 0) {
@@ -218,25 +208,30 @@ FieldList = React.createClass({
         return (
             <div className="list-group col-md-9 col-sm-12">
                 {fields}
-                <PaginationLinks Total={items.length} Active={this.state.PageNumber} onChangePage={this.changePage} RowsPerPage={rowsPerPage}/>
+                <PaginationLinks Total={items.length} Active={this.props.PageNumber} onChangePage={this.props.changePage} RowsPerPage={rowsPerPage}/>
             </div>
-            );
+        );
     }
 });
 
 /*
  *  The following component is the base component for the field select tan
  */
-FieldSelector = React.createClass({
+var FieldSelector = React.createClass({
     propTypes: {
         selectedFields: React.PropTypes.array
     },
     getInitialState: function() {
+        var instruments = {};
+        for(var i = 0; i < this.props.items.length; i++) {
+            instruments[this.props.items[i].category] = this.props.items[i].category;
+        }
         return {
             filter: "",
             selectedCategory: "",
-            categoryFields: {
-            }
+            categoryFields: {},
+            instruments: instruments,
+            PageNumber: 1
         };
     },
     onFieldSelect: function(fieldName, category, downloadable) {
@@ -261,7 +256,8 @@ FieldSelector = React.createClass({
             }, 'json');
         }
         this.setState({
-            selectedCategory: category
+            selectedCategory: category,
+            PageNumber: 1
         });
     },
     filterChange: function(evt) {
@@ -295,8 +291,51 @@ FieldSelector = React.createClass({
             }
         }
     },
+    modifyCategoryFieldVists: function(visit, action) {
+        if(this.state.selectedCategory && this.props.selectedFields[this.state.selectedCategory]) {
+            for(var field in this.props.selectedFields[this.state.selectedCategory]) {
+                if(field == "allVisits") {
+                    continue;
+                }
+                if(action == "check" && !this.props.selectedFields[this.state.selectedCategory][field][visit]) {
+                    this.props.fieldVisitSelect(
+                        action,
+                        visit,
+                        {"instrument": this.state.selectedCategory, "field": field}
+                    );
+                } else if(action == "uncheck" && this.props.selectedFields[this.state.selectedCategory][field][visit]) {
+                    this.props.fieldVisitSelect(
+                        action,
+                        visit,
+                        {"instrument": this.state.selectedCategory, "field": field}
+                    );
+                }
+            }
+        }
+    },
+    changePage: function(i) {
+        this.setState({
+            PageNumber: i
+        });
+    },
     render: function() {
         // Renders the html for the component
+        var categoryVisits = {},
+            selectedFieldsCount;
+        if(this.state.selectedCategory != "") {
+            if(this.props.selectedFields[this.state.selectedCategory]) {
+                selectedFieldsCount = Object.keys(this.props.selectedFields[this.state.selectedCategory]).length - 1;
+            }
+            for(var key in this.props.Visits){
+                if(this.props.selectedFields[this.state.selectedCategory]
+                    && this.props.selectedFields[this.state.selectedCategory].allVisits[key]
+                    && this.props.selectedFields[this.state.selectedCategory].allVisits[key] == selectedFieldsCount) {
+                    categoryVisits[key] = true;
+                } else {
+                    categoryVisits[key] = false;
+                }
+            }
+        }
 
         return (
             <div>
@@ -310,14 +349,35 @@ FieldSelector = React.createClass({
                     </div>
                 </div>
                 <div className="row form-group">
-                    <button type="button" className="btn btn-primary" onClick={this.addAll}>Add All</button>
-                    <button type="button" className="btn btn-primary" onClick={this.deleteAll}>Remove All</button>
+                    <div className="col-md-8">
+                        <button type="button" className="btn btn-primary" onClick={this.addAll}>Add All</button>
+                        <button type="button" className="btn btn-primary" onClick={this.deleteAll}>Remove All</button>
+                    </div>
+                </div>
+                <div className="row form-group">
+                    <div className="form-group col-sm-8 search">
+                        <label className="col-sm-12 col-md-2">Instrument:</label>
+                        <div className="col-sm-12 col-md-8">
+                            <SelectDropdown
+                                multi={false}
+                                options={this.state.instruments}
+                                onFieldClick={this.onCategorySelect}
+                                selectedCategory={this.state.selectedCategory}
+                            />
+                        </div>
+                    </div>
+                    <div className="form-group col-sm-4 search">
+                        <label className="col-sm-12 col-md-4">Visits:</label>
+                        <div className="col-sm-12 col-md-8">
+                            <SelectDropdown
+                                multi={true}
+                                options={categoryVisits}
+                                onFieldClick={this.modifyCategoryFieldVists}
+                            />
+                        </div>
+                    </div>
                 </div>
                 <div className="row">
-                    <CategoryList
-                        items={this.props.items}
-                        onCategorySelect={this.onCategorySelect}
-                    />
                     <FieldList
                         items={this.state.categoryFields[this.state.selectedCategory]}
                         category={this.state.selectedCategory}
@@ -328,9 +388,25 @@ FieldSelector = React.createClass({
                         Filter={this.state.filter}
                         Visits={this.props.Visits}
                         fieldVisitSelect = {this.props.fieldVisitSelect}
+                        changePage={this.changePage}
+                        PageNumber={this.state.PageNumber}
                     />
                 </div>
             </div>
         );
     }
 });
+
+window.CategoryItem = CategoryItem;
+window.CategoryList = CategoryList;
+window.FieldItem = FieldItem;
+window.FieldList = FieldList;
+window.FieldSelector = FieldSelector;
+
+export default {
+  CategoryItem,
+  CategoryList,
+  FieldItem,
+  FieldList,
+  FieldSelector
+};

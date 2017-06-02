@@ -44,7 +44,7 @@ class NDB_Form_Examiner extends NDB_Form
 
         $user         = User::singleton();
         $userFullName = $user->getFullname();
-        $userCenter   = $user->getCenterID();
+        $userCenter   = $user->getCenterIDs();
 
         $certification = $config->getSetting('Certification');
         if (isset($certification['EnableCertification'])) {
@@ -63,7 +63,7 @@ class NDB_Form_Examiner extends NDB_Form
 
             return $user->hasPermission('examiner_view')
                 && (($user->hasPermission('examiner_multisite')
-                || $user->getData('CenterID') == $centerID));
+                || in_array($centerID, $user->getData('CenterIDs'))));
         }
         return false;
     }
@@ -186,7 +186,7 @@ class NDB_Form_Examiner extends NDB_Form
                 $oldVal  = $oldVals['new'];
                 $oldDate = $oldVals['new_date'];
 
-                $oldCertification = $DB->pselect(
+                $oldCertification = $DB->pselectRow(
                     "SELECT pass, date_cert, comment
                      FROM certification
                      WHERE examinerID=:EID AND testID=:TID",

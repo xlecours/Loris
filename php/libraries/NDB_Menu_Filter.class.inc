@@ -530,7 +530,8 @@ class NDB_Menu_Filter extends NDB_Menu
             }
         }
 
-        if (is_array($this->searchKeyword)
+        if (isset($this->searchKeyword)
+            && is_array($this->searchKeyword)
             && count($this->searchKeyword) > 0
             && !empty($this->searchKey['keyword'])
         ) {
@@ -590,11 +591,10 @@ class NDB_Menu_Filter extends NDB_Menu
     {
         $wheredetails = $this->_getBaseFilter();
         $db           = Database::singleton();
-        if (empty($this->group_by)) {
+        if (empty($this->group_by) && empty($this->having)) {
             $query = "SELECT COUNT(*)" . $this->query . $wheredetails['clause'];
-        } else if (!empty($this->group_by)) {
+        } else {
             $query = "SELECT COUNT(*) FROM ($query) as tmptable";
-
         }
         $this->TotalItems = $db->pselectOne($query, $wheredetails['params']);
 
@@ -615,10 +615,17 @@ class NDB_Menu_Filter extends NDB_Menu
 
         $pageID = isset($_GET['pageID']) ? $_GET['pageID'] : 1;
 
-        $this->tpl_data['rowsPerPage']      = $rowsPerPage;
-        $this->tpl_data['pageID']           = $pageID;
-        $this->tpl_data['filterfield']      = $_GET['filter'][order][field];
-        $this->tpl_data['filterfieldOrder'] = $_GET['filter'][order][fieldOrder];
+        $this->tpl_data['rowsPerPage'] = $rowsPerPage;
+        $this->tpl_data['pageID']      = $pageID;
+
+        $this->tpl_data['filterfield'] = isset($_GET['filter']['order']['field'])
+              ? $_GET['filter']['order']['field']
+              : '';
+
+        $this->tpl_data['filterfieldOrder']
+            = isset($_GET['filter']['order']['fieldOrder'])
+              ? $_GET['filter']['order']['fieldOrder']
+              : '';
 
         $this->tpl_data['TotalItems'] = $this->TotalItems;
         // print out column headings
@@ -684,6 +691,16 @@ class NDB_Menu_Filter extends NDB_Menu
      */
     function display()
     {
+        if (isset($_REQUEST['format'])) {
+            switch($_REQUEST['format']) {
+            case 'json':
+                       header('Content-Type: application/json');
+                return $this->toJSON();
+            }
+        }
+        if ($this->skipTemplate) {
+            return "";
+        }
         // Set the csvFile links
         $uri    = ltrim($_SERVER['REQUEST_URI'], "/");
         $suffix = strpos($uri, '?') ? '&format=csv' : '?&format=csv';
@@ -789,8 +806,12 @@ class NDB_Menu_Filter extends NDB_Menu
                 ." ".$this->filter['order']['fieldOrder'].", ";
         }
         $query .= $this->order_by;
-        // get the list
 
+        if (!empty($this->limit)) {
+            $query .= " LIMIT $this->limit";
+        }
+
+        // get the list
         $this->_getNumberPages($query);
 
         $config         =& NDB_Config::singleton();
@@ -834,7 +855,6 @@ class NDB_Menu_Filter extends NDB_Menu
             $depends,
             array(
              $baseURL . '/js/components/PaginationLinks.js',
-             $baseURL . '/js/components/FilterTable.js',
              $baseURL . '/js/components/StaticDataTable.js',
              $baseURL . '/js/components/DynamicDataTable.js',
             )

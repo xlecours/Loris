@@ -55,6 +55,13 @@ class NDB_Page
     var $defaults = array();
 
     /**
+     * If true, the default display function will not try to load any template.
+     * This is intended to be used with, for instance, pages that completely
+     * construct the DOM from javascript.
+     */
+    var $skipTemplate = false;
+
+    /**
      * Does the setup required for this page. By default, sets up elements
      * that are common to every type of page. May be overridden by a specific
      * page or specific page type.
@@ -243,15 +250,15 @@ class NDB_Page
      * Adds a hidden element to the current page. Note if the hidden element
      * needs a value it should be added to the defaults.
      *
-     * @param string $label      The label to attach to the element
-     * @param array  $attributes List of HTML attributes to add to the
-     *                           element
+     * @param string $name       The name of the hidden element to add
+     * @param array  $value      The value of the hidden element to add
+     * @param array  $attributes Additional html attributes for element
      *
      * @return none
      */
-    function addHidden($label, $attributes=null)
+    function addHidden($name, $value=null, $attributes=array())
     {
-        $this->form->addElement('hidden', $label, $attributes);
+        $this->form->addElement('hidden', $name, $value, $attributes);
     }
 
     /**
@@ -371,6 +378,23 @@ class NDB_Page
     }
 
     /**
+     * Create a QuickForm label element but does not add it to the form
+     *
+     * @param string $labelString The label to attach to the element
+     *
+     * @return HTML_QuickForm Label element
+     */
+    function createLabel(
+        $labelString
+    ) {
+        return $this->form->createElement(
+            "static",
+            null,
+            null,
+            $labelString
+        );
+    }
+    /**
      * Creates a QuickForm text element but does not add it to the form
      *
      * @param string $field The field name for this text element
@@ -475,11 +499,13 @@ class NDB_Page
     /**
      * Displays the form
      *
-     * @return void
-     * @access public
+     * @return a string of the content to be inserted into the template
      */
     function display()
     {
+        if ($this->skipTemplate) {
+            return "";
+        }
         if (!$this->form->isFrozen()) {
             // hidden values
               $this->addHidden('test_name', $this->name);
@@ -553,38 +579,87 @@ class NDB_Page
 
         $www     = $config->getSetting('www');
         $baseurl = $www['url'];
+        $min     = ($config->getSetting("sandbox") === '1') ? '' : '.min';
 
-        $paths = $config->getSetting("paths");
-
-        $TestName = $this->name;
+        // Currently jquery-ui is required for dialogs and datepickers to work.
+        // In the future release, dialogs should be replaced with bootstrap dialogs
+        // and datepickers only created by modernizr
 
         $files = array(
                   $baseurl . '/js/jquery/jquery-1.11.0.min.js',
                   $baseurl . '/js/helpHandler.js',
-                  $baseurl . '/js/modernizr.min.js',
-                  $baseurl . '/js/react-with-addons-0.13.3.min.js',
+                  $baseurl . '/js/modernizr/modernizr.min.js',
+                  // Only load minified file on production, not sandboxes
+                  $baseurl . '/js/react/react-with-addons' . $min . '.js',
+                  $baseurl . '/js/react/react-dom' . $min . '.js',
                   $baseurl . '/js/jquery/jquery-ui-1.10.4.custom.min.js',
                   $baseurl . '/js/jquery.dynamictable.js',
                   $baseurl . '/js/jquery.fileupload.js',
-                  $baseurl . '/js/polyfiller.js',
                   $baseurl . '/bootstrap/js/bootstrap.min.js',
-                  $baseurl . '/js/components/react.breadcrumb.js',
+                  $baseurl . '/js/components/Breadcrumbs.js',
+                  $baseurl . '/vendor/sweetalert/sweetalert' . $min . '.js',
+                  $baseurl . "/js/util/queryString.js",
+                  $baseurl . '/js/components/Form.js',
+                  $baseurl . '/js/components/Markdown.js',
                  );
-        if (file_exists($paths['base'] . "modules/$TestName/js/$TestName.js")) {
-            error_log(
-                "WARNING: Relying on $TestName.js getting automatically loaded will"
-                . " soon be removed. "
-                . "Override getJSDependencies() instead"
-            );
-
-            if (strpos($_SERVER['REQUEST_URI'], "main.php") === false
-            ) {
-                $files[] = $baseurl . "/$TestName/js/$TestName.js";
-            } else {
-                $files[] = $baseurl . "/GetJS.php?Module=$TestName";
-            }
-        }
         return $files;
+    }
+
+
+    /**
+     * Returns an ordered list of CSS dependencies that this page depends
+     * on.  These will get loaded into the template in order, so that
+     * interdependent files can be included in the correct order.
+     *
+     * @return array of strings with URLs to retrieve CSS resources
+     */
+    function getCSSDependencies()
+    {
+        $factory = NDB_Factory::singleton();
+        $config  = $factory->config();
+
+        $www     = $config->getSetting('www');
+        $baseurl = $www['url'];
+
+        $files = array(
+                  $baseurl . "/bootstrap/css/bootstrap.min.css",
+                  $baseurl . "/bootstrap/css/custom-css.css",
+                  $baseurl . "/js/jquery/datepicker/datepicker.css",
+                  $baseurl . '/vendor/sweetalert/sweetalert.css',
+                 );
+        return $files;
+    }
+
+    /**
+     * Does any setup required for this page. This is generally overridden
+     * by NDB_Page subtypes.
+     *
+     * @return none, but may have side-effects
+     */
+    function setup()
+    {
+    }
+
+    /**
+     * Returns false if user does not have access to page.
+     *
+     * Usage: the hasAccess() function in a child class should contain
+     * something like:
+     *
+     *     // create user object
+     *     $user =& User::singleton();
+     *
+     *     return $user->hasPermission('superuser');
+     *
+     * You do not need to overload hasAccess() if there are no access restrictions
+     *
+     * @note   overloaded function
+     * @return bool
+     * @access private
+     */
+    function _hasAccess()
+    {
+        return true;
     }
 }
 ?>

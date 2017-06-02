@@ -113,12 +113,23 @@ var Instrument = {
                             "{@}{@}NULL=>''{-}'not_answered'=>'Not Answered'\n";
                         break;
                     case "date":
-                        content += 'date{@}';
-                        content += element.Name + "{@}" + element.Description ;
-                        content += "{@}" + element.Options.MinDate.split('-')[0];
-                        content += "{@}" + element.Options.MaxDate.split('-')[0] + "\n";
-                        content += "select{@}" + element.Name + "_status" +
+                        var elName = element.Name.replace(/\s/g, "").toLowerCase();
+                        var dropdown = "";
+
+                        // Add dropdown and special naming when no date format is set
+                        // (i.e when addDateElement() is used)
+                        if (element.Options.dateFormat === "") {
+                            elName = elName + "_date";
+                            dropdown = "select{@}" + elName + "_status" +
                             "{@}{@}NULL=>''{-}'not_answered'=>'Not Answered'\n";
+                        }
+
+                        content += 'date{@}';
+                        content += elName + "{@}" + element.Description;
+                        content += "{@}" + element.Options.MinDate.split('-')[0];
+                        content += "{@}" + element.Options.MaxDate.split('-')[0];
+                        content += "{@}" + element.Options.dateFormat + "\n";
+                        content += dropdown;
                         break;
                     case "numeric":
                         content += 'numeric{@}';
@@ -145,9 +156,10 @@ var Instrument = {
         }
         return content;
    },
-   load: function (file, callback) {
+    load: function (file, callback) {
         var reader = new FileReader();
             ParseInstrument = function () {
+                var elementNames = [];
                 var Elements = [{
                         Type        : "ElementGroup",
                         GroupType   : "Page",
@@ -284,6 +296,28 @@ var Instrument = {
                         default:
                             break;
                     }
+
+                    /* "Header" elements always have 'undefined' as their Name. These should not trigger an error message. */
+                    if (tempElement.Name) {
+                        if (elementNames.indexOf(tempElement.Name) < 0) {
+                            if (tempElement.Type != "header") {
+                                elementNames.push(tempElement.Name)
+                            }
+                        } else {
+                            var alertMessage = [
+                                "Duplicate entry on element named: ",
+                                tempElement.Name,
+                                ".",
+                                React.createElement('br'),
+                                "Instrument file can not contain elements with identical names.",
+                                React.createElement('br'),
+                                "Please verify the format of your LINST file!",
+                            ];
+                            callback.error("duplicateEntry", alertMessage);
+                            return;
+                        }
+                    }
+
                     Elements[currentPage].Elements.push(tempElement);
                     tempElement = {};
                     specialCase = false;
@@ -297,10 +331,13 @@ var Instrument = {
             callback.error("typeError");
         }
     },
-    Enumize: function (option) {
+    enumize: function (option) {
         var enum_option = option.replace(/ /g, "_");
         enum_option = enum_option.replace(/\./, "");
         enum_option = enum_option.toLowerCase();
         return enum_option;
+    },
+    clone: function(obj) {
+        return JSON.parse(JSON.stringify(obj))
     }
 }

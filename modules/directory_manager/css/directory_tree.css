@@ -116,3 +116,32 @@
 .additionnal-elements .action-item:hover .not-registered:after {
     content: 'Add to userfiles';
 }
+
+/* 
+  Lauch task button
+*/
+.action-item > .task {
+    background-color: white;
+    border: 2px solid #c0c0c0;
+    border-radius: 4px;
+    color: black;
+    padding: 5px 12px;
+    transition-duration: 0.4s;
+}
+
+.action-item > .task:hover {
+    background-color: #064785;
+    border: 2px solid #064785;
+    color: white;
+    box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    transform: translateX(4px);
+}
+
+
+.additionnal-elements .action-item:hover .task span {
+    display: none;
+}
+
+.additionnal-elements .action-item:hover .task:after {
+    content: 'Launch task';
+}

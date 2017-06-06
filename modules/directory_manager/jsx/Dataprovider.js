@@ -74,7 +74,7 @@ class Dataprovider extends React.Component {
             } else if (typeof obj[key] === 'number') {
               element = (
                 <div key={index} className="action-item">
-                  <button className="task" onClick={this.checkSum} data-userfile-id={obj[key]}><span>Registered</span></button>
+                  <button className="task" onClick={this.checkSum} data-userfile-id={obj[key]}><span>Launch task</span></button>
                   <button className="registered" onClick={this.unregisterFile} data-relative-path={postData.fullpath}><span>Registered</span></button>
                 </div>
               );

@@ -26,8 +26,59 @@ use LORIS\Core\Study_OV;
  */
 class Study_DAO implements DAO
 {
-    public static function createValueObject(array $primary_key): OV
+
+    private $_database;
+
+    // contructor
+    public function __construct()
     {
-          return new Study_OV();
+        $this->_database = \Database::singleton();
+    }
+
+    public function createValueObject(array $primary_key): OV
+    {
+          $study = new Study_OV();
+
+          $values = $this->_database->pselectRow("
+            SELECT 
+              Value as title
+            FROM
+              Config c
+            JOIN 
+              ConfigSettings cs 
+              ON (c.ConfigID = cs.ID)
+            WHERE name = 'title'
+          ",array());
+
+          $study->setTitle($values['title']);
+
+          return $study;
+    }
+
+    /**
+     * Update the database with new values
+     *
+     * @param OV the modified object.
+     *
+     * @return void
+     */
+    public function updateValueObject(OV $modifiedObject)
+    {
+        $prep = $this->_database->prepare(
+            "UPDATE 
+               Config 
+             JOIN
+               ConfigSettings 
+               ON (Config.ConfigID = ConfigSettings.ID)
+             SET 
+               Config.Value = :new_title
+             WHERE
+               ConfigSettings.Name = 'title'"
+        );
+        $this->_database->execute(
+            $prep,
+            array('new_title' => $modifiedObject->getTitle()),
+            array('nofetch' => true)
+        );
     }
 }

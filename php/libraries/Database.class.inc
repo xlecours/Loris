@@ -462,7 +462,7 @@ class Database
 
         $err = $this->trackChanges($table, $set, $where);
         $this->_printQuery($query.$where);
-
+var_dump($exec_params);
         $prep   = $this->_PDO->prepare($prepQ);
         $result = $prep->execute($exec_params);
         if ($result === false) {

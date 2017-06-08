@@ -3,7 +3,6 @@ namespace LORIS\Core;
 
 use LORIS\Core\OV;
 
-
 interface DAO
 {
     /**
@@ -11,5 +10,14 @@ interface DAO
      *
      * @return OV
      */
-    public static function createValueObject(array $primary_key): OV;
+    public function createValueObject(array $primary_key): OV;
+
+    /**
+     * Update the database with new values
+     *
+     * @param OV the modified object.
+     *
+     * @return void
+     */
+    public function updateValueObject(OV $modifiedObject);
 }

@@ -26,15 +26,15 @@ use LORIS\Core\OV;
  */
 class Study_OV extends OV
 {
-    protected $name = '';
+    protected $title = '';
 
-    public function getName()
+    public function getTitle()
     {
-        return $this->name;
+        return $this->title;
     }
 
-    public function setName($name)
+    public function setTitle($title)
     {
-        $this->name = $name;
+        $this->title = $title;
     }
 }

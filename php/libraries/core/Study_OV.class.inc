@@ -11,7 +11,10 @@
  * @link     https://www.github.com/aces/Loris/
  */
 
-namespace LORIS\Core
+namespace LORIS\Core;
+
+use LORIS\Core\OV;
+
 /**
  * A class for stydy instances.
  *
@@ -21,7 +24,7 @@ namespace LORIS\Core
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-class Study_OV extends \OV
+class Study_OV extends OV
 {
     protected $name = '';
 
@@ -32,6 +35,6 @@ class Study_OV extends \OV
 
     public function setName($name)
     {
-        $this->name = $name
+        $this->name = $name;
     }
 }

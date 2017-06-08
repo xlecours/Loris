@@ -26,7 +26,6 @@ class LORIS_DAO_Factory
 
     public function __construct()
     {
-        var_dump('ye');
     }
 
     /**

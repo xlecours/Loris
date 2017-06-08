@@ -4,15 +4,12 @@ namespace LORIS\Core;
 use LORIS\Core\OV;
 
 
-abstract class DAO
+interface DAO
 {
     /**
      * Create a new DOA instance of the object
      *
      * @return OV
      */
-    public function createValueObject()
-    {
-
-    }
+    public static function createValueObject(array $primary_key): OV;
 }

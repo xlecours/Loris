@@ -13,7 +13,8 @@
 
 namespace LORIS\Core;
 
-use LORIS\Core\DAO;
+use LORIS\Core\Study_OV;
+
 /**
  * A class to link the database to the application.
  *
@@ -23,9 +24,10 @@ use LORIS\Core\DAO;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-class Study_DAO extends DAO
+class Study_DAO implements DAO
 {
-    function createValueObject() {
+    public static function createValueObject(array $primary_key): OV
+    {
           return new Study_OV();
     }
 }

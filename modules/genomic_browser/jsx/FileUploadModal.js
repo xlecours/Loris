@@ -50,6 +50,7 @@ var GenomicFileUploadModal = React.createClass({
     };
     xhr.onreadystatechange = function() {
       var bar = document.getElementById("progressBar");
+console.log(xhr.readyState);
       try {
         switch (xhr.readyState) {
           case 0:
@@ -71,6 +72,11 @@ var GenomicFileUploadModal = React.createClass({
             xhr.previousText = xhr.responseText;
             break;
           case 4:
+            var newResponse = xhr.responseText.substring(xhr.previousText.length);
+            var result = JSON.parse(newResponse);
+            if (result.error) {
+              throw result.message;
+            }
             self.setState({submited: true});
             break;
           default:
@@ -78,8 +84,8 @@ var GenomicFileUploadModal = React.createClass({
         }
       } catch (e) {
         console.error("[XHR STATECHANGE] Exception: " + e);
-        bar.innerHTML = 'An error occured';
-        bar.className = 'progress-bcar progress-bar-danger';
+        bar.innerHTML = e;
+        bar.className = 'progress-bar progress-bar-danger';
         bar.style.width = "100%";
       }
     };

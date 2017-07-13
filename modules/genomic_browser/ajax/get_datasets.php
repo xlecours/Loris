@@ -20,7 +20,7 @@ if (!$userSingleton->hasPermission('genomic_browser_view_site')
     exit;
 }
 
-$couch = CouchDB::singleton();
+$couch = \NDB_Factory::singleton()->couchDB();
 $couch->setDatabase('test_epi');
 
 $params = array('reduce' => 'false');

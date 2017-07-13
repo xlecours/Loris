@@ -1,0 +1,41 @@
+### This file is a example of data.frame file expected by the CouchDB importer of LORIS. 
+### File following this format will be transformed into a dataset.json file and N variable.json files. (Where N is the number of data lines)
+###
+### Comment line start with (###).
+### Those lines will be ignored.
+###
+### Any informations about history or provenance should be on a line stating with (##). 
+### Those informations should be represented as key, value pairs and will be kept as string.
+### The key needs to be a single word at the start of the line.
+### The actual separator is single comma.
+### Invalid lines will be ommited.
+### The following information are required :
+### --REQUIRED--> variable_type: This is used to create the tabs in the genomic browser. 
+### --REQUIRED--> variable_format: One of float, integer, string. variable values will always be stored as string be this specify of to display them.
+### --REQUIRED--> sample_count: How many column to treaty as samples starting from the right of the data.frame
+###
+### The headers line should start with a single (#).
+### There should be only one headers line.
+### Headers will be put to lower case, whites-space trimmed at both ends then spaces and dash will be replaced by underscore. ( UCSC Gene-group =>ucsc_gene_group)
+### Sample headers will not be modified.
+### The lines following the headers will be considered as data line.
+###
+### Data lines should contain at least 4 columns before the samples columns in the following order :
+### --REQUIRED--> variable_name, the unique identifier of the variable.
+### --REQUIRED--> chromosome, The chromosome where this variable is located.
+### --REQUIRED--> start_loc, The loci of that variable.
+### --REQUIRED--> size, The number of base paires covered by that variable.
+###
+### The parser script will stop at the first invalid line.
+###
+## description,Example data.frame file type describing the format expected by the LORIS CouchDB import script. 
+## author,xlecours
+## project,LORIS demo data
+## normalisation_method,Manual entry
+## variable_type,SNP
+## variable_format,string
+## sample_count,6
+# variable_name,chromosome,start_loc,size,gene_name,SNP_R09C01,SNP_R09C02,SNP_R10C01,SNP_R10C02,SNP_R11C01,SNP_R11C02 
+snp0000001,1,536797,1,MORN1,A A,A A,A C,A A,A C,A A
+snp0000002,1,981646,1,AGRN,C C,C C,C C,C C,C C,C G
+snp0000003,1,949933,1,ISG15,T A,T A,T A,C C,T C,T A

@@ -1,0 +1,14 @@
+{
+   "_id": "_design/datasets",
+   "_rev": "2-90f61936339e781e5ed3fe3fd2d8904f",
+   "language": "javascript",
+   "views": {
+       "betavalue_by_sample": {
+           "map": "function(doc) {   \n    if( doc.meta && doc.meta.doctype == 'dataset' ) {       \n        var probe_count = doc.data.probe_count;\n        var file_id = doc.meta.identifier.LORIS_file_id;\n        var variable_type = doc.meta.variable_type;\n        \n        doc.data.samples.forEach(function (sample_label) {\n            var key = [sample_label, variable_type, file_id];\n            emit(key, probe_count);\n        });\n    }\n}",
+           "reduce": "_sum"
+       }
+   },
+   "lists": {
+       "profile": "function(head, req) { start({'headers': {'Content-Type': 'application/json'}}); var data_table = {}; var row_count = 0; var column_totals = {}; while (row = getRow()) {var obj = data_table[row.key[0]] || {}; obj[row.key[1]] = row.value; data_table[row.key[0]] = obj; row_count++; column_totals[row.key[1]] = column_totals[row.key[1]] || 0; column_totals[row.key[1]]++ } send('{ \"data\" :'); send(JSON.stringify(data_table)); send(', \"row_count\": '); send(JSON.stringify(row_count)); send(', \"column_totals\": '); send(JSON.stringify(column_totals)); send('}');}"
+   }
+}

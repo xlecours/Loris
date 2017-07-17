@@ -90,7 +90,9 @@ class NDB_Form_User_Accounts extends NDB_Form
             unset($defaults['Password_hash']);
 
             // get the user's permissions
-            $perms = $user->getPermissionIDs();
+            $perms = array_map(function ($value) {
+                return $value['permID'];
+            }, $user->getPermissionIDs());
 
             // set the user's permission defaults
             foreach ($perms as $value) {
@@ -824,8 +826,12 @@ class NDB_Form_User_Accounts extends NDB_Form
             // add hidden permissions if editor has less permissions than user
             // being edited
             $perms = array_diff(
-                $user->getPermissionIDs(),
-                $editor->getPermissionIDs()
+                array_map(function ($value) {
+                    return $value['permID'];
+                }, $user->getPermissionIDs()),
+                array_map(function ($value) {
+                    return $value['permID'];
+                }, $editor->getPermissionIDs())
             );
             foreach ($perms as $value) {
                 $this->addHidden("permID[$value]", 1);

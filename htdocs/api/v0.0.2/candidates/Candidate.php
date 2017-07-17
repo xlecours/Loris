@@ -28,20 +28,25 @@ require_once 'APIBase.php';
 class Candidate extends \Loris\API\APIBase
 {
     var $Candidate;
+    var $Data;
 
     /**
      * Construct class to handle request
      *
      * @param string $method HTTP method of request
      * @param string $CandID CandID of candidate to be serialized
+     * @param array  $input  json_decoded request payload
      */
-    public function __construct($method, $CandID)
+    public function __construct($method, $CandID, $input)
     {
+        $this->AllowedMethods     = [
+                                     'GET',
+                                     'PATCH',
+                                    ];
         $requestDelegationCascade = $this->AutoHandleRequestDelegation;
 
         $this->AutoHandleRequestDelegation = false;
         $this->CandID = $CandID;
-
         parent::__construct($method);
 
         if (!is_numeric($CandID)
@@ -61,6 +66,8 @@ class Candidate extends \Loris\API\APIBase
             $this->error("Unknown CandID");
             $this->safeExit(0);
         }
+
+        $this->Data = $input;
 
         if ($requestDelegationCascade) {
             $this->handleRequest();
@@ -94,6 +101,23 @@ class Candidate extends \Loris\API\APIBase
     }
 
     /**
+     * Handle a PATCH request
+     *
+     * @return the updated candidate
+     */
+    public function handlePATCH()
+    {
+        $new_values = $this->Data['Candidate'];
+        array_walk(
+            $new_values,
+            function ($value, $key) {
+                $this->Candidate->setData($key, $value);
+            },
+            $this->Candidate
+        );
+    }
+
+    /**
      * Calculate the ETag for this Candidate by taking a hash of the
      * most recent change to the candidate, visit tables or number of
      * visits
@@ -121,9 +145,21 @@ class Candidate extends \Loris\API\APIBase
 }
 
 if (isset($_REQUEST['PrintCandidate'])) {
+    $input = null;
+
+    if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
+        $fp   = fopen("php://input", "r");
+        $data = '';
+        while (!feof($fp)) {
+            $data .= fread($fp, 1024);
+        }
+        fclose($fp);
+        $input = json_decode($data, true);
+    }
     $obj = new \Loris\API\Candidates\Candidate(
         $_SERVER['REQUEST_METHOD'],
-        $_REQUEST['CandID']
+        $_REQUEST['CandID'],
+        $input
     );
     print $obj->toJSONString();
 }

@@ -161,16 +161,7 @@ var UploadForm = React.createClass({
     inputs.push(<FileTypeSelect baseURL={this.props.baseURL} multiple={false} onFileTypeChange={this.handleFileTypeChange} name="fileType" label="File type:"/>);
 
     switch (this.state.fileType) {
-      case 'Methylation beta-values':
-        inputs.push(<FileInput name="fileData" label="File :"/>);
-        inputs.push(<TextAreaInput name="description" label="Description :" />);
-        if (!this.state.useColumnHeaders) {
-          inputs.push(<FileInput name="fileMapping" label="Mapping :"/>);
-        }
-        inputs.push(<CheckboxInput handleChange={this.handleCheckboxChange} checked={this.state.useColumnHeaders} name="pscidColumn" />);
-        inputs.push(<ProgressBar name="progressbar" label="Progress :" />);
-        break;
-      case 'Other':
+      case 'Single file':
         inputs.push(<FileInput name="fileData" label="File :"/>);
         inputs.push(<TextAreaInput name="description" label="Description :" />);
         inputs.push(<ProgressBar name="progressbar" label="Progress :" />);

@@ -1,5 +1,6 @@
 <?php
-require 'vendor/autoload.php';
+require '../vendor/autoload.php';
+require 'generic_includes.php';
 
 class CandidateList extends \NDB_Page {
     private $table; // TableD
@@ -23,6 +24,13 @@ class CandidateListRow implements \LORIS\Data\Instance {
     protected $visitCount;
     protected $feedback;
 
+    public function __construct($candidate, $participantstatus, $visitCount, $feedback) {
+        $this->candidate         = $candidate;
+        $this->participantstatus = $participantstatus;
+        $this->visitCount        = $visitCount;
+        $this->feedback          = $feedback;
+    }
+
     public function toJSON() : string {
         // Site, DCCID, PSCID, GEnder, EntityType, ParticipantStatus,
         // Subproject, DoB, ScanDone, VisitCount, LatestVisitStatus,
@@ -40,6 +48,10 @@ class CandidateListRow implements \LORIS\Data\Instance {
         ];
         return json_encode($arr);
     }
+
+    public function getCenterID() : string {
+        return $this->candidate->getCenterID();
+    }
 }
 
 class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
@@ -47,7 +59,7 @@ class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
         $sql = "SELECT c.CandID,
                  COALESCE(pso.Description,'Active') as ParticipantStatus,
                  COUNT(DISTINCT s.Visit_label) as VisitCount,
-                 IFNULL(MIN(feedback_bvl_thread.Status+0),0) as Feedback,
+                 IFNULL(MIN(feedback_bvl_thread.Status+0),0) as Feedback
         FROM candidate c
               LEFT JOIN psc ON (c.CenterID=psc.CenterID)
               LEFT JOIN session s ON (c.CandID = s.CandID AND s.Active = 'Y')
@@ -56,15 +68,16 @@ class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
               LEFT JOIN participant_status ps ON (ps.CandID=c.CandID)
               LEFT JOIN participant_status_options pso
                   ON (ps.participant_status=pso.ID)
-             WHERE c.Active = 'Y'";
+             WHERE c.Active = 'Y' 
+             GROUP BY c.CandID";
 
         $db = Database::singleton();
         $query = $db->pselect($sql, array());
         $results = [];
         foreach ($query as $row) {
-            $r = new CandidadateListRowInstance(
+            $r = new CandidateListRow(
                 Candidate::singleton($row['CandID']),
-                $row['Participant_Status'],
+                $row['ParticipantStatus'],
                 $row['VisitCount'], 
                 $row['Feedback']
             );

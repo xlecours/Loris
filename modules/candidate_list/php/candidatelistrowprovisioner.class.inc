@@ -2,8 +2,15 @@
 
 namespace LORIS\candidate_list;
 
+use \LORIS\Data\DAO\Candidate_DAO;
+use \LORIS\Data\DTO\Candidate_DTO;
+
 class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
     protected function GetAllRows() : array {
+        $candidate_dao = new Candidate_DAO();
+        $data          = $candidate_dao->getAll();
+var_dump($data);
+exit;
         $sql = "SELECT psc.Name AS Site,
             c.CenterID,
             c.CandID,

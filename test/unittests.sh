@@ -15,10 +15,10 @@
 #       *  Set sandbox mode to 1: <sandbox>1</sandbox>
 
 # set environment variable LORIS_DB_CONFIG to test config.xml file
-host="127.0.0.1"
-database="LorisTest"
-username="SQLTestUser"
-password="TestPassword"
+host="ace-db-2.cbrain.mcgill.ca"
+database="xavier_test"
+username="xlecours"
+password='$Demo4022'
 sed -i \
     -e "s/%HOSTNAME%/$host/g" \
     -e "s/%USERNAME%/$username/g" \

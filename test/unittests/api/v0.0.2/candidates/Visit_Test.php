@@ -27,6 +27,9 @@ class Visit_Test extends BaseTestCase
 
        $this->Timepoint->method("getDateOfApproval")->willReturn("1935-03-20");
        $this->Timepoint->method("getApprovalStatus")->willReturn("Failure");
+
+        $user= $this->getMockBuilder('User')->disableOriginalConstructor()->setMockClassName("MockUser")->getMock();
+        $user->method("getCenterIDs")->will($this->returnValue(array(1)));
     }
 
     function testValidMethods() {
@@ -74,13 +77,13 @@ class Visit_Test extends BaseTestCase
 
     function testPutInvalidBattery() {
         $this->expectOutputString(json_encode(["error" => "Test battery specified does not exist"]));
-        $JSON = json_encode([
+        $JSON = [
             "Meta" => [
                 "CandID" => 123456,
                 "Visit"  => "V3",
                 "Battery" => "I don't belong here"
             ]
-        ], true);
+        ];
         try {
             $API = new \Loris\API\Candidates\Candidate\Visit("PUT", "123456", "V3", $JSON);
         } catch(\Loris\API\SafeExitException $e) {
@@ -89,13 +92,13 @@ class Visit_Test extends BaseTestCase
         $this->assertEquals($API->Headers, ["HTTP/1.1 400 Bad Request"]);
     }
     function testPostValidVisit() {
-        $JSON = json_encode([
+        $JSON = [
             "Meta" => [
-                "CandID" => 123456,
+                "CandID" => "123456",
                 "Visit"  => "V3",
                 "Battery" => "Test Battery"
             ]
-        ], true);
+        ];
         try {
             $API = $this->getMockBuilder(
                 '\Loris\API\Candidates\Candidate\Visit')->disableOriginalConstructor()->setMethods(['createNew'])->getMock();
@@ -113,13 +116,13 @@ class Visit_Test extends BaseTestCase
     }
     function testPostInvalidVisit() {
         $this->expectOutputString(json_encode(["error" => "Visit from URL does not match metadata"]));
-        $JSON = json_encode([
+        $JSON = [
             "Meta" => [
                 "CandID" => 123456,
                 "Visit"  => "V4",
                 "Battery" => "Test Battery"
             ]
-        ], true);
+        ];
         try {
             $API = new \Loris\API\Candidates\Candidate\Visit("PUT", "123456", "V3", $JSON);
         } catch(\Loris\API\SafeExitException $e) {

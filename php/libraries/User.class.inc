@@ -52,7 +52,7 @@ class User extends UserPermissions
         $success = $obj->select($username);
 
         // create DB object
-        $DB =& Database::singleton();
+        $DB = \NDB_Factory::singleton()->database();
 
         // get user data from database
         $query = "SELECT users.*,
@@ -72,6 +72,7 @@ class User extends UserPermissions
             array('UID' => $row['ID'])
         );
 
+        $user_cid = array();
         foreach ($user_centerID_query as $key=>$val) {
             $user_cid[$key] =$val['CenterID'];
         }
@@ -146,7 +147,7 @@ class User extends UserPermissions
     function insert($set)
     {
         // create DB object
-        $DB =& Database::singleton();
+        $DB = \NDB_Factory::singleton()->database();
 
         $success = $DB->insert('users', $set);
 
@@ -165,7 +166,7 @@ class User extends UserPermissions
     function update($set)
     {
         // create DB object
-        $DB =& Database::singleton();
+        $DB = \NDB_Factory::singleton()->database();
 
         $success = $DB->update(
             'users',

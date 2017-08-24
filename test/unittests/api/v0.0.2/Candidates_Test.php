@@ -14,7 +14,11 @@ class Candidates_Test extends PHPUnit_Framework_TestCase
         $this->getMockBuilder('NDB_Config')->setMockClassName("MockNDB_Config")->getMock();
         $this->getMockBuilder('Database')->setMockClassName("MockDatabase")->getMock();
         $this->getMockBuilder('Candidate')->setMockClassName("MockCandidate")->getMock();
-        $this->getMockBuilder('Project')->disableOriginalConstructor()->setMockClassName("MockProject")->getMock();
+        $this->getMockBuilder('\Project')->disableOriginalConstructor()->setMockClassName("MockProject")->getMock();
+        $user= $this->getMockBuilder('\User')->disableOriginalConstructor()->setMockClassName("MockUser")->getMock();
+
+//        $Login= $this->getMockBuilder('\SinglePointLogin')->getMock();
+//        $Login->method("passwordAuthenticate")->will($this->returnValue(true));
 
         $this->Factory = NDB_Factory::singleton();
         $this->Factory->setTesting(true);
@@ -24,6 +28,7 @@ class Candidates_Test extends PHPUnit_Framework_TestCase
 
         $this->Database->method("pselect")->will($this->returnCallback(
             function ($query, $params) {
+print $query;
                 if (strpos($query, "SELECT CandID, ProjectID") === 0) {
                     return [
                         [
@@ -114,15 +119,13 @@ class Candidates_Test extends PHPUnit_Framework_TestCase
     function testPostCandidateInvalidGender() {
         try {
             $API = new \Loris\API\Candidates("POST",
-                ['candidate' => json_encode([
-                'Candidate' => [
+                ['Candidate' => [
                     'Project' => "loris",
                     'PSCID'   => 'HelloPSC',
                     'EDC'     => '2015-05-19',
                     'Gender'  => 'None'
-                ]])
-            ]
-        );
+                ]]
+            );
         } catch(\Loris\API\SafeExitException $e) {
             $API = $e->Object;
         }

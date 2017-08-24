@@ -149,10 +149,9 @@ class NDB_Factory
             return self::$_user;
         }
         if ($this->Testing) {
-            Mock::generate("User");
             $user = new MockUser();
         } else {
-            $user = User::singleton();
+            $user = \User::singleton();
         }
         self::$_user = $user;
         return $user;

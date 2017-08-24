@@ -22,6 +22,7 @@ class Projects_Test extends BaseTestCase
 
         $this->getMockBuilder('NDB_Config')->setMockClassName("MockNDB_Config")->getMock();
         $this->getMockBuilder('Database')->setMockClassName("MockDatabase")->getMock();
+        $this->getMockBuilder('Project')->disableOriginalConstructor()->setMockClassName("MockProject")->getMock();
 
         $this->Database->method("pselect")->will($this->returnCallback(
             function ($query, $params) {

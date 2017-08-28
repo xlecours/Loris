@@ -5,11 +5,11 @@
  * This class contains all database handling that is needed to 
  * permanently store and retrieve Candidate object instances.
  */
-namespace LORIS\Data\DAO;
+namespace LORIS\Data\Models\AccessObjects;
 
-use LORIS\Data\DTO;
+use \LORIS\Data\Models\TransferObjects as DTO;
 
-class Candidate implements \LORIS\Data\DAO
+class Candidate implements \LORIS\Data\Models\AccessObject
 {
     private $_user;
     private $_database;
@@ -57,9 +57,11 @@ class Candidate implements \LORIS\Data\DAO
     }
 
     /**
-     * @throws LorisException
+     * Instanciate and return a TransferObject matching the given primary key.
+     *
+     * @return DTO The requested object
      */
-    public function getObject(array $primary_key): \LORIS\Data\DTO
+    public function getOne(array $primary_key): \LORIS\Data\DTO
     {
         $sql_query =  $this->_query;
         $sql_query .= ' AND candidate.CandID = :v_candid ';
@@ -81,7 +83,9 @@ class Candidate implements \LORIS\Data\DAO
     }
 
     /**
+     * Instanciate all available objects as TransferObject 
      *
+     * @return array<DTO> An array of transfer object
      */
     public function getAll()
     {
@@ -104,22 +108,14 @@ class Candidate implements \LORIS\Data\DAO
         }, $values);
     }
 
-    public function create()
-    {
-
-    }
-
-    public function delete()
-    {
-
-    }
-
-    public function replace()
-    {
-
-    }
-
-    public function update(\LORIS\Data\DTO $modifiedObject)
+    /**
+     * Update the database with new values 
+     *
+     * @param DTO $modifiedObject the modified object.
+     *
+     * @return void
+     */
+    public function save(\LORIS\Data\Models\TransferObject $modifiedObject)
     {
         $new_values = $candidate->asArray();
         $this->_database->update('candidate', $new_values, array('CandID' => $new_values['CandID']));

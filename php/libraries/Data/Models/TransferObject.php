@@ -1,7 +1,7 @@
 <?php
-namespace LORIS\Data;
+namespace LORIS\Data\Models;
 
-abstract class DTO
+abstract class TransferObject
 {
     public function __toString()
     {

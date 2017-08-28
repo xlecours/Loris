@@ -7,9 +7,9 @@
  * 
  * See Site_DAO for persistance.
  */
-namespace LORIS\Data\DTO;
+namespace LORIS\Data\Models\TransferObjects;
 
-class Site extends \LORIS\Data\DTO
+class Site extends \LORIS\Data\Models\TransferObject
 {
     /**
      * This data is directly mapped to the columns of database table.

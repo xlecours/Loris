@@ -2,12 +2,12 @@
 
 namespace LORIS\candidate_list;
 
-use \LORIS\Data\Models\{AccessObjects as DAO, TransferObjects as DTO};
+use \LORIS\Data\Models\AccessObjects;
 
 class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
     protected function GetAllRows() : array {
-        $candidate_dao = new DAO\Candidate();
-        $site_dao      = new DAO\Site();
+        $candidate_dao = new AccessObjects\Candidate();
+        $site_dao      = new AccessObjects\Site();
 
         return array_map(function($c) use ($site_dao) {
             $site   = $site_dao->getOne(array($c->getCenterID()));

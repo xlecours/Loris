@@ -7,9 +7,9 @@
  */
 namespace LORIS\Data\DAO;
 
-use \LORIS\Data\DTO\Site_DTO;
+use LORIS\Data\DTO;
 
-class Site_DAO implements DAO
+class Site implements \LORIS\Data\DAO
 {
     private $_user;
     private $_database;
@@ -50,7 +50,7 @@ class Site_DAO implements DAO
     /**
      * @throws LorisException
      *
-     * @return Site_DTO the requested site.
+     * @return DTO\Site the requested site.
      */
     public function getObject(array $primary_key)
     {
@@ -64,7 +64,7 @@ class Site_DAO implements DAO
             throw new \LorisException("This candidate does not exists.");
         }
 
-        $site = new Site_DTO($values); 
+        $site = new DTO\Site($values); 
         return $site;
     }
 
@@ -83,7 +83,7 @@ class Site_DAO implements DAO
         }
 
         return array_map(function($row) {
-            return new Site_DTO($row);
+            return new DTO\Site($row);
         }, $values);
     }
 

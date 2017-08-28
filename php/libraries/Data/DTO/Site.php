@@ -9,7 +9,7 @@
  */
 namespace LORIS\Data\DTO;
 
-class Site_DTO extends DTO
+class Site extends \LORIS\Data\DTO
 {
     /**
      * This data is directly mapped to the columns of database table.

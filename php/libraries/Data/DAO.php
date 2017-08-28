@@ -1,7 +1,5 @@
 <?php
-namespace LORIS\Data\DAO;
-
-use LORIS\Data\DTO;
+namespace LORIS\Data;
 
 interface DAO
 {

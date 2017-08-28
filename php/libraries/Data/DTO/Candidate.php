@@ -9,7 +9,7 @@
  */
 namespace LORIS\Data\DTO;
 
-class Candidate_DTO extends DTO
+class Candidate extends \LORIS\Data\DTO
 {
     /**
      * This data is directly mapped to the columns of database table.

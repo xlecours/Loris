@@ -2,15 +2,12 @@
 
 namespace LORIS\candidate_list;
 
-use \LORIS\Data\DAO\Candidate_DAO;
-use \LORIS\Data\DTO\Candidate_DTO;
-use \LORIS\Data\DAO\Site_DAO;
-use \LORIS\Data\DTO\Site_DTO;
+use \LORIS\Data\DAO;
 
 class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
     protected function GetAllRows() : array {
-        $candidate_dao = new Candidate_DAO();
-        $site_dao      = new Site_DAO();
+        $candidate_dao = new DAO\Candidate();
+        $site_dao      = new DAO\Site();
 
         return array_map(function($c) use ($site_dao) {
             $site   = $site_dao->getObject(array($c->getCenterID()));

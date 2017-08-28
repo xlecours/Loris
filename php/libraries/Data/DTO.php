@@ -1,5 +1,5 @@
 <?php
-namespace LORIS\Data\DTO;
+namespace LORIS\Data;
 
 abstract class DTO
 {

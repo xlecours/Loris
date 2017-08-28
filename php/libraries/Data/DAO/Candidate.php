@@ -7,9 +7,9 @@
  */
 namespace LORIS\Data\DAO;
 
-use \LORIS\Data\DTO\Candidate_DTO;
+use LORIS\Data\DTO;
 
-class Candidate_DAO implements DAO
+class Candidate implements \LORIS\Data\DAO
 {
     private $_user;
     private $_database;
@@ -76,7 +76,7 @@ class Candidate_DAO implements DAO
             throw new \LorisException("This candidate does not exists.");
         }
 
-        $candidate = new Candidate_DTO($values); 
+        $candidate = new DTO\Candidate($values); 
         return $candidate;
     }
 
@@ -100,7 +100,7 @@ class Candidate_DAO implements DAO
         }
 
         return array_map(function($row) {
-            return new Candidate_DTO($row);
+            return new DTO\Candidate($row);
         }, $values);
     }
 

@@ -1,40 +1,40 @@
-<?php echo '<?php';?> 
+<?php 
 /**
  * LORIS DTO template
  *
  * Data Transfer Object (DTO).
  * It should be use to encapsulate all site related data and should
  * be used to transfer data between the application layer and the persistance
- * with minimal knowledge of what <?php echo $this->class_name; ?> does.
+ * with minimal knowledge of what Permission does.
  */
-<?php echo "namespace LORIS\Data\Models\TransferObjects;\n"; ?>
+namespace LORIS\Data\Models\TransferObjects;
 
-<?php echo "class $this->class_name extends \LORIS\Data\Models\TransferObject\n"; ?>
+class Permission extends \LORIS\Data\Models\TransferObject
 {
     /**
      * This data is directly mapped to the columns of database table.
      */
-<?php
-    array_walk($this->columns, function ($c) {
-        echo "    private \$_$c;\n";
-    });
-?>
+    private $_permID;
+    private $_code;
+    private $_description;
+    private $_categoryID;
 
     // Getters and Setters
-<?php
-    array_walk($this->columns, function ($c) {
-        echo "    public function get$c() {return \$this->_$c;}\n";
-        echo "    public function set$c(\$$c) {\$this->_$c = \$$c;}\n";
-    });
-?>
+    public function getpermID() {return $this->_permID;}
+    public function setpermID($permID) {$this->_permID = $permID;}
+    public function getcode() {return $this->_code;}
+    public function setcode($code) {$this->_code = $code;}
+    public function getdescription() {return $this->_description;}
+    public function setdescription($description) {$this->_description = $description;}
+    public function getcategoryID() {return $this->_categoryID;}
+    public function setcategoryID($categoryID) {$this->_categoryID = $categoryID;}
 
     // Shortcut to avoid the use of setters during instanciation.
     private function _setAll(array &$allVals) {
-<?php
-    array_walk($this->columns, function ($c) {
-        echo "        \$this->_$c = \$allVals['$c'];\n";
-    });
-?>
+        $this->_permID = $allVals['permID'];
+        $this->_code = $allVals['code'];
+        $this->_description = $allVals['description'];
+        $this->_categoryID = $allVals['categoryID'];
     }
 
     /**
@@ -43,11 +43,7 @@
     public function getPrimaryKey()
     {
         $keys = array(
-<?php
-    array_walk($this->pk_columns, function($column_name) {
-        echo "            '$column_name' => \$this->_$column_name,\n";
-    });
-?>
+            'permID' => $this->_permID,
         );
     }
 

@@ -120,6 +120,11 @@ class Candidate extends \LORIS\Data\Models\TransferObject
         $this->_setAll($allVals);
     }
 
+    public function getPrimaryKey()
+    {
+        return array('CandID' => $this->_CandID);
+    }
+
     public function __toString()
     {
         return json_encode($this->asArray());

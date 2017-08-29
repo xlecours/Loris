@@ -8,24 +8,27 @@ class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
     protected function GetAllRows() : array {
         $candidate_dao = new AccessObjects\Candidate();
         $site_dao      = new AccessObjects\Site();
+        $session_dao   = new AccessObjects\Session();
 
-        return array_map(function($c) use ($site_dao) {
+        return array_map(function($c) use ($site_dao, $session_dao) {
             $site   = $site_dao->getOne(array($c->getCenterID()));
 
-//          $visits = $visit_dao->getAllByCandidate($c->getCandID()); 
-            $visits = array();
+            $sessions = $session_dao->getAllByCandidate($c->getCandID()); 
 
-            $hasScanDone = array_reduce($visits, function ($carry, $item) {
+            $hasScanDone = array_reduce($sessions, function ($carry, $item) {
                 return $carry || $item->getScan_done() == 'Y';
             }, false);
 
             $chrono_cmp = function ($v1, $v2) {
                 return strcmp($v1->getDate_visit(), $v2->getDate_visit());
             };
-            usort($visits, $chrono_cmp);
+            usort($sessions, $chrono_cmp);
 
-//          $latestVisitStatus = end($visits)->getCurrent_stage();
-            $latestVisitStatus = 'TBD';
+            $latestVisitStatus = '';
+            $latestVisit       = end($sessions);
+            if (!empty($latestVisit)) {
+                $latestVisitStatus = $latestVisit->getCurrent_stage();
+            } 
 
             $row = array(
                 "Site"                => $site->getName(),
@@ -36,8 +39,8 @@ class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
                 "Participant Status"  => 'Active', // TODO 
                 "Subproject"          => 'High, Low', // TODO
                 "DoB"                 => $c->getDob(),
-                "Scan Done"           => $hasScanDone,
-                "Visit Count"         => count($visits),
+                "Scan Done"           => $hasScanDone ? 'Y' : 'N',
+                "Visit Count"         => count($sessions),
                 "Latest Visit Status" => $latestVisitStatus,
                 "Feedback"            => 'Yeah!'
             );

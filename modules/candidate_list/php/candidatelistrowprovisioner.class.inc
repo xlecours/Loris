@@ -11,7 +11,7 @@ class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
         $session_dao   = new AccessObjects\Session();
 
         return array_map(function($c) use ($site_dao, $session_dao) {
-            $site   = $site_dao->getOne(array($c->getCenterID()));
+            $site   = $site_dao->getOne(array('CenterID' => $c->getCenterID()));
 
             $sessions = $session_dao->getAllByCandidate($c->getCandID()); 
 
@@ -19,12 +19,11 @@ class CandidateListRowProvisioner extends \LORIS\Data\Provisioner {
                 return $carry || $item->getScan_done() == 'Y';
             }, false);
 
+            $latestVisitStatus = '';
             $chrono_cmp = function ($v1, $v2) {
                 return strcmp($v1->getDate_visit(), $v2->getDate_visit());
             };
             usort($sessions, $chrono_cmp);
-
-            $latestVisitStatus = '';
             $latestVisit       = end($sessions);
             if (!empty($latestVisit)) {
                 $latestVisitStatus = $latestVisit->getCurrent_stage();

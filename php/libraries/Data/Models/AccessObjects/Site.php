@@ -15,6 +15,8 @@ class Site implements \LORIS\Data\Models\AccessObject
     private $_database;
     private $_query;
 
+    private $_cache; 
+
     /**
      *
      */
@@ -54,18 +56,21 @@ class Site implements \LORIS\Data\Models\AccessObject
      */
     public function getOne(array $primary_key)
     {
-        $sql_query =  $this->_query;
-        $sql_query .= ' AND CenterID = :v_center_id ';
-        $params = array('v_center_id' => $primary_key[0]);
-
-        $values = $this->_database->pselectRow($sql_query, $params);
-
-        if (empty($values)) {
-            throw new \LorisException("This candidate does not exists.");
+        $hash = md5(json_encode($primary_key));
+        if (empty($this->_cache[$hash])) {
+            $sql_query =  $this->_query;
+            $sql_query .= ' AND CenterID = :CenterID ';
+            $params = $primary_key;
+    
+            $values = $this->_database->pselectRow($sql_query, $params);
+    
+            if (empty($values)) {
+                throw new \LorisException("This candidate does not exists.");
+            }
+    
+            $this->_cache[$hash] = new DTO\Site($values);
         }
-
-        $site = new DTO\Site($values); 
-        return $site;
+        return $this->_cache[$hash];
     }
 
     /**

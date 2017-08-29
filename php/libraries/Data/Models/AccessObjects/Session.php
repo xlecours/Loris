@@ -83,7 +83,8 @@ class Session implements \LORIS\Data\Models\AccessObject
     public function getOne(array $primary_key): \LORIS\Data\Models\TransferObject
     {
         $sql_query =  $this->_query;
-        $params = array();
+        $sql_query .= ' AND ID = :ID ';
+        $params = $primary_key;
 
         $values = $this->_database->pselectRow($sql_query, $params);
 

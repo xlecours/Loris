@@ -64,14 +64,14 @@ class Candidate implements \LORIS\Data\Models\AccessObject
     public function getOne(array $primary_key): \LORIS\Data\DTO
     {
         $sql_query =  $this->_query;
-        $sql_query .= ' AND candidate.CandID = :v_candid ';
-        $params = array('v_candid' => $primary_key[0]);
+        $sql_query .= ' AND candidate.CandID = :CandID ';
+        $params = $primary_key;
 
         if (!$this->_user->hasPermission('access_all_profiles')) {
             $sql_query .= ' AND FIND_IN_SET(CenterID, :v_user_centers) ';
             $params['v_user_centers'] = join(',',$this->_user->getCenterIDs());
         }
-        
+
         $values = $this->_database->pselectRow($sql_query, $params);
 
         if (empty($values)) {

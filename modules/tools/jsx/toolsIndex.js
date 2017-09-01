@@ -1,4 +1,5 @@
 import {Tabs, TabPane} from 'Tabs';
+import {Tool} from './tool';
 
 class ProcessingToolsIndex extends React.Component {
 
@@ -42,13 +43,18 @@ class ProcessingToolsIndex extends React.Component {
       {id: "tools", label: "Tool List"}
     ];
 
-    let toolTiles = Object.keys(this.state.tools).map(function (tool) {
-      return <div>{tool}</div>
+    let toolTiles = Object.keys(this.state.tools).map(function (tool, index) {
+      //const tool_name = tool.slice(tool.lastIndexOf('\\') + 1);
+      //const link = loris.BaseURL.concat('/tools/',tool_name); 
+      //return <div key={'tool_'.concat(index)} className="tool-tile"><a href={link}>{tool_name}</a></div>
+      return <Tool key={'tool_'.concat(index)}/>
     });
     return (
       <Tabs tabs={tabList} defaultTab="tools" updateURL={true}>
         <TabPane TabId={tabList[0].id}>
+          <div className='tools-container'>
           {toolTiles}
+          </div>
         </TabPane>
       </Tabs>
     );
@@ -57,9 +63,7 @@ class ProcessingToolsIndex extends React.Component {
 
 $(function() {
   const processingToolsIndex = (
-    <div className="page-processing-tools">
-      <ProcessingToolsIndex DataURL={`${loris.BaseURL}/tools/?format=json`} />
-    </div>
+    <ProcessingToolsIndex DataURL={`${loris.BaseURL}/tools/?format=json`} />
   );
 
   ReactDOM.render(processingToolsIndex, document.getElementById("lorisworkspace"));

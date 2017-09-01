@@ -43,14 +43,14 @@ class PCEVPipelineIndex extends React.Component {
     const form = document.getElementById('pcev_pipeline_form');
     const formData = new FormData(form);
 
-    const self = this;
+//    const self = this;
 
     xhr.upload.addEventListener('loadstart', this.onloadstartHandler, false);
-    xhr.upload.addEventListener('progress', onprogressHandler, false);
+//    xhr.upload.addEventListener('progress', onprogressHandler, false);
 //    xhr.upload.addEventListener('load', onloadHandler, false);
 //    xhr.addEventListener('readystatechange', onreadystatechangeHandler, false)
 
-    xhr.open('POST', this.props.DataURL, true);
+    xhr.open('POST', this.props.DataURL.concat('?format=json'), true);
     xhr.send(formData);
   }
 

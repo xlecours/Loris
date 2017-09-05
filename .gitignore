@@ -27,3 +27,4 @@ modules/*/js/*.map
 htdocs/js/components/*.map
 modules/directory_manager/php/cbrain_api_config.ini
 modules/directory_manager/cbrain-php-api/
+npm-debug.log*

@@ -1,5 +1,5 @@
 import {Tabs, TabPane} from 'Tabs';
-import {Tool} from './tool';
+import ToolTile from './tool';
 
 class ProcessingToolsIndex extends React.Component {
 
@@ -44,10 +44,8 @@ class ProcessingToolsIndex extends React.Component {
     ];
 
     let toolTiles = Object.keys(this.state.tools).map(function (tool, index) {
-      //const tool_name = tool.slice(tool.lastIndexOf('\\') + 1);
-      //const link = loris.BaseURL.concat('/tools/',tool_name); 
-      //return <div key={'tool_'.concat(index)} className="tool-tile"><a href={link}>{tool_name}</a></div>
-      return <Tool key={'tool_'.concat(index)}/>
+      const tool_name = tool.slice(tool.lastIndexOf('\\') + 1);
+      return <ToolTile key={'tool_'.concat(index)} name={tool_name} DataURL={`${loris.BaseURL}/tools/`}/>
     });
     return (
       <Tabs tabs={tabList} defaultTab="tools" updateURL={true}>

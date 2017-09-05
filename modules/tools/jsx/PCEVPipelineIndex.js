@@ -11,6 +11,9 @@ class PCEVPipelineIndex extends React.Component {
     this.getToolForm = this.getToolForm.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onloadstartHandler = this.onloadstartHandler.bind(this);
+    this.onprogressHandler = this.onprogressHandler.bind(this);
+    this.onloadHandler = this.onloadHandler.bind(this);
+    this.onreadystatechangeHandler = this.onreadystatechangeHandler.bind(this);
   }
 
   componentDidMount() {
@@ -46,16 +49,28 @@ class PCEVPipelineIndex extends React.Component {
 //    const self = this;
 
     xhr.upload.addEventListener('loadstart', this.onloadstartHandler, false);
-//    xhr.upload.addEventListener('progress', onprogressHandler, false);
-//    xhr.upload.addEventListener('load', onloadHandler, false);
-//    xhr.addEventListener('readystatechange', onreadystatechangeHandler, false)
+    xhr.upload.addEventListener('progress', this.onprogressHandler, false);
+    xhr.upload.addEventListener('load', this.onloadHandler, false);
+    xhr.addEventListener('readystatechange', this.onreadystatechangeHandler, false)
 
     xhr.open('POST', this.props.DataURL.concat('?format=json'), true);
     xhr.send(formData);
   }
 
   onloadstartHandler(evt) {
-    console.log('started');
+    console.log('onloadstart');
+  }
+
+  onprogressHandler(evt) {
+    console.log('onprogress');
+  }
+
+  onloadHandler(evt) {
+    console.log('onload');
+  }
+
+  onreadystatechangeHandler(evt) {
+    console.log('onreadystatechange');
   }
 
   render() {

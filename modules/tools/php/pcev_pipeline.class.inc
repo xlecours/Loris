@@ -10,7 +10,6 @@ class PCEV_Pipeline extends Tool
 {
     public function _setupPage($name, $page, $identifier, $commentID, $formname)
     {
-error_log('_setupPage');
        $this->addFile('response_file', 'Response matrix file');
        $this->addRule('response_file', 'Required', 'required');
 
@@ -23,6 +22,7 @@ error_log('_setupPage');
     public function handlePOST()
     {
         var_dump($_REQUEST);
+        
     }
 
     /**

@@ -1,3 +1,4 @@
+import {Tabs, TabPane} from 'Tabs';
 import Dataprovider from './Dataprovider';
 import CBRAIN from './CBRAIN';
 import Imaging from './Imaging';

@@ -40,7 +40,7 @@ abstract class Tool extends \NDB_Form
             case 'json':
                 $content = json_encode($this->form->toArray());
                 break;
-            case 'json':
+            case 'html':
                 $content = $this->form->toHTML();
                 break;
         }

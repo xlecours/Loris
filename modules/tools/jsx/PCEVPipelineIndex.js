@@ -80,7 +80,6 @@ class PCEVPipelineIndex extends React.Component {
     }, this);
 
     elements.push(<input type='submit' key='submit'/>);
-    elements.push(<input type='text' name='bob' key='bob'/>);
 
     return (
       <div>

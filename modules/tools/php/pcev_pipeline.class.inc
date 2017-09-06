@@ -6,6 +6,8 @@
 */
 namespace LORIS\tools;
 
+use \LORIS\CBRAIN\CBRAIN_API_client;
+
 class PCEV_Pipeline extends Tool
 {
     public function _setupPage($name, $page, $identifier, $commentID, $formname)
@@ -21,8 +23,27 @@ class PCEV_Pipeline extends Tool
 
     public function handlePOST()
     {
-        var_dump($_REQUEST);
         
+        $uploader = new \LORIS\Uploader();
+
+        $uploader->setDir('/data/dataprovider/');
+        $uploader->setMaxSize(100);
+        $uploader->allowAllFormats();
+        $uploader->setSameFileName();
+
+        array_walk($_FILES, function ($file, $key) use ($uploader) {
+            if ($file['error'] === 0) {
+                if (!$uploader->uploadFile($key)) {
+                    error_log($uploader->getMessage());
+                }
+            }
+        }, $_FILES);
+
+        $client = CBRAIN_API_client::getInstance();
+        $client->connect();
+        $client->selectDataproviderByName('Epigenomics');
+        print_r($client->listDataProviderFile(),true);
+        exit;
     }
 
     /**

@@ -1,5 +1,5 @@
 <?php
-
+// see : https://stackoverflow.com/questions/9108861/php-class-for-uploading-files
 namespace LORIS;
 
 class Uploader

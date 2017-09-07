@@ -10,6 +10,10 @@ use \LORIS\CBRAIN\CBRAIN_API_client;
 
 class PCEV_Pipeline extends Tool
 {
+    public function __construct() {
+
+    }
+
     public function _setupPage($name, $page, $identifier, $commentID, $formname)
     {
        $this->addFile('response_file', 'Response matrix file');
@@ -21,9 +25,22 @@ class PCEV_Pipeline extends Tool
        $this->addFile('confounder_file', 'confounder matrix file');
     }
 
-    public function handlePOST()
+    public function save()
     {
-        
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            return;
+        }
+
+        $inputs = array_merge($_REQUEST, $_FILES);
+        array_walk($this->form->form, function (&$formField, $key) use ($inputs) {
+            $formField['value'] = $inputs[$key];
+        });
+
+        $task_manager = Task_Manager::getInstance();
+        $task_manager->stageTask('PCEV_Pipeline', $_REQUEST, $_FILES);
+        //$task_manager->stageTask($_REQUEST, $_FILES);
+
+/*
         $uploader = new \LORIS\Uploader();
 
         $uploader->setDir('/data/dataprovider/');
@@ -44,6 +61,12 @@ class PCEV_Pipeline extends Tool
         $client->selectDataproviderByName('Epigenomics');
         print_r($client->listDataProviderFile(),true);
         exit;
+*/
+    }
+
+    public function launch()
+    {
+        
     }
 
     /**

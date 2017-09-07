@@ -5,11 +5,11 @@
  * Data Transfer Object (DTO).
  * It should be use to encapsulate all site related data and should
  * be used to transfer data between the application layer and the persistance
- * with minimal knowledge of what Examiners does.
+ * with minimal knowledge of what Examiner does.
  */
 namespace LORIS\Data\Models\TransferObjects;
 
-class Examiners extends \LORIS\Data\Models\TransferObject
+class Examiner extends \LORIS\Data\Models\TransferObject
 {
     /**
      * This data is directly mapped to the columns of database table.

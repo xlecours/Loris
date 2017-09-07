@@ -3,13 +3,13 @@
  * LORIS data access object (DAO) template
  *
  * This class contains all database handling that is needed to
- * permanently store and retrieve Examiners object instances.
+ * permanently store and retrieve Examiner object instances.
  */
 namespace LORIS\Data\Models\AccessObjects;
 
 use \LORIS\Data\Models\TransferObjects as DTO;
 
-class Examiners implements \LORIS\Data\Models\AccessObject
+class Examiner implements \LORIS\Data\Models\AccessObject
 {
     /**
      * The logged in User object
@@ -60,10 +60,10 @@ class Examiners implements \LORIS\Data\Models\AccessObject
         $values = $this->_database->pselectRow($sql_query, $params);
 
         if (empty($values)) {
-            throw new \LorisException("This Examiners does not exists.");
+            throw new \LorisException("This Examiner does not exists.");
         }
 
-        return new DTO\Examiners($values);
+        return new DTO\Examiner($values);
     }
 
     /**
@@ -79,11 +79,11 @@ class Examiners implements \LORIS\Data\Models\AccessObject
         $values = $this->_database->pselect($sql_query, $params);
 
         if (empty($values)) {
-            throw new \LorisException("This Examiners does not exists.");
+            throw new \LorisException("This Examiner does not exists.");
         }
 
         return array_map(function($row) {
-            return new DTO\Examiners($row);
+            return new DTO\Examiner($row);
         }, $values);
     }
 

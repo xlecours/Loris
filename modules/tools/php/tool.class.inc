@@ -38,4 +38,10 @@ abstract class Tool extends \NDB_Form
         }
         return $content;
     }
+
+    public function save()
+    {
+        error_log('tool-save');
+        return true;
+    }
 }

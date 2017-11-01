@@ -61,7 +61,11 @@ class Genomic_Browser extends \NDB_Menu_Filter
         parent::_setupPage($name, $page, $identifier, $commentID, $formname);
 
         // Form Elements
-        $this->addBasicText('candID', 'CandID', ["size" => 9, "maxlength" => 6]);
+        $this->addBasicText('f_1', 'Field 1', ["size" => 9, "maxlength" => 6]);
+        $this->addBasicText('f_2', 'Field 2', ["size" => 9, "maxlength" => 6]);
+        $this->addBasicText('f_3', 'Field 3', ["size" => 9, "maxlength" => 6]);
+        $this->addBasicText('f_4', 'Field 4', ["size" => 9, "maxlength" => 6]);
+        $this->addBasicText('f_5', 'Field 5', ["size" => 9, "maxlength" => 6]);
 
         return true;
     }
@@ -77,21 +81,21 @@ class Genomic_Browser extends \NDB_Menu_Filter
         // set the class variables
 
         $this->columns = array (
-            'c.CandID'
+            '"1" as f_1',
+            '"2" as f_2',
+            '"3" as f_3',
+            '"4" as f_4',
+            '"5" as f_5'
         );
 
-        $this->query = " FROM candidate c WHERE 1=1 ";
+        $this->query = " FROM DUAL WHERE 1=1 ";
 
         $this->group_by = '';
-        $this->order_by = 'c.CandID';
+        $this->order_by = 'f_1';
 
-        $this->validFilters = array( 
-            'c.CandID'
-        );
+        $this->validFilters = array();
 
-        $this->formToFilter = array(
-            'candid' => 'c.CandID',
-        );
+        $this->formToFilter = array();
 
         return true;
     }

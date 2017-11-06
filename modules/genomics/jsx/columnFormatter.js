@@ -7,8 +7,6 @@
  * @return {*} a formated table cell for a given column
  */
 function formatColumn(column, cell, rowData, rowHeaders) {
-console.log(loris.hiddenHeaders);
-console.log(loris.hiddenHeaders.indexOf(column));
   // If a column if set as hidden, don't display it
   if (loris.hiddenHeaders.indexOf(column) > -1) {
     return null;

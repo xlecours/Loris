@@ -49,7 +49,8 @@ class MenuFilterForm extends React.Component {
   }
 
   resetFilters() {
-    this.refs.mediaFilter.clearFilter();
+    const refName = this.props.moduleName.concat("_filter_form");
+    this.refs[refName].clearFilter();
   }
 
   render() {
@@ -71,7 +72,7 @@ class MenuFilterForm extends React.Component {
     return (
       <div id={this.props.name}>
         <FilterForm
-          Module={name}
+          Module={moduleName}
           name={filterFormName}
           id={filterFormName}
           ref={filterFormName}
@@ -80,7 +81,7 @@ class MenuFilterForm extends React.Component {
           onUpdate={this.updateFilter}
           filter={this.state.filter}
         >
-          <ButtonElement label="Clear Filters" type="reset" onUserInput={this.resetFilters}/>
+          <ButtonElement ref="" label="Clear Filters" type="reset" onUserInput={this.resetFilters}/>
         </FilterForm>
         <StaticDataTable
           Data={this.state.Data.Data}

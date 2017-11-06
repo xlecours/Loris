@@ -15,7 +15,7 @@ class GenomicsApp extends React.Component {
     return (
       <div>
         <MenuFilterForm
-          moduleName="genomics/genomic_browser"
+          moduleName="genomics/dataset_browser"
           formatColumn={formatColumn}
         />
       </div>

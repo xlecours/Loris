@@ -40,6 +40,8 @@ class SNP_Browser extends \NDB_Menu_Filter
      */
     var $AjaxModule = true;
 
+    public $skipTemplate = true;
+
     /**
      * Overloading this method to allow access to site users (own site only)
      * and users w/ multisite privileges
@@ -452,24 +454,17 @@ class SNP_Browser extends \NDB_Menu_Filter
     }
 
     /**
-     * Include the column formatter required to display the feedback link colours
-     * in the candidate_list menu
+     * Converts the results of this menu filter to a JSON format to be retrieved
+     * with ?format=json
      *
-     * @return array of javascript to be inserted
+     * @return a json encoded string of the headers and data from this table
      */
-    function getJSDependencies()
+    function toJSON()
     {
-        $factory = \NDB_Factory::singleton();
-        $baseURL = $factory->settings()->getBaseURL();
-        $deps    = parent::getJSDependencies();
-        return array_merge(
-            $deps,
-            array(
-             $baseURL . "/genomic_browser/js/genomic_browser.js",
-             $baseURL . "/genomic_browser/js/snpColumnFormatter.js",
-            )
-        );
+        $result         = $this->toArray();
+        $result['form'] = $this->form->form;
+        return json_encode($result);
     }
-
+     
 }
 ?>

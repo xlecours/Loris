@@ -216,9 +216,9 @@ class Candidate_List extends \NDB_Menu_Filter
     function _setupPage($name, $page, $identifier, $commentID, $formname)
     {
         parent::_setupPage($name, $page, $identifier, $commentID, $formname);
- 
+
         // Relying on a side-effect of the the server process module to autoload
-        // its namespace. 
+        // its namespace.
         \Module::factory('candidate_parameters')
 
         // create user object
@@ -261,7 +261,7 @@ class Candidate_List extends \NDB_Menu_Filter
                                        );
 
         // Relying on a side-effect of the the server process module to autoload
-        // its namespace (alias CP). 
+        // its namespace (alias CP).
         \Module::factory('candidate_parameters')
 
         $participant_status_options = array(null => 'All')

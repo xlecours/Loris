@@ -15,12 +15,13 @@
         "phpunit/phpunit" : "4.3.*",
         "phpunit/dbunit": ">=1.2",
         "facebook/webdriver" : "dev-master",
-        "phpmd/phpmd": "^2.6"
+        "phpmd/phpmd": "^2.6",
+        "psr/http-message": "^1.0"
     },
     "scripts": {
       "pre-install-cmd": "mkdir -p project/libraries"
     },
     "autoload" : {
-        "classmap": ["project/libraries", "php/libraries", "php/exceptions", "php/interfaces"]
+        "classmap": ["project/libraries", "php/libraries", "php/exceptions", "php/interfaces", "php/libraries/http"]
     }
 }

@@ -48,12 +48,12 @@ This module use tabs for each data modality
 
 Tab | Description
 --- | -----------
-[Profile](#profile_link) |  
-[GWAS](#gwas_link) |  
-[SNP](#snp_link) |  
-[CNV](#cnv_link) |  
-[CPG](#cpg_link) |  
-[File Upload](#file_upload_link) |  
+[Profile](#profile_link) | Sommary of available data per candidate 
+[GWAS](#gwas_link) | GWAS result spreadsheet
+[SNP](#snp_link) | Genotype of each SNP for each candidate
+[CNV](#cnv_link) | Imported CNV for each candidate 
+[CPG](#cpg_link) | beta-value for each CpG for each candidate 
+[File Upload](#file_upload_link) | uploaded file list and uploader 
 
 
 <a name="profile_link"></a>

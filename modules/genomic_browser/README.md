@@ -11,11 +11,17 @@ for each of the variables of that type. Filtering is based on provided
 annotations. Links to specific external databases (UCSC, dbSNP) have
 been added to variable ID and some annotation columns. An uploader
 
+The `Profile` tab present
+
 ## Intended Users
 
 
 ## Scope
+The profile tab allow researchers to see what kind of data is available for each of the study's candidates. The datatable can be filtered on the candidate level using those candidates attributes (Site, Gender (not yet called Sex), Subproject, External ID, DDCID (also called CandID) and PSCID). Additionnaly, custom filters are provide for each available data type. e.g: Filtering on `SNP = Yes` will present a row for candidate that have at least 1 SNP associated to them in the database.
 
+The GWAS tab present a ibasic GWAS analysis results. Each row, correspond to a SNP in the database and the associated Estimate, Standard error ad p-value.
+
+The SNP, CNV and Methylation tab all present the inserted value for each variable 
 
 ## Permissions
 
@@ -36,7 +42,9 @@ The file upload feature require special configurations (see [File Upload](#file_
 ## Interactions with LORIS There are foreign keys on the candidate table.
 
 
-## More...  This module use tabs for each data modality
+## More...
+
+This module use tabs for each data modality
 
 Tab | Description
 --- | -----------
@@ -70,8 +78,8 @@ ftp://webdata2:webdata2@ussd-ftp.illumina.com/downloads/ProductFiles/HumanMethyl
 We provide a script,
 `modules/genomic_browser/tools/HumanMethylation450k_annotations_to_sql`
 to transforme the csv file from Illumina's FTP to into a mysql transaction
-file. The output of the tool can be piped to mysql. The process should
-take between 5 to 10 minutes.
+file. The output of the tool can be piped to mysql. It it far from optimal
+and the process should take between 5 to 10 minutes.
 
 This exemple script is a python3 script.
 
@@ -79,7 +87,7 @@ usage : ``` python3 HumanMethylation450k_annotations_to_sql.py
 <annotation_file> | mysql -u <user> -p <database> ```
 
 
-<a name="file_upload_link"></a>i
+<a name="file_upload_link"></a>
 ## Files
 
 The uploading functionnality require a genomic_uploader directory under

@@ -34,13 +34,14 @@ class GenomicInstaller
     public function run()
     {
         $fp     = fopen(DESING_DOC_PATH, 'r');
-        $doc    = fread($fp,filesize(DESING_DOC_PATH));
+        $doc    = json_decode(fread($fp,filesize(DESING_DOC_PATH)), true);
         $result = json_decode(
-            $this->couchDB->putDoc(
-                '_design/genomic_browser',
-                json_decode($doc)
+            $this->couchDB->replaceDoc(
+                $doc['_id'],
+                $doc
             )
         );
+var_dump($result);
     }
 }
 

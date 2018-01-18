@@ -50,14 +50,17 @@ class PLINK_Parser
     {
         $tmpFile = new \SplTempFileObject();
 
-        for ($i=0; !$this->mapParser->eof(); $i++) {
+        for ($i=1; !$this->mapParser->eof(); $i++) {
             $line = $this->mapParser->getNextDataLine();
-var_dump($line);
-            $tmpFile->fwrite($line[1]);
-var_dump($this->pedParser->getColumnData(1));
-            $tmpFile->fwrite("A\n");
+            
+                $tmpFile->fwrite($line[1] . ",");
+                $tmpFile->fwrite(implode(",",$this->pedParser->getColumnData($i)) . "\n");
+
+            if ($i > 3) {
 $tmpFile->rewind();
 $tmpFile->fpassthru();
+exit;
+            }
         }
     }
 }
@@ -72,6 +75,7 @@ $tmpFile->fpassthru();
 class PLINK_PED_Parser
 {
     private $file;
+    private $line_pointers;
 
     private $comments = array();
 
@@ -132,13 +136,14 @@ class PLINK_PED_Parser
     {
         return array_map(
             function ($line) use ($column_index) {
-                $value = explode("\t",$line)[$column_index];
-                return $value;
+                $values = preg_split("/\t/", $line);
+                return $values[$column_index];
             }, 
             array_filter(
                 iterator_to_array($this->file),
                 function ($line) { 
-                    return (preg_match('/^#/',$line) !== 1);
+                    // Filter out comment lines and headers
+                    return (preg_match('/(^#|^$)/',$line) !== 1);
                 }
             )
         );
@@ -221,7 +226,7 @@ class PLINK_MAP_Parser
     {
         do {
             $line = $this->file->fgetcsv();
-        } while (preg_match('/^#/',$line[0]) === 1 && !$this->file->eof());
+        } while (preg_match('/(^#|^[.])/',$line[0]) === 1 && !$this->file->eof());
         return $line;
     }
 

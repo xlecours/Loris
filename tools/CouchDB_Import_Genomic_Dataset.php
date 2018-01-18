@@ -48,7 +48,8 @@ class GenomicDatasetImporter
 
     function __construct()
     {
-        $this->CouchDB = CouchDB::singleton();
+        $factory = \NDB_Factory::singleton();
+        $this->CouchDB = $factory->couchDB('genomics');
     }
 
     function run($GenomicFileID) 
@@ -102,7 +103,7 @@ class GenomicDatasetImporter
             $_id = 'genomic_dataset-' . $doc->loris_file_id; 
 
 // TODO remove the set database or use a config value
-            $this->CouchDB->setDatabase('test_epi');
+            $this->CouchDB->setDatabase('genomics');
 
             if (empty($genomic_file['couchdb_doc_id'])) {
                 $response = $this->CouchDB->postDoc((Array) $doc);

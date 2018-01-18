@@ -29,39 +29,41 @@ require_once __DIR__ . "/../vendor/autoload.php";
  */
 class PLINK_Parser
 {
-    private $mapParser;
-    private $pedParser;
+    private $tpedParser;
 
     public function __construct($filesPath)
     {
         // Make sure the file can be opened
         try {
-            $mapFile = new \SplFileObject($filesPath . '.map');
-            $pedFile = new \SplFileObject($filesPath . '.ped');
+            $tpedInfo = new \SplFileInfo($filesPath . '.tped');
         } catch (\Exception $e) {
             print($e->getMessage());
         }
 
-        $this->mapParser = new PLINK_MAP_Parser($mapFile);
-        $this->pedParser = new PLINK_PED_Parser($pedFile);
+        $this->tpedParser = new PLINK_TPED_Parser($tpedInfo);
     }
 
-    public function asDataMatrix()
+    public function getDescriptor() {
+       return array(
+          "LROIS PLINK_Parser",
+          (new \DateTime())->format('c')
+       );
+    }
+
+    public function asDataMatrix(\SplFileObject $file)
     {
-        $tmpFile = new \SplTempFileObject();
-
-        for ($i=1; !$this->mapParser->eof(); $i++) {
-            $line = $this->mapParser->getNextDataLine();
-            
-                $tmpFile->fwrite($line[1] . ",");
-                $tmpFile->fwrite(implode(",",$this->pedParser->getColumnData($i)) . "\n");
-
-            if ($i > 3) {
-$tmpFile->rewind();
-$tmpFile->fpassthru();
-exit;
+        $tmpFile = new \SplTempFileObject(500000000);
+        
+        While (!$this->tpedParser->eof()) {
+            $snp = $this->tpedParser->next();   
+            if ( $snp !== false ) {
+                $tmpFile->fwrite($snp->rsID . ",");
+                $tmpFile->fwrite(implode(",",$snp->genotypes).PHP_EOL);
             }
         }
+
+        $tmpFile->rewind();
+        $file->fwrite($tmpFile->fread($tmpFile->fstat()['size']));
     }
 }
 
@@ -72,162 +74,44 @@ exit;
  *  @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  *  @link     https://www.github.com/aces/Loris/
  */
-class PLINK_PED_Parser
+class PLINK_TPED_Parser
 {
-    private $file;
-    private $line_pointers;
-
-    private $comments = array();
-
-    private $headers = array(
-        'Family ID',
-        'Individual ID',
-        'Paternal ID',
-        'Maternal ID',
-        'Sex', # (1=male; 2=female; other=unknown)
-        'Phenotype'
-    );
-
-    public function __construct(\SplFileObject $file)
-    {
-        $this->file = $file;
-
-        // Extract headers and comments from the file
-        $nonDataLine = array_filter(
-            iterator_to_array($this->file),
-            function ($line) {
-                return preg_match('/^#/',$line);
-            }
-        );
-        $this->file->rewind();
-
-        $headersLine = array_filter(
-            $nonDataLine,
-            function ($line) {
-                return (preg_match('/^#[^#]/',$line) === 1);
-            }
-        );
-
-        if (!empty($headersLine)) {
-            if (count($headersLine) > 1) {
-                throw new \FileFormatException("More than one header line");
-            }
-            $this->headers = explode("\t", ltrim(array_shift($headersLine),'#'));
-        }
-        $commentLines = array_filter(
-            $nonDataLine,
-            function ($line) {
-                return (preg_match('/^##/',$line) === 1);
-            }
-        );
-        $this->comments = $commentLines;
-    }
-    public function getHeaders()
-    {
-        return $this->headers;
-    }
-
-    public function getComments()
-    {
-        return $this->comments;
-    }
-
-    public function getColumnData($column_index = 0)
-    {
-        return array_map(
-            function ($line) use ($column_index) {
-                $values = preg_split("/\t/", $line);
-                return $values[$column_index];
-            }, 
-            array_filter(
-                iterator_to_array($this->file),
-                function ($line) { 
-                    // Filter out comment lines and headers
-                    return (preg_match('/(^#|^$)/',$line) !== 1);
-                }
-            )
-        );
-    }
-}
-/**
- *  @category Parser
- *  @package  Genomics
- *  @author   Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
- *  @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
- *  @link     https://www.github.com/aces/Loris/
- */
-class PLINK_MAP_Parser
-{
+    private $fileInfo;
     private $file;
 
-    private $comments = array();
-
-    private $headers = array(
-        'chromosome',
-        'rs#',
-        'distance',
-        'position'
-    );
-
-    public function __construct(\SplFileObject $file)
+    public function __construct(\SplFileInfo $fileInfo)
     {
-        $this->file = $file;
-
-        // Extract headers and comments from the file
-        $nonDataLine = array_filter(
-            iterator_to_array($this->file),
-            function ($line) {
-                return preg_match('/^#/',$line);
-            }
-        );
-        $this->file->rewind();
-
-        // Set controls and flags
-        $delim = "\t";
-        $enclosure = '"';
-        $escape    = "\\";
-        $this->file->setCsvControl($delim, $enclosure, $escape);
-
-        $headersLine = array_filter(
-            $nonDataLine,
-            function ($line) {
-                return (preg_match('/^#[^#]/',$line) === 1);
-            }
-        );
-
-        if (!empty($headersLine)) {
-            if (count($headersLine) > 1) {
-                throw new \FileFormatException("More than one header line");
-            }
-            $this->headers = explode($delim, ltrim(array_shift($headersLine),'#'));
-        }
-
-        $commentLines = array_filter(
-            $nonDataLine,
-            function ($line) {
-                return (preg_match('/^##/',$line) === 1);
-            }
-        );
-        $this->comments = $commentLines;
-
+        $this->fileInfo = $fileInfo;
+        $this->file = $fileInfo->openFile('r');
     }
 
-    public function getHeaders()
-    {
-        return $this->headers;
-    }
-
-    public function getComments()
-    {
-        return $this->comments;
-    }
-
-    public function getNextDataLine()
+    public function next()
     {
         do {
-            $line = $this->file->fgetcsv();
-        } while (preg_match('/(^#|^[.])/',$line[0]) === 1 && !$this->file->eof());
-        return $line;
+            $line = $this->file->fgets();
+        } while ( preg_match("/(^#|^$)/",$line) === 1 && !$this->file->eof());
+
+        if (empty($line)) {
+            return false;
+        }
+
+        list($chr, $rsID, $dist, $loc, $values) = preg_split(
+            "/ /",
+            $line,
+            5
+        ); 
+
+        $genotypes  = preg_split(
+            "/(\H\h\H\h)/",
+            $values,
+            -1,
+            PREG_SPLIT_NO_EMPTY|PREG_SPLIT_DELIM_CAPTURE
+        );
+        array_walk($genotypes, function (&$pair) {
+            $pair = trim($pair);
+        });
+
+        return new SNP($rsID, $genotypes);
     }
 
     public function eof()
@@ -236,5 +120,15 @@ class PLINK_MAP_Parser
     }
 }
 
-$p = new PLINK_Parser('/data/loris/data/genomics/genomic_uploader/KS_BB1_P002_plink');
-$p->asDataMatrix();
+class SNP 
+{
+    public function __construct($rsID, $genotypes)
+    {
+        $this->rsID       = $rsID;
+        $this->genotypes  = $genotypes; 
+    }
+}
+
+$p = new PLINK_Parser('/data/loris/data/genomics/genomic_uploader/plink');
+var_dump($p->getDescriptor());
+$p->asDataMatrix(new \SplFileObject('/data/loris/data/genomics/genomic_uploader/output.txt', 'w'));

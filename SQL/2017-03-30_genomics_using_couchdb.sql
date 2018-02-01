@@ -48,3 +48,42 @@ ADD CONSTRAINT `fk_genomic_files_2`
   REFERENCES `fileset_role` (`fileset_role_id`)
   ON DELETE RESTRICT
   ON UPDATE CASCADE;
+
+CREATE TABLE `chromosome` (
+  `ChromosomeID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `Name` varchar(100) NOT NULL,
+  `Code` varchar(100) NOT NULL,
+  `ShortCode` varchar(50) DEFAULT NULL,
+  `PLINKNumeric` tinyint(3) unsigned DEFAULT NULL,
+  PRIMARY KEY (`Code`),
+  KEY `IDX_chromosome_ChromosomeID` (`ChromosomeID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO chromosome (Name, Code, ShortCode, PLINKNumeric) VALUES 
+('Unknown', 'U', 'Unk', 0),
+('Autosome 1', 'chr1', '1', 1),
+('Autosome 2', 'chr2', '2', 2),
+('Autosome 3', 'chr3', '3', 3),
+('Autosome 4', 'chr4', '4', 4),
+('Autosome 5', 'chr5', '5', 5),
+('Autosome 6', 'chr6', '6', 6),
+('Autosome 7', 'chr7', '7', 7),
+('Autosome 8', 'chr8', '8', 8),
+('Autosome 9', 'chr9', '9', 9),
+('Autosome 10', 'chr10', '10', 10),
+('Autosome 11', 'chr11', '11', 11),
+('Autosome 12', 'chr12', '12', 12),
+('Autosome 13', 'chr13', '13', 13),
+('Autosome 14', 'chr14', '14', 14),
+('Autosome 15', 'chr15', '15', 15),
+('Autosome 16', 'chr16', '16', 16),
+('Autosome 17', 'chr17', '17', 17),
+('Autosome 18', 'chr18', '18', 18),
+('Autosome 19', 'chr19', '19', 19),
+('Autosome 20', 'chr20', '20', 20),
+('Autosome 21', 'chr21', '21', 21),
+('Autosome 22', 'chr22', '22', 22),
+('Allosome X', 'chrX', 'X', 23),
+('Allosome Y', 'chrY', 'Y', 24),
+('Pseudo-autosomal region of X', 'chrXY', 'XY', 25),
+('Mitochondrial', 'MT-dna', 'MT', 26);

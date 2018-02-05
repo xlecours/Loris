@@ -6,6 +6,8 @@ require_once __DIR__ . "/../vendor/autoload.php";
 class CouchDB_TPlink_Import
 {
     private $filesetID;
+    private $couchFilesetDocID;
+
     private $mysql;
     private $couch;
 
@@ -19,6 +21,11 @@ class CouchDB_TPlink_Import
         $factory     = new \NDB_Factory(__DIR__ . '../project/config.xml');
         $this->mysql = $factory->database();
         $this->couch = $factory->couchDB('genomics');
+
+        $this->couchFilesetDocID = $this->mysql->pselectOne(
+            "SELECT couchdb_doc_id FROM fileset WHERE fileset_id = :v_fileset_id",
+            array('v_fileset_id' => $filesetID)
+        );
 
         $query = $this->mysql->prepare(
             "
@@ -119,7 +126,7 @@ class CouchDB_TPlink_Import
                      'meta'                 => array(
                                                 'doctype'         => 'dataset',
                                                 'file_format'     => 'datamatrix',
-                                                'variable_type'   => 'SNP',
+                                                'variable_type'   => 'SNPs',
                                                 'variable_format' => 'string',
                                                 'variable_count'  => $this->datavalueFile->getLineCount(),
                                                ),
@@ -142,8 +149,45 @@ class CouchDB_TPlink_Import
 
     public function run()
     {
-        $dataset = $this->getDatasetDocument();
-        return $dataset;
+        if (empty($this->couchFilesetDocID)) {
+            $doc_id = $this->couch->createDoc(
+                $this->getDatasetDocument()
+            );
+            $this->mysql->update(
+                'fileset',
+                array('couchdb_doc_id' => $doc_id),
+                array('fileset_id' => $this->filesetID)
+            );
+        } else {
+            $this->couch->replaceDoc(
+                $this->couchFilesetDocID,
+                $this->getDatasetDocument()
+            );
+        }
+
+        $valueFile = new DatavalueFile($this->datavalueFile);
+        $annotationFile = new AnnotationFile($this->annotationFile);
+
+        $docs_count = 0;
+        $this->couch->beginBulkTransaction();
+            while(!$valueFile->eof()) {
+                $variable = $valueFile->getNextVariable();
+                $var_name = $variable['meta']['identifier']['variable_name'];
+                $doc_id = $this->filesetID . '-' . $var_name;
+
+                $annotations = $annotationFile->getAnnotations($var_name);
+
+                $variable['_id'] = $doc_id;
+                $variable['properties'] = $annotations;
+ 
+                $this->couch->replaceDoc($doc_id, $variable);
+                $docs_count++;
+                if ($docs_count % 500 === 0) {
+                    $this->couch->commitBulkTransaction();
+                    $this->couch->beginBulkTransaction();
+                }
+            }
+        $this->couch->commitBulkTransaction();
     }
 }
 
@@ -203,6 +247,83 @@ class FileDescriptor
     }
 }
 
+class DatavalueFile
+{
+    private $descriptor;
+    private $file;
+
+    public function __construct(FileDescriptor $fd)
+    {
+        $this->descriptor = $fd;
+        $this->file = $fd->openFile("r");
+    }
+
+    public function eof()
+    {
+        return $this->file->eof();
+    }
+
+    public function getNextVariable()
+    {
+        $line = $this->file->current();
+        $this->file->next();
+
+        list($chr, $name, $dist, $location, $vals) = preg_split('/ /', $line, 5);
+        $tuples = preg_split('/([\w-]+ [\w-]+) /', $vals, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $alleles = array_map(function($e) {
+            return trim($e);
+        }, $tuples);
+
+        $variable = array(
+            'meta' => array(
+                'doctype' => 'variable',
+                'identifier' => array(
+                    'variable_name' => $name,
+                    'chromosome'    => $this->getChrFromCode($chr),
+                    'start_loc'     => $location
+                )
+            ),
+            'values' => $alleles
+        );
+        return $variable;
+    }
+
+    private function getChrFromCode($code)
+    {
+        $mapping = array(
+            '0' => 'Unk',
+            '1' => 'chr1',
+            '2' => 'chr2',
+            '3' => 'chr3',
+            '4' => 'chr4',
+            '5' => 'chr5',
+            '6' => 'chr6',
+            '7' => 'chr7',
+            '8' => 'chr8',
+            '9' => 'chr9',
+            '10' => 'chr10',
+            '11' => 'chr11',
+            '12' => 'chr12',
+            '13' => 'chr13',
+            '14' => 'chr14',
+            '15' => 'chr15',
+            '16' => 'chr16',
+            '17' => 'chr17',
+            '18' => 'chr18',
+            '19' => 'chr19',
+            '20' => 'chr20',
+            '21' => 'chr21',
+            '22' => 'chr22',
+            '23' => 'chrX',
+            '24' => 'chrY',
+            '25' => 'chrXY',
+            '26' => 'MT-dna'
+        );
+
+        return $mapping[$code];
+    }
+}
+
 class MappingFile
 {
     private $descriptor;
@@ -242,5 +363,56 @@ class MappingFile
         );
     }
 }
+
+class AnnotationFile
+{
+    private $descriptor;
+
+    private $headers;
+    private $mapping;
+
+    public function __construct(FileDescriptor $fd)
+    {   
+        $this->descriptor = $fd;
+    }
+
+    public function getAnnotations($variableName)
+    {
+        $headers = $this->getHeaders();
+
+        $file = $this->descriptor->openFile('r');
+        $file->seek($this->getAnnotationRow($variableName));
+
+        
+        return array_combine($headers, $file->fgetcsv());
+    }
+
+    public function getHeaders()
+    {
+        if (empty($this->headers)) {
+            $file = $this->descriptor->openFile('r');
+            $this->headers = $file->fgetcsv(',');
+        }
+        return $this->headers;
+    }
+
+    private function getAnnotationRow($name)
+    {
+        if (empty($this->mapping)) {
+            $file = $this->descriptor->openFile('r');
+        
+            while (!$file->eof()) {
+                $line = $file->current();
+                if (strlen($line) > 0) {
+                    list($name, $rest) = preg_split('/,/', $file->current(), 2);
+                    $this->mapping[$name] = $file->key() - 1;
+                }
+                $file->next();
+            }
+        }
+        return $this->mapping[$name];
+    }
+}
+
 $o = new CouchDB_TPlink_Import(1);
-var_dump($o->run());
+$o->run();

@@ -147,7 +147,7 @@ class CouchDB_TPlink_Import
         return $document;
     }
 
-    public function run()
+    public function importDatasetDocument()
     {
         if (empty($this->couchFilesetDocID)) {
             $doc_id = $this->couch->createDoc(
@@ -164,9 +164,12 @@ class CouchDB_TPlink_Import
                 $this->getDatasetDocument()
             );
         }
+    }
 
-        $valueFile = new DatavalueFile($this->datavalueFile);
-        $annotationFile = new AnnotationFile($this->annotationFile);
+    public function importValues()
+    {
+        $valueFile = new TransposedPED($this->datavalueFile);
+        $annotationFile = new AxiomBioBank1Annotations($this->annotationFile);
 
         $docs_count = 0;
         $this->couch->beginBulkTransaction();
@@ -247,8 +250,15 @@ class FileDescriptor
     }
 }
 
-class DatavalueFile
+interface DatavalueFile
 {
+    public function eof(): bool;
+    public function getNextVariable(): array; // This should return a DataVariable class
+}
+
+class TransposedPED implements DatavalueFile
+{
+    // DatavalueFile
     private $descriptor;
     private $file;
 
@@ -364,11 +374,39 @@ class MappingFile
     }
 }
 
-class AnnotationFile
+/**
+ * Abstraction of a file that contain annotation for omics variable
+ */ 
+interface AnnotationFile
 {
+    /**
+     * Getter for annotations of a given variable name
+     *
+     * @param $variableName string
+     *
+     * @return An array of the form ['property name' => value, ... ] 
+     */
+    public function getAnnotations(string $variableName): array;
+}
+
+/**
+ * A specialized case of annotation file for Affymetrix Axiom BioBank1 chip
+ * @see Axiom_BioBank1.na35.annot.csv.zip
+ */
+class AxiomBioBank1Annotations implements AnnotationFile
+{
+    // Reference to a SPLFileInfo for that file
     private $descriptor;
 
+    /**
+     * List of annotations (properties)
+     */
     private $headers;
+
+    /**
+     * Mapping of the form  ["variable name" => "row number"]
+     * This will be used to seek into the file
+     */
     private $mapping;
 
     public function __construct(FileDescriptor $fd)
@@ -376,31 +414,49 @@ class AnnotationFile
         $this->descriptor = $fd;
     }
 
-    public function getAnnotations($variableName)
+    public function getAnnotations(string $name): array
     {
         $headers = $this->getHeaders();
 
         $file = $this->descriptor->openFile('r');
-        $file->seek($this->getAnnotationRow($variableName));
+        $file->seek($this->getAnnotationRow($name));
 
         
         return array_combine($headers, $file->fgetcsv());
     }
 
-    public function getHeaders()
+    /**
+     * Generate the property list for the variables
+     *
+     * @return array The list of properties
+     */
+    private function getHeaders(): array
     {
+        // Lazy initialization
         if (empty($this->headers)) {
+            // Read and split the first line of the file
             $file = $this->descriptor->openFile('r');
             $this->headers = $file->fgetcsv(',');
         }
         return $this->headers;
     }
 
+    /**
+     * Use the mapping to get the row number of a given variable name
+     * Create the mapping if it doesn't exists already
+     *
+     * @param string $name The variable name
+     *
+     * @return int The Row number for that variable
+     */
     private function getAnnotationRow($name)
     {
+        // Lazy initialization
         if (empty($this->mapping)) {
             $file = $this->descriptor->openFile('r');
         
+            // Read each line to create a array of the form 
+            // ["variable name" => "row number", ...]
             while (!$file->eof()) {
                 $line = $file->current();
                 if (strlen($line) > 0) {
@@ -415,4 +471,4 @@ class AnnotationFile
 }
 
 $o = new CouchDB_TPlink_Import(1);
-$o->run();
+$o->importDatasetDocument();

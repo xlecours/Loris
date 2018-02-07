@@ -5,9 +5,42 @@
  */
 namespace LORIS\omics;
 
-class Datasets extends \NDB_Page
+class Datasets extends \NDB_Menu_Filter
 {
     public $skipTemplate = true;
+    public $AjaxModule = true;
+
+    public function _hasAccess()
+    {
+        return true;
+    }
+ 
+    public function setup()
+    {
+        $this->couch = (\NDB_Factory::singleton())->couchdb('genomics_test');
+    }
+
+    /**
+     * Override called with format=json
+     */
+    public function _getFullList()
+    {
+        error_log('_getFullList');
+        $this->headers = array(
+            'id',
+            'key',
+            'value',
+            'doc'
+        );
+        return array_map( function ($row) {
+            return $row;
+        }, $this->couch->queryView(
+            'genomic_browser',
+            'datasets',
+            array('reduce' => 'false', 'include_docs' => 'true'),
+            false)
+        );
+    }
 
     /**
      * Overrides base getJSDependencies()

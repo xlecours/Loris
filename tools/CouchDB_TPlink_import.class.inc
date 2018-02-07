@@ -174,6 +174,9 @@ class CouchDB_TPlink_Import
         $this->couch->beginBulkTransaction();
             while(!$valueFile->eof()) {
                 $variable = $valueFile->getNextVariable();
+
+                $variable['meta']['identifier']['fileset_id'] = $this->filesetID;
+
                 $var_name = $variable['meta']['identifier']['variable_name'];
                 $doc_id = $this->filesetID . '-' . $var_name;
 
@@ -184,6 +187,11 @@ class CouchDB_TPlink_Import
  
                 $this->couch->replaceDoc($doc_id, $variable);
                 $docs_count++;
+
+if ($docs_count > 20) {
+$this->couch->commitBulkTransaction();
+exit;
+}
                 if ($docs_count % 500 === 0) {
                     $this->couch->commitBulkTransaction();
                     $this->couch->beginBulkTransaction();

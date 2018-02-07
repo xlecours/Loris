@@ -20,7 +20,7 @@ class CouchDB_TPlink_Import
     {
         $factory     = new \NDB_Factory(__DIR__ . '../project/config.xml');
         $this->mysql = $factory->database();
-        $this->couch = $factory->couchDB('genomics');
+        $this->couch = $factory->couchDB('genomics_test');
 
         $this->couchFilesetDocID = $this->mysql->pselectOne(
             "SELECT couchdb_doc_id FROM fileset WHERE fileset_id = :v_fileset_id",
@@ -125,9 +125,8 @@ class CouchDB_TPlink_Import
         $document = array(
                      'meta'                 => array(
                                                 'doctype'         => 'dataset',
-                                                'file_format'     => 'datamatrix',
-                                                'variable_type'   => 'SNPs',
-                                                'variable_format' => 'string',
+                                                'variable_type'   => 'SNP',
+                                                'variable_format' => 'alleles',
                                                 'variable_count'  => $this->datavalueFile->getLineCount(),
                                                ),
                      'loris_fileset'        => array(
@@ -268,12 +267,12 @@ class TransposedPED implements DatavalueFile
         $this->file = $fd->openFile("r");
     }
 
-    public function eof()
+    public function eof(): bool
     {
         return $this->file->eof();
     }
 
-    public function getNextVariable()
+    public function getNextVariable(): array
     {
         $line = $this->file->current();
         $this->file->next();
@@ -472,3 +471,4 @@ class AxiomBioBank1Annotations implements AnnotationFile
 
 $o = new CouchDB_TPlink_Import(1);
 $o->importDatasetDocument();
+$o->importValues();

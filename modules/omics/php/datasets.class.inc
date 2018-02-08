@@ -28,12 +28,13 @@ class Datasets extends \NDB_Menu_Filter
         error_log('_getFullList');
         $this->headers = array(
             'id',
-            'key',
-            'value',
-            'doc'
+            'rev',
+            'identifier',
+            'fileset',
+            'mapping'
         );
         return array_map( function ($row) {
-            return $row;
+            return $row['doc'];
         }, $this->couch->queryView(
             'genomic_browser',
             'datasets',

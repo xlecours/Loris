@@ -55,7 +55,7 @@ class Datasets extends \NDB_Menu_Filter
         return array_merge(
             $deps,
             array(
-             $baseURL . "/omics/js/datasets.js",
+             $baseURL . "/omics/js/OmicsApp.js",
             )
         );
     }

@@ -172,17 +172,16 @@ class CouchDB_TPlink_Import
 
         $docs_count = 0;
         $this->couch->beginBulkTransaction();
-            while(!$valueFile->eof()) {
-                $variable = $valueFile->getNextVariable();
-
+        while(!$valueFile->eof()) {
+            $variable = $valueFile->getNextVariable();
+            if (!empty($variable)) {
                 $variable['meta']['identifier']['fileset_id'] = $this->filesetID;
 
                 $var_name = $variable['meta']['identifier']['variable_name'];
                 $doc_id = $this->filesetID . '-' . $var_name;
+                $variable['_id'] = $doc_id;
 
                 $annotations = $annotationFile->getAnnotations($var_name);
-
-                $variable['_id'] = $doc_id;
                 $variable['properties'] = $annotations;
  
                 $this->couch->replaceDoc($doc_id, $variable);
@@ -197,6 +196,7 @@ exit;
                     $this->couch->beginBulkTransaction();
                 }
             }
+        }
         $this->couch->commitBulkTransaction();
     }
 }
@@ -260,7 +260,7 @@ class FileDescriptor
 interface DatavalueFile
 {
     public function eof(): bool;
-    public function getNextVariable(): array; // This should return a DataVariable class
+    public function getNextVariable(): array; // This should return a DataVariable implementation class
 }
 
 class TransposedPED implements DatavalueFile
@@ -284,6 +284,10 @@ class TransposedPED implements DatavalueFile
     {
         $line = $this->file->current();
         $this->file->next();
+
+        if (strlen($line) === 0) {
+            return null;
+        }
 
         list($chr, $name, $dist, $location, $vals) = preg_split('/ /', $line, 5);
         $tuples = preg_split('/([\w-]+ [\w-]+) /', $vals, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);

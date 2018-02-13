@@ -8,9 +8,15 @@ class DatasetsTab extends React.Component {
   }
 
   render() {
-    console.log(this.props.datasets);
+    const datasets = this.props.datasets.map(function (key, value) {
+      return (
+        <h1 key={key}>BOB</h1>
+      );
+    });
     return (
-      <pre>"Hello"</pre>
+      <div className="dataset-container">
+        {datasets}
+      </div>
     );
   }
 }

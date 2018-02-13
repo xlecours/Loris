@@ -1,5 +1,5 @@
 import {Tabs, TabPane} from 'Tabs'; 
-import DatasetsTab from './datasetsTab.js'
+import DatasetsTab from './DatasetsTab.js'
 
 class OmicsApp extends React.Component {
   constructor(props) {

@@ -1,4 +1,5 @@
 import {Tabs, TabPane} from 'Tabs'; 
+import DatasetsTab from './datasetsTab.js'
 
 class OmicsApp extends React.Component {
   constructor(props) {
@@ -51,17 +52,26 @@ class OmicsApp extends React.Component {
 
   render() {
     const datasets = this.state.datasets;
+
     const tabList = [{id: 'default', label: 'Datasets'}].concat(datasets.map(function(d) {
       return ({
         id: d.Id,
         label: d.Identifier.variable_type
       });
     }));
-    const tabs = [<TabPane key='d' TabId='default' />].concat(datasets.map(function(d, i) {
+
+    const datasetsTabPane = (
+      <TabPane key='d' TabId='default'>
+        <DatasetsTab datasets={datasets} />
+      </TabPane>
+    );
+
+    const tabs = [datasetsTabPane].concat(datasets.map(function(d, i) {
       return (
         <TabPane key={i} TabId={d.Id} />
       );
     }));
+
     return (
       <Tabs tabs={tabList}>
         {tabs}

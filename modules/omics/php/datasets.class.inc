@@ -8,16 +8,18 @@ namespace LORIS\omics;
 class Datasets extends \NDB_Menu_Filter
 {
     public $skipTemplate = true;
-    public $AjaxModule = true;
+    public $AjaxModule   = true;
 
     public function _hasAccess()
     {
         return true;
     }
- 
+
     public function setup()
     {
-        $this->couch = (\NDB_Factory::singleton())->couchdb('genomics_test');
+        $factory     = \NDB_Factory::singleton();
+        $this->couch = $factory->couchdb('genomics_test');
+        $this->mysql = $factory->database();
     }
 
     /**
@@ -25,22 +27,38 @@ class Datasets extends \NDB_Menu_Filter
      */
     public function _getFullList()
     {
-        error_log('_getFullList');
         $this->headers = array(
-            'id',
-            'rev',
-            'identifier',
-            'fileset',
-            'mapping'
+                          'fileset_id',
+                          'origin',
+                          'ShortDescription',
+                          'timestamp_added',
+                          'couch_doc',
+                         );
+        $data          = array();
+
+        $filesets = $this->mysql->pselect(
+            "SELECT 
+              fileset_id,
+              origin,
+              ShortDescription,
+              timestamp_added,
+              couchdb_doc_id
+            FROM
+              fileset",
+            array()
         );
-        return array_map( function ($row) {
-            return $row['doc'];
-        }, $this->couch->queryView(
-            'genomic_browser',
-            'datasets',
-            array('reduce' => 'false', 'include_docs' => 'true'),
-            false)
-        );
+
+        foreach ($filesets as $index => $fileset) {
+            $doc = null;
+            if (!empty($fileset['couchdb_doc_id'])) {
+                $doc = $this->couch->getDoc($fileset['couchdb_doc_id'], array());
+            }
+            unset($fileset['couchdb_doc_id']);
+            $fileset['couch_doc'] = $doc;
+            $data[$index]         = $fileset;
+        }
+
+        return $data;
     }
 
     /**

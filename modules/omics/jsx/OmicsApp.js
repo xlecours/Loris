@@ -1,5 +1,5 @@
 import {Tabs, TabPane} from 'Tabs'; 
-import DatasetsTab from './DatasetsTab.js'
+import DatasetTab from './DatasetTab.js'
 
 class OmicsApp extends React.Component {
   constructor(props) {
@@ -15,7 +15,6 @@ class OmicsApp extends React.Component {
     this.fetchDatasets = this.fetchDatasets.bind(this);
     this.formatCell    = this.formatCell.bind(this);
     this.viewDetails   = this.viewDetails.bind(this);
-    this.goToEditPage  = this.goToEditPage.bind(this);
   }
 
   componentDidMount() {
@@ -58,11 +57,8 @@ class OmicsApp extends React.Component {
 
   viewDetails(event) {
     const filesetId = event.target.getAttribute("data-fileset-id");
+    event.target.hash = '#'.concat(filesetId);
     this.refs.tabs.handleClick(filesetId, event);
-  }
-
-  goToEditPage(event) {
-    console.log(event.target);
   }
 
   formatCell(column, cell, rowData, rowHeaders) {
@@ -91,8 +87,6 @@ class OmicsApp extends React.Component {
         element = (
           <td>
             <button onClick={this.viewDetails} data-fileset-id={row['Fileset Id']}>View</button>
-            &nbsp;
-            <button onClick={this.goToEditPage} data-fileset-id={row['Fileset Id']}>Edit</button>
           </td>
         );
         break;
@@ -123,7 +117,9 @@ class OmicsApp extends React.Component {
 
     const tabs = [datasetsTabPane].concat(datasets.map(function(d, i) {
       return (
-        <TabPane key={i} TabId={d['Fileset Id']} />
+        <TabPane key={i} TabId={d['Fileset Id']}>
+          <DatasetTab dataset={d}/>
+        </TabPane>
       );
     }));
 

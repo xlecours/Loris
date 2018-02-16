@@ -47,19 +47,26 @@ class DatasetsTab extends React.Component {
         );
         break;
     }
+    return element;
   }
 
   getFormElements() {
     return this.props.headers.filter(function(h) {
       return ['Actions','Couch Doc'].indexOf(h) < 0;
-    }).map(function(h) {
-      return {
-        "label":h,
-        "name":h,
+    }).reduce(function(carry, current) {
+      const name = current.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+        if (Number(match) === 0) return "";
+        return index === 0 ? match.toLowerCase() : match.toUpperCase();
+      });
+  
+      carry[name] = {
+        "label":current,
+        "name": name,
         "class":"form-control input-sm",
         "type":"text"
       };
-    });
+      return carry;
+    },{});
   }
 
   viewDetails(event) {
@@ -90,6 +97,7 @@ class DatasetsTab extends React.Component {
         <StaticDataTable 
           Headers={this.props.headers}
           Data={this.props.data}
+          Filter={this.state.filter}
           getFormattedCell={this.formatCell}
         />
       </div>

@@ -141,6 +141,7 @@ class CouchDB_TPlink_Import
                                                     $this->provenanceFiles
                                                 ),
                                                ),
+                     'variable_properties'  => (new AxiomBioBank1Annotations($this->annotationFile))->getVariableProperties(),
                      'sample_pscid_mapping' => (new MappingFile($this->mappingFile))->getMapping(),
                     );
         return $document;
@@ -311,7 +312,7 @@ class TransposedPED implements DatavalueFile
 
     private function getChrFromCode($code)
     {
-        $mapping = array(
+        $map = array(
             '0' => 'Unk',
             '1' => 'chr1',
             '2' => 'chr2',
@@ -341,7 +342,7 @@ class TransposedPED implements DatavalueFile
             '26' => 'MT-dna'
         );
 
-        return $mapping[$code];
+        return $map[$code];
     }
 }
 
@@ -391,6 +392,13 @@ class MappingFile
 interface AnnotationFile
 {
     /**
+     * Getter for annotation definition
+     *
+     * @return An array of AnnotationDefinition
+     */
+    public function getVariableProperties(): array;
+
+    /**
      * Getter for annotations of a given variable name
      *
      * @param $variableName string
@@ -418,11 +426,21 @@ class AxiomBioBank1Annotations implements AnnotationFile
      * Mapping of the form  ["variable name" => "row number"]
      * This will be used to seek into the file
      */
-    private $mapping;
+    private $rowMapping;
 
     public function __construct(FileDescriptor $fd)
     {   
         $this->descriptor = $fd;
+    }
+
+    public function getVariableProperties(): array
+    {
+        return array_map(function($h) {
+            return array(
+                'name' => $h, 
+                'format' => 'string',
+            );
+        }, $this->getHeaders());
     }
 
     public function getAnnotations(string $name): array
@@ -453,8 +471,8 @@ class AxiomBioBank1Annotations implements AnnotationFile
     }
 
     /**
-     * Use the mapping to get the row number of a given variable name
-     * Create the mapping if it doesn't exists already
+     * Use the row mapping to get the row number of a given variable name
+     * Create the row mapping if it doesn't exists already
      *
      * @param string $name The variable name
      *
@@ -463,7 +481,7 @@ class AxiomBioBank1Annotations implements AnnotationFile
     private function getAnnotationRow($name)
     {
         // Lazy initialization
-        if (empty($this->mapping)) {
+        if (empty($this->rowMapping)) {
             $file = $this->descriptor->openFile('r');
         
             // Read each line to create a array of the form 
@@ -472,15 +490,15 @@ class AxiomBioBank1Annotations implements AnnotationFile
                 $line = $file->current();
                 if (strlen($line) > 0) {
                     list($name, $rest) = preg_split('/,/', $file->current(), 2);
-                    $this->mapping[$name] = $file->key() - 1;
+                    $this->rowMapping[$name] = $file->key() - 1;
                 }
                 $file->next();
             }
         }
-        return $this->mapping[$name];
+        return $this->rowMapping[$name];
     }
 }
 
 $o = new CouchDB_TPlink_Import(1);
 $o->importDatasetDocument();
-$o->importValues();
+//$o->importValues();

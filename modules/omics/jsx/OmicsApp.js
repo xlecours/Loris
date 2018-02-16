@@ -1,5 +1,6 @@
 import {Tabs, TabPane} from 'Tabs'; 
-import DatasetTab from './DatasetTab.js'
+import DatasetsTab from './DatasetsTab.js';
+import DatasetTab from './DatasetTab.js';
 
 class OmicsApp extends React.Component {
   constructor(props) {
@@ -13,7 +14,6 @@ class OmicsApp extends React.Component {
     }
 
     this.fetchDatasets = this.fetchDatasets.bind(this);
-    this.formatCell    = this.formatCell.bind(this);
     this.viewDetails   = this.viewDetails.bind(this);
   }
 
@@ -61,41 +61,12 @@ class OmicsApp extends React.Component {
     this.refs.tabs.handleClick(filesetId, event);
   }
 
-  formatCell(column, cell, rowData, rowHeaders) {
-    // If a column if set as hidden, don't display it
-    if (loris.hiddenHeaders.indexOf(column) > -1) {
-      return null;
-    }
-
-    // Create the mapping between rowHeaders and rowData in a row object.
-    var row = {};
-    rowHeaders.forEach(function(header, index) {
-      row[header] = rowData[index];
-    }, this);
-
-    let element;
-
-    switch (column) {
-      case 'Origin':
-      case 'ShortDescription':
-      case 'Timestamp Added':
-        element = (
-          <td>{cell}</td>
-        );
-        break;
-      case 'Actions':
-        element = (
-          <td>
-            <button onClick={this.viewDetails} data-fileset-id={row['Fileset Id']}>View</button>
-          </td>
-        );
-        break;
-    }
-
-    return element;
-  }
-
   render() {
+    if (!this.state.isLoaded) {
+      return (
+        <div></div>
+      );
+    }
     const datasets = this.state.datasets;
     const tabList = [{id: 'default', label: 'Datasets'}].concat(datasets.map(function(d) {
       const label = (d['Couch Doc']) ? d['Couch Doc'].meta.variable_type : "Unknown";
@@ -107,10 +78,10 @@ class OmicsApp extends React.Component {
 
     const datasetsTabPane = (
       <TabPane key='datasets' TabId='default'>
-        <StaticDataTable
-          Headers={this.state.headers}
-          Data={datasets.map(function(d) {return Object.values(d);})}
-          getFormattedCell={this.formatCell}
+        <DatasetsTab
+          headers={this.state.headers}
+          data={datasets.map(function(d) {return Object.values(d);})}
+          viewDetails={this.viewDetails}
         />
       </TabPane>
     );
@@ -122,7 +93,6 @@ class OmicsApp extends React.Component {
         </TabPane>
       );
     }));
-
     return (
       <Tabs tabs={tabList} updateURL={true} ref="tabs">
         {tabs}

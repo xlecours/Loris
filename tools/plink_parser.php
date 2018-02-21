@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * http://zzz.bwh.harvard.edu/plink/data.shtml#plink
+ * https://www.cog-genomics.org/plink2
  *
  * File comment lines MUST start with ##
  * Column header line MUST start with #

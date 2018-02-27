@@ -13,6 +13,7 @@
  */
 namespace LORIS\server_processes_manager;
 
+use \LORIS\ToolDescriptors\ToolDescriptor;
 /**
  * Allows processes to be executed on the server, as background Unix processes.
  * Records the processes successfully started in the database.
@@ -104,11 +105,18 @@ class ServerProcessLauncher
 
         $db = $this->getDatabaseProvider()->getDatabase();
 
-        $db->insert(
+        $processLabelID = $db->pselectOne(
+           "SELECT ProcessLabelID FROM process_label WHERE Label = :v_label",
+           array(
+               'v_label' => $process->getType()
+           )
+        );
+
+        $db->unsafeinsert(
             'server_processes',
             array(
              'pid'            => $process->getPid(),
-             'type'           => $process->getType(),
+             'ProcessLabelID' => $processLabelID,
              'stdout_file'    => $process->getStdoutFile(),
              'stderr_file'    => $process->getStderrFile(),
              'exit_code_file' => $process->getExitCodeFile(),
@@ -167,6 +175,23 @@ class ServerProcessLauncher
         );
         return $this->_launch($mriUploadProcess);
     }
+
+    /**
+     * Launch a LORIS internal tool
+     *
+     * @param \ToolDescriptor $descriptor A tool descritor of the desired tool with
+     *                                    the appropriate options
+     * @throws \NoSushTool when the tool can't be found
+     * @throws \InvalidToolDescriptor when the tool can't be lauched
+     *
+     * @return int ID (in the database) of the launched process or null
+     */
+     public function lorisInternal(ToolDescriptor $descriptor) : int
+     {
+         $tool = (new LORISServerProcess())->withTool($descriptor);
+         
+         return $this->_launch($tool);
+     }
 }
 
 ?>

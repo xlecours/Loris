@@ -38,6 +38,16 @@
             </div>
         </div>
     </div>
+    <div class="col-sm-2 col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading" onclick="hideFilter();">
+                Selection Filter
+            </div>
+            <div class="panel-body" id="panel-body">
+                <input type="button" name="new" value="New" class="btn btn-sm btn-primary col-xs-12" onclick="location.href='{$baseurl}/server_processes_manager/launchprocess'" />
+            </div>
+        </div>
+    </div>
 </div>
 <div id="datatable"/>
 <script>

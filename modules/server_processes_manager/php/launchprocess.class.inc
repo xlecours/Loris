@@ -28,6 +28,10 @@ class LaunchProcess extends \NDB_Page
     {
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET':
+                $format = $_REQUEST['format'] ?? null;
+                if ($format == 'json') {
+                
+                }
                 break;
             case 'POST':
                 break;
@@ -36,10 +40,6 @@ class LaunchProcess extends \NDB_Page
                 throw new \Exception("Not Implemented");
                 break;
         }
-    }
-
-    public function display()
-    {
     }
 
     public function launch(): void

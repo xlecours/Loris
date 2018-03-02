@@ -2,7 +2,7 @@
 
 namespace LORIS\ToolDescriptors;
 
-class ToolDescriptor
+abstract class ToolDescriptor
 {
     // Mandatory Boutique descriptor properties
     private $name;
@@ -13,9 +13,56 @@ class ToolDescriptor
     private $inputs;
     private $output_files;
 
-    // Optionnal Boutique descriptor properties
+    public function withName( string $name): TollDescriptor
+    {
+        $new = clone $this;
+        $new->name = $name;
+        return $new;
+    }
 
-    // Accessors
+    public function withToolVersion( string $version): TollDescriptor
+    {
+        $new = clone $this;
+        $new->tool_version = $version;
+        return $new;
+    }
+
+    public function withDescrtiption( string $desc): TollDescriptor
+    {
+        $new = clone $this;
+        $new->descrtiption = $desc;
+        return $new;
+    }
+    public function withCommandLine( string $cmd): TollDescriptor
+    {
+        $new = clone $this;
+        $new->command_line = $cmd;
+        return $new;
+    }
+    public function withSchemeVersion( string $version): TollDescriptor
+    {
+        $new = clone $this;
+        $new->scheme_version = $version;
+        return $new;
+    }
+    public function withInputs( string $inputs): TollDescriptor
+    {
+        $new = clone $this;
+        $new->inputs = $inputs;
+        return $new;
+    }
+    public function withOutputFiles( string $filename): TollDescriptor
+    {
+        $new = clone $this;
+        $new->output_files = $filename;
+        return $new;
+    }
+
+    public function getCommandLine(): string
+    {
+        return $this->command_line ?? '';
+    }
+
     public function withCommandLine(string $cmd): ToolDescriptor
     {
         $new = clone $this;
@@ -23,8 +70,8 @@ class ToolDescriptor
         return $new;
     }
 
-    public function getcommandLine(): string
+    public function toJSON: string
     {
-        return $this->command_line ?? '';
+        return json_encode(get_object_vars($this),true);
     }
-}
+} 

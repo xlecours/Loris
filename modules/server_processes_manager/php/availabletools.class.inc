@@ -1,7 +1,7 @@
 <?php
 namespace LORIS\server_processes_manager;
 
-use \LORIS\ToolDescriptors\ToolDescriptor;
+use \LORIS\ToolDescriptors\Tool;
 
 class AvailableTools extends \NDB_Page
 {
@@ -26,20 +26,39 @@ class AvailableTools extends \NDB_Page
     public function setup()
     {
         $this->toolList = [
-            (new ToolDescriptor())->withCommandLine('ls'),
-            (new ToolDescriptor())->withCommandLine('ls -lrt'),
-            (new ToolDescriptor())->withCommandLine('ifconfig'),
+            (new Tool())->withCommandLine('ls')->withName('Simple ls'),
+            (new Tool())->withCommandLine('ls -lrt')->withName('Revers order ls'),
+            (new Tool())->withCommandLine('ifconfig'),
         ];
     }
 
     public function display(): string
     {
         $format = $_REQUEST['format'] ?? null;
-        if ($format == 'json') {
+        $accept = $_SERVER['HTTP_ACCEPT'];
+        if ($accept == 'application/json' || $format == 'json') {
             header('Content-type: application/json');
             return json_encode(array_map( function ($tool) {
-                return $tool->serialize();
-            }, $this->toolList), true);
+                return $tool->toArray();
+            }, $this->toolList), JSON_FORCE_OBJECT);
         }
+        return '';
     }
+
+    /**
+     * Gathers JS dependecies and merge them with the parent
+     *
+     * @return array of javascript to be inserted
+     */
+    function getJSDependencies()
+    {
+        $factory = \NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
+        $deps    = parent::getJSDependencies();
+        return array_merge(
+            $deps,
+            array($baseURL . "/server_processes_manager/js/LaunchPad.js")
+        );
+    }
+
 }

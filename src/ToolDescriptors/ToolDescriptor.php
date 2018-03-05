@@ -13,49 +13,68 @@ abstract class ToolDescriptor
     private $inputs;
     private $output_files;
 
-    public function withName( string $name): TollDescriptor
+    public function withName( string $name): ToolDescriptor
     {
         $new = clone $this;
         $new->name = $name;
         return $new;
     }
 
-    public function withToolVersion( string $version): TollDescriptor
+    public function withToolVersion( string $version): ToolDescriptor
     {
         $new = clone $this;
         $new->tool_version = $version;
         return $new;
     }
 
-    public function withDescrtiption( string $desc): TollDescriptor
+    public function withDescrtiption( string $desc): ToolDescriptor
     {
         $new = clone $this;
         $new->descrtiption = $desc;
         return $new;
     }
-    public function withCommandLine( string $cmd): TollDescriptor
+
+    public function withCommandLine( string $cmd): ToolDescriptor
     {
         $new = clone $this;
         $new->command_line = $cmd;
         return $new;
     }
-    public function withSchemeVersion( string $version): TollDescriptor
+
+    public function withSchemeVersion( string $version): ToolDescriptor
     {
         $new = clone $this;
         $new->scheme_version = $version;
         return $new;
     }
-    public function withInputs( string $inputs): TollDescriptor
+
+    public function withInputs( string $inputs): ToolDescriptor
     {
         $new = clone $this;
         $new->inputs = $inputs;
         return $new;
     }
-    public function withOutputFiles( string $filename): TollDescriptor
+
+    public function withOutputFiles( string $filename): ToolDescriptor
     {
         $new = clone $this;
         $new->output_files = $filename;
         return $new;
+    }
+
+    public function getName(): string
+    {
+        return $this->name ?? '';
+    }
+
+    public function getTool_version(): string
+    {
+        return $this->tool_version ?? '';
+    }
+
+    public function getDescrtiption(): string
+    {
+        return $this->description ?? '';
     }
 
     public function getCommandLine(): string
@@ -63,15 +82,24 @@ abstract class ToolDescriptor
         return $this->command_line ?? '';
     }
 
-    public function withCommandLine(string $cmd): ToolDescriptor
+    public function getScheme_version(): string
     {
-        $new = clone $this;
-        $new->command_line = $cmd;
-        return $new;
+        return $this->schema_version ?? '';
     }
 
-    public function toJSON: string
+    public function getInputs(): string
     {
-        return json_encode(get_object_vars($this),true);
+        return $this->inputs ?? '';
+    }
+
+    public function getOutput_files(): string
+    {
+        return $this->output_files ?? '';
+    }
+
+    public function toArray(): array
+    {
+        return get_object_vars($this);
     }
 } 
+

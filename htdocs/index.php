@@ -21,17 +21,23 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $client = new \NDB_Client;
 $client->initialize();
 
+$user    = \User::singleton();
+$config  = \NDB_Config::singleton();
+
 // Middleware that happens on every request. This doesn't include
 // any authentication middleware, because that's done dynamically
 // based on the module router, depending on if the module is public.
 $middlewarechain = (new \LORIS\Middleware\ContentLength())
     ->withMiddleware(new \LORIS\Middleware\HeadersGenerator())
+    ->withMiddleware(new \LORIS\Middleware\PageDecorationMiddleware(
+        $user,
+        $config
+    ))
     ->withMiddleware(new \LORIS\Middleware\ResponseGenerator());
 
 $serverrequest = \Zend\Diactoros\ServerRequestFactory::fromGlobals();
 
 // Now that we've created the ServerRequest, handle it.
-$user = \User::singleton();
 
 $entrypoint = new \LORIS\Router\BaseRouter(
     $user,

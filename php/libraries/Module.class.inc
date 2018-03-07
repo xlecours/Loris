@@ -177,7 +177,6 @@ class Module extends \LORIS\Router\PrefixRouter implements RequestHandlerInterfa
         $identifier = $_REQUEST['identifier'] ?? '';
         $commentID  = $_REQUEST['commentID'] ?? '';
         $cls        = new $className($this, $page, $identifier, $commentID, $page);
-
         // Hacks so that existing display() functions load the right template
         // for different page types.
         $cls->menu = $page;
@@ -213,21 +212,24 @@ class Module extends \LORIS\Router\PrefixRouter implements RequestHandlerInterfa
     public function handle(\Psr\Http\Message\ServerRequestInterface $request) : \Psr\Http\Message\ResponseInterface
     {
         $resp = parent::handle($request);
+        // TODO :: Should this be == 200 instead?
         if ($resp->getStatusCode() != 404) {
             return $resp;
         }
-        switch ($request->getURI()->getPath()) {
-        case "":
-        case "/":
-            $page = $this->loadPage($this->getName());
-            return $page->process($request, $page);
-        default:
-            // Fall back on the old way of doing subpages
-            $components = explode("@", trim($request->getURI()->getPath(), "/"));
-            $page       = $this->loadPage($components[0]);
-            return $page->process($request, $page);
+
+        $pagename = $this->getName(); // Default
+        $path = trim($request->getURI()->getPath(), "/");
+        if (!empty($path)) {
+            // There is a subpage
+            $pagename = explode("@", $path)[0];
         }
 
-        return (new \LORIS\Http\Error($request, 404, "File not found: " . $request->getURI()->__toString()));
+        try {
+            $page = $this->loadPage($pagename);
+        } catch (\Notfound $e) {
+            return (new \LORIS\Http\Error($request, 404, "File not found: " . $request->getURI()->__toString()));
+        }
+
+        return $page->process($request, $page);
     }
 }

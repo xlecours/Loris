@@ -635,36 +635,7 @@ class NDB_Page implements RequestHandlerInterface
         // but may eventually be removed.
         $request = $request->withAttribute("pageclass", $this);
 
-        // FIXME: For historical compatibility with NDB_Menu_Filter.
-        // Format should be deprecated and getting the page in different formats
-        // should be a different endpoint or use HTTP content negotiation headers.
-        $get = $request->getQueryParams();
-        if (isset($get['format'])) {
-            $this->format = $get['format'];
-            // Do not add the decoration middleware for json format requests. See
-            // FIXME above.
-            return $handler->handle($request);
-        }
-
-        if ($user instanceOf \LORIS\AnonymousUser) {
-            return (new \LORIS\Middleware\AnonymousPageDecorationMiddleware(
-                $baseURL,
-                $config,
-                $this->getJSDependencies(),
-                $this->getCSSDependencies()
-            )
-            )->process($request, $handler);
-        }
-
-        return (new \LORIS\Middleware\UserPageDecorationMiddleware(
-            $user,
-            $baseURL,
-            $this->name,
-            $config,
-            $this->getJSDependencies(),
-            $this->getCSSDependencies()
-        )
-        )->process($request, $handler);
+        return $handler->handle($request);
     }
 
     /**

@@ -42,7 +42,6 @@ class Error extends Response
                      'message' => $message,
                      'baseurl' => '/',
                     );
-        error_log(print_r($request->getURI()->getHost(), true));
         $template_file = (string) $status . '.tpl';
         $body          = (new \Smarty_neurodb())
             ->assign($tpl_data)

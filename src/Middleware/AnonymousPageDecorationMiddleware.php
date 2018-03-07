@@ -5,16 +5,41 @@ use \Psr\Http\Message\ResponseInterface;
 use \Psr\Http\Server\MiddlewareInterface;
 use \Psr\Http\Server\RequestHandlerInterface;
 
-class AnonymousPageDecorationMiddleware implements MiddlewareInterface {
+class AnonymousPageDecorationMiddleware implements MiddlewareInterface, MiddlewareChainer
+{
+    use MiddlewareChainerMixin;
+
     protected $JSFiles;
     protected $CSSFiles;
     protected $Config;
     protected $BaseURL;
 
     public function __construct(string $baseurl, \NDB_Config $config, array $JS, array $CSS) {
-        $this->JSFiles = $JS;
-        $this->CSSFiles = $CSS;
         $this->Config = $config;
+        $baseurl = $config->getSetting('www')['url'];
+        $this->JSFiles = array(
+                  $baseurl . '/js/jquery/jquery-1.11.0.min.js',
+                  $baseurl . '/js/helpHandler.js',
+                  $baseurl . '/js/modernizr/modernizr.min.js',
+                  $baseurl . '/js/polyfills.js',
+                  $baseurl . '/js/react/react-with-addons.min.js',
+                  $baseurl . '/js/react/react-dom.min.js',
+                  $baseurl . '/js/jquery/jquery-ui-1.10.4.custom.min.js',
+                  $baseurl . '/js/jquery.dynamictable.js',
+                  $baseurl . '/js/jquery.fileupload.js',
+                  $baseurl . '/bootstrap/js/bootstrap.min.js',
+                  $baseurl . '/js/components/Breadcrumbs.js',
+                  $baseurl . '/vendor/sweetalert/sweetalert.min.js',
+         $baseurl . "/js/util/queryString.js",
+         $baseurl . '/js/components/Form.js',
+         $baseurl . '/js/components/Markdown.js',
+        );
+        $this->CSSFiles = array(
+                  $baseurl . "/bootstrap/css/bootstrap.min.css",
+                  $baseurl . "/bootstrap/css/custom-css.css",
+                  $baseurl . "/js/jquery/datepicker/datepicker.css",
+                  $baseurl . '/vendor/sweetalert/sweetalert.css',
+        );
         $this->BaseURL = $baseurl;
     }
 

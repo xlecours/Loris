@@ -228,8 +228,6 @@ class Module extends \LORIS\Router\PrefixRouter implements RequestHandlerInterfa
             return $page->process($request, $page);
         }
 
-        return (new \Zend\Diactoros\Response())
-            ->withStatus(404)
-            ->withBody(new \LORIS\Http\StringStream("File not found: " . $request->getURI()->__toString()));
+        return (new \LORIS\Http\Error($request, 404, "File not found: " . $request->getURI()->__toString()));
     }
 }

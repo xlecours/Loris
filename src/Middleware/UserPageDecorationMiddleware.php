@@ -41,7 +41,6 @@ class UserPageDecorationMiddleware implements MiddlewareInterface, MiddlewareCha
         );
         $this->Config = $config;
         $this->BaseURL = $baseurl;
-        $this->PageName = $pagename;
         $this->user = $user;
     }
 
@@ -55,14 +54,19 @@ class UserPageDecorationMiddleware implements MiddlewareInterface, MiddlewareCha
      * @return ResponseInterface a PSR15 response of handler, after adding decorations.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface { 
-//todo
-        $this->PageName = 'dashboard';
         ob_start();
         // Set the page template variables
         // $user is set by the page base router
         $user = $request->getAttribute("user");
+
+        $paths = explode('/', $request->getQueryParams()['lorispath'], 3);
+        $pagename = $paths[0] ?? 'dashboard';
+        $subpage  = $paths[1] ?? '';
+        $rest     = $paths[2] ?? '';
+
         $tpl_data = array(
-                     'test_name' => $this->PageName,
+                     'test_name' => $pagename,
+                     'subtest' => $subpage
                     );
 
         // Basic page outline variables
@@ -70,7 +74,7 @@ class UserPageDecorationMiddleware implements MiddlewareInterface, MiddlewareCha
                       'study_title' => $this->Config->getSetting('title'),
                       'baseurl'     => $this->BaseURL,
                       'tabs'        => \NDB_Config::getMenuTabs(),
-                      'crumbs'      => (new \NDB_Breadcrumb($this->PageName))->getBreadcrumb(),
+                      'crumbs'      => (new \NDB_Breadcrumb($pagename))->getBreadcrumb(),
                       'currentyear' => date('Y'),
                       'sandbox'     => ($this->Config->getSetting("sandbox") === '1'),
                      );

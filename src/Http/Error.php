@@ -45,14 +45,16 @@ class Error extends HtmlResponse
     ) {
 
         $uri     = $request->getURI();
-        $baseurl = @strstr($uri->__toString(), $uri->getPath(), true);
+        $baseurl = $uri->getScheme() .'://'. $uri->getAuthority();
 
-        $tpl_data      = array(
-                          'message' => $message,
-                          'baseurl' => $baseurl,
-                         );
+        $tpl_data = array(
+                     'message' => $message,
+                     'baseurl' => $baseurl,
+                    );
+
         $template_file = (string) $status . '.tpl';
-        $body          = (new \Smarty_neurodb())
+
+        $body = (new \Smarty_neurodb())
             ->assign($tpl_data)
             ->fetch($template_file);
 

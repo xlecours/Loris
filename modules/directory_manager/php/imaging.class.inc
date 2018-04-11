@@ -73,6 +73,6 @@ exit;
 
       $tree = array_reduce($rows, $asTree, array());
 
-      return $files_path;
+      return $tree;
     }
 }

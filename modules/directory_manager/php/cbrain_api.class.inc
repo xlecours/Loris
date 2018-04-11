@@ -2,7 +2,7 @@
 
 namespace LORIS\directory_manager;
 
-require_once __DIR__ . '/../cbrain-php-api/vendor/autoload.php';
+require_once __DIR__ . '/../../.././vendor/cbrain-php-api/autoload.php';
 // TODO :: There is probably a better way...
 
 final class CBRAIN_API
@@ -21,7 +21,7 @@ final class CBRAIN_API
 
     private function __construct()
     {
-        $config_array = parse_ini_file(__DIR__ . '/cbrain_api_config.ini', true);
+        $config_array = parse_ini_file(__DIR__ . '/../../../project/cbrain_api_config.ini', true);
 
         $this->cbrain_user = new \Swagger\Client\Model\User();
         $this->cbrain_user->setLogin($config_array['credential']['username']);
@@ -47,7 +47,6 @@ final class CBRAIN_API
     {
         $login    = $this->cbrain_user->getLogin(); // string | The username of the User trying to connect.
         $password = $this->cbrain_user->getPassword(); // string | The CBRAIN User's password
-
          
         try {
 

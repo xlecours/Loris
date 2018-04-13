@@ -78,6 +78,9 @@ class UserPageDecorationMiddleware implements MiddlewareInterface {
         if (method_exists($page, 'getControlPanel')) {
             $tpl_data['control_panel'] = $page->getControlPanel();
         }
+        if (method_exists($page, 'getBreadcrumbs')) {
+            $tpl_data['breadcrumbs'] = $page->getBreadcrumbs();
+        }
         if (method_exists($page, 'getFeedbackPanel')
             && $user->hasPermission('bvl_feedback')
             && isset($get['candID'])
@@ -191,6 +194,7 @@ class UserPageDecorationMiddleware implements MiddlewareInterface {
             'cssfiles'  => $this->CSSFiles,
             'workspace' => $undecorated->getBody(),
         );
+
 
         $smarty = new \Smarty_neurodb;
         $smarty->assign($tpl_data);

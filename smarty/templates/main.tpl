@@ -32,6 +32,7 @@
         <script type="text/javascript">
           $(document).ready(function() {
             {if $crumbs != "" && empty($error_message)}
+              var bc = {$breadcrumbs};
               var crumbs = {$crumbs|@json_encode},
                       baseurl = "{$baseurl}",
                       breadcrumbs = RBreadcrumbs({

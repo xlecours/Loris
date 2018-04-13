@@ -828,5 +828,11 @@ class NDB_Page implements RequestHandlerInterface
     {
         return true;
     }
+
+    public function getBreadcrumbs(): \LORIS\BreadcrumbTrail
+    {
+        $label = ucwords(str_replace(' ', '_', $this->name));
+        return new \LORIS\BreadcrumbTrail(new \LORIS\Breadcrumb($label, $this->name));
+    }
 }
-?>
+

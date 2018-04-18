@@ -1,6 +1,9 @@
 import BoutiqueToolName from './BoutiqueComponents/BoutiqueToolName';
 import BoutiqueToolDescription from './BoutiqueComponents/BoutiqueToolDescription';
 import BoutiqueToolVersion from './BoutiqueComponents/BoutiqueToolVersion';
+import BoutiqueToolCommandLine from './BoutiqueComponents/BoutiqueToolCommandLine';
+import BoutiqueToolContainerImage from './BoutiqueComponents/BoutiqueToolContainerImage';
+import BoutiqueToolEnvironmentVariables from './BoutiqueComponents/BoutiqueToolEnvironmentVariables';
 
 class BoutiqueToHtml extends React.Component {
 
@@ -45,11 +48,23 @@ class BoutiqueToHtml extends React.Component {
 
     const schema = this.state.schema;
 
+    let messages = [];
+
+    if (Number(schema['schema-version']) != 0.5) {
+      messages.push(
+        <span>This Boutique schema version might not be supported</span>
+      );
+    }
+
     return (
       <div>
-        <BoutiqueToolName data={schema.name} />
-        <BoutiqueToolDescription data={schema.description} />
-        <BoutiqueToolVersion data={schema.tool-version} />
+        {messages}
+        <BoutiqueToolName data={schema['name']} />
+        <BoutiqueToolDescription data={schema['description']} />
+        <BoutiqueToolVersion data={schema['tool-version']} />
+        <BoutiqueToolCommandLine data={schema['command-line']} />
+        <BoutiqueToolContainerImage data={schema['container-image']} />
+        <BoutiqueToolEnvironmentVariables data={schema['environment-variables']}/>
       </div>
     );
   } 

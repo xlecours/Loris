@@ -1,7 +1,21 @@
+import BoutiqueToolInputsItem from './BoutiqueToolInputsItem';
+
 class BoutiqueToolInputs extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
   render() {
+    const inputs = this.props.inputs.map(function(input, index) {
+      return (
+        <BoutiqueToolInputsItem key={index} data={input} />
+      );
+    }, this);
+
     return (
-      <div></div>
+      <div>
+        {inputs}
+      </div>
     );
   }
 }

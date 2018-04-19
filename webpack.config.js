@@ -48,6 +48,7 @@ var config = {
     './modules/brainbrowser/js/Brainbrowser.js': './modules/brainbrowser/jsx/Brainbrowser.js',
     './modules/imaging_uploader/js/index.js': './modules/imaging_uploader/jsx/index.js',
     './modules/directory_manager/js/index.js':'./modules/directory_manager/jsx/index.js',
+    './modules/boutiquehtml/js/index.js':'./modules/boutiquehtml/jsx/index.js',
     './modules/data_integrity_flag/js/index.js': './modules/data_integrity_flag/jsx/index.js',
     './modules/imaging_uploader/js/index.js': './modules/imaging_uploader/jsx/index.js'
   },

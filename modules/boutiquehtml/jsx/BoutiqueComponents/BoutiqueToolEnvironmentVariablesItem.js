@@ -1,7 +1,7 @@
 class BoutiqueToolEnvironmentVariablesItem extends React.Component {
   render() {
     return (
-      <div><span>{this.props.data.name}</span></div>
+      <div><span>{this.props.data.name}: {this.props.data.value}</span></div>
     );
   }
 }

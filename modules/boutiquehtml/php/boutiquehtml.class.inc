@@ -46,7 +46,7 @@ class Boutiquehtml extends \NDB_Page
         $ch = curl_init(); 
 
         // set url 
-        curl_setopt($ch, CURLOPT_URL, "https://raw.githubusercontent.com/boutiques/boutiques/master/tools/python/boutiques/schema/examples/example2/example2.json"); 
+        curl_setopt($ch, CURLOPT_URL, "https://raw.githubusercontent.com/boutiques/boutiques/master/tools/python/boutiques/schema/examples/tests_good.json");
 
         //return the transfer as a string 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 

@@ -6,7 +6,6 @@ class BoutiqueToolEnvironmentVariables extends React.Component {
   }
 
   render() {
-console.log(this.props.data);
     const items = this.props.data.map(function(item, index) {
       return (
         <BoutiqueToolEnvironmentVariablesItem key={index} data={item} />

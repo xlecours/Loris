@@ -6,6 +6,9 @@ import BoutiqueToolContainerImage from './BoutiqueComponents/BoutiqueToolContain
 import BoutiqueToolEnvironmentVariables from './BoutiqueComponents/BoutiqueToolEnvironmentVariables';
 import BoutiqueToolInputs from './BoutiqueComponents/BoutiqueToolInputs';
 import BoutiqueToolTests from './BoutiqueComponents/BoutiqueToolTests';
+import BoutiqueToolOutputFiles from './BoutiqueComponents/BoutiqueToolOutputFiles';
+import BoutiqueToolInvocationSchema from './BoutiqueComponents/BoutiqueToolInvocationSchema';
+import BoutiqueToolSuggestedRessources from './BoutiqueComponents/BoutiqueToolSuggestedRessources';
 
 class BoutiqueToHtml extends React.Component {
 
@@ -69,6 +72,12 @@ class BoutiqueToHtml extends React.Component {
         <BoutiqueToolEnvironmentVariables data={schema['environment-variables']} />
         <BoutiqueToolInputs inputs={schema['inputs']} groups={schema['groups']} />
         <BoutiqueToolTests data={schema['tests']} />
+        <BoutiqueToolOutputFiles data={schema['output-files']} />
+        <BoutiqueToolInvocationSchema data={schema['invocation-schema']} />
+        <BoutiqueToolSuggestedRessources data={schema['suggested-resources']} />
+        <BoutiqueToolTags data={schema['tags']} />
+        <BoutiqueToolErrorCodes data={schema['error-codes']} />
+        <BoutiqueToolcustom data={schema['custom']} />
       </div>
     );
   } 

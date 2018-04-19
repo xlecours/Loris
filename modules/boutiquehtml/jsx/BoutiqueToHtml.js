@@ -9,6 +9,9 @@ import BoutiqueToolTests from './BoutiqueComponents/BoutiqueToolTests';
 import BoutiqueToolOutputFiles from './BoutiqueComponents/BoutiqueToolOutputFiles';
 import BoutiqueToolInvocationSchema from './BoutiqueComponents/BoutiqueToolInvocationSchema';
 import BoutiqueToolSuggestedRessources from './BoutiqueComponents/BoutiqueToolSuggestedRessources';
+import BoutiqueToolTags from './BoutiqueComponents/BoutiqueToolTags';
+import BoutiqueToolErrorCodes from './BoutiqueComponents/BoutiqueToolErrorCodes';
+import BoutiqueToolCustom from './BoutiqueComponents/BoutiqueToolCustom';
 
 class BoutiqueToHtml extends React.Component {
 
@@ -77,7 +80,7 @@ class BoutiqueToHtml extends React.Component {
         <BoutiqueToolSuggestedRessources data={schema['suggested-resources']} />
         <BoutiqueToolTags data={schema['tags']} />
         <BoutiqueToolErrorCodes data={schema['error-codes']} />
-        <BoutiqueToolcustom data={schema['custom']} />
+        <BoutiqueToolCustom data={schema['custom']} />
       </div>
     );
   } 

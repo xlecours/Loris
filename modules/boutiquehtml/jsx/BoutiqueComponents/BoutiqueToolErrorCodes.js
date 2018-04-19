@@ -1,7 +1,7 @@
 class BoutiqueToolErrorCodes extends React.Component {
   render() {
     return (
-      <div><span>{this.props.data}</span></div>
+      <div><span>ErrorCode</span></div>
     );
   }
 }

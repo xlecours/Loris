@@ -163,9 +163,9 @@ class Utility
      */
     static function getVisitList() : array
     {
-        $db = (\NDB_Factory::singleton())->database();
-
-        $controler = new \LORIS\VisitControler($db);
+        $controler = new \LORIS\VisitControler(
+            (\NDB_Factory::singleton())->database()
+        );
 
         return array_reduce(
             $controler->getAllVisits(),
@@ -186,15 +186,18 @@ class Utility
      */
     static function getProjectList()
     {
-        $factory = NDB_Factory::singleton();
-        $DB      = $factory->database();
-        // get the list of projects
-        $projects = $DB->pselect("SELECT * FROM Project", array());
-        $project  = array();
-        foreach ($projects as $row) {
-            $project[$row['ProjectID']] = $row['Name'];
-        }
-        return $project;
+        $controler = new \LORIS\ProjectControler(
+            (\NDB_Factory::singleton())->database()
+        );
+
+        return array_reduce(
+            $controler->getAllProjects(),
+            function ($carry, $project) {
+                $carry[$project->getId()] = $project->getName();
+                return $carry;
+            },
+            []
+        );
     }
 
     /**

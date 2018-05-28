@@ -1313,11 +1313,22 @@ INSERT INTO StatisticsTabs (ModuleName, SubModuleName, Description, OrderNo) VAL
 -- server_processes tables
 -- ********************************
 
+CREATE TABLE `server_process_type` (
+  `ProcessTypeID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL,
+  PRIMARY KEY (`ProcessTypeID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `server_process_type` (Name) VALUES
+  ('mri_upload'),
+  ('phantom_pipeline')
+;
 
 CREATE TABLE `server_processes` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `ProcessTypeID` int(10) unsigned NOT NULL,
   `pid` int(11) unsigned NOT NULL,
-  `type` enum('mri_upload') NOT NULL,
   `stdout_file` varchar(255) DEFAULT NULL,
   `stderr_file` varchar(255) DEFAULT NULL,
   `exit_code_file` varchar(255) DEFAULT NULL,
@@ -1328,6 +1339,8 @@ CREATE TABLE `server_processes` (
   `exit_text` text,
   PRIMARY KEY (`id`),
   KEY `FK_task_1` (`userid`),
+  KEY `FK_server_process_type_ProcessTypeID` (`ProcessTypeID`),
+  CONSTRAINT `FK_server_process_type_ProcessTypeID` FOREIGN KEY (`ProcessTypeID`) REFERENCES `server_process_type` (`ProcessTypeID`),
   CONSTRAINT `FK_task_1` FOREIGN KEY (`userid`) REFERENCES `users` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

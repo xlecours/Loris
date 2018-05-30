@@ -520,6 +520,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
             array(
              $baseurl . "/imaging_browser/js/columnFormatter.js",
              $baseurl . "/imaging_browser/js/onSort.js",
+             $baseurl . '/js/components/LaunchPhantomPipelineButton.js',
             )
         );
     }

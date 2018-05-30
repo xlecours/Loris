@@ -8,8 +8,7 @@ if (!$user->hasPermission('server_processes_manager')) {
     header("HTTP/1.1 403 Forbidden");
     exit;
 }
-
-$userfileId = $_REQUEST['userfileId'] ?? null;
+$userfileId = JSON_decode(file_get_contents("php://input"),true)['userfileId'] ?? null;
 if (empty($userfileId)) {
     header('HTTP/1.0 400 Bad Request');
     exit;

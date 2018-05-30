@@ -31,8 +31,6 @@ $rep_session_post = $session_api->sessionPost(
 $token            = $rep_session_post->getCbrainApiToken();
 $config->setApiKey('cbrain_api_token', $token);
 
-echo $token . PHP_EOL;
-exit(1);
 /*
 *************
 * Browse DP *

@@ -21,7 +21,7 @@ $serverProcessLauncher = new ServerProcessLauncher();
 try {
     $serverProcessLauncher->phantomPipeline(
         $userfileId,
-        '/var/www/loris_1/project/tools/phantom_pipeline.php'
+        '/var/www/loris_1/tools/phantom_pipeline.php'
     );
     header('HTTP/1.0 201 Created');
 } catch (\Exception $e) {

@@ -93,11 +93,21 @@ class ServerProcessLauncher
 
         $db = $this->getDatabaseProvider()->getDatabase();
 
+        $processtype = $db->pselectOne(
+            'SELECT
+               ProcessTypeID
+             FROM
+               server_process_type
+             WHERE
+               Name = :v_name',
+            array('v_name' => $process->getType())
+        );
+
         $db->insert(
             'server_processes',
             array(
              'pid'            => $process->getPid(),
-             'type'           => $process->getType(),
+             'ProcessTypeID'  => $processtype,
              'stdout_file'    => $process->getStdoutFile(),
              'stderr_file'    => $process->getStderrFile(),
              'exit_code_file' => $process->getExitCodeFile(),
@@ -155,6 +165,24 @@ class ServerProcessLauncher
             $sourceLocation
         );
         return $this->_launch($mriUploadProcess);
+    }
+
+    /**
+     * Launch a phantom_pipeline process
+     *
+     * @param int    $userfileId     ID of the MRI upload in the mri_upload table.
+     * @param string $sourceLocation location of the MRI file
+     *
+     * @return int ID (in the database) of the launched process or null
+     *             if the process could not be run
+     */
+    public function phantomPipeline($userfileId, $sourceLocation)
+    {
+        $process = new PhantomPipeline(
+            $userfileId,
+            $sourceLocation
+        );
+        return $this->_launch($process);
     }
 }
 

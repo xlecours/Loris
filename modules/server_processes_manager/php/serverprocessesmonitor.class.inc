@@ -91,28 +91,38 @@ class ServerProcessesMonitor
         //------------------------------------------------------
         $db = $this->getDatabaseProvider()->getDatabase();
 
-        $query = "SELECT id, pid, type, userid, stdout_file, stderr_file, 
-                         exit_code_file, exit_code, start_time, end_time,
-                         exit_text
-                  FROM server_processes
+        $query = "SELECT 
+                    sp.id,
+                    sp.pid,
+                    spt.Name,
+                    sp.userid,
+                    sp.stdout_file,
+                    sp.stderr_file, 
+                    sp.exit_code_file,
+                    sp.exit_code,
+                    sp.start_time,
+                    sp.end_time,
+                    sp.exit_text
+                  FROM server_processes sp
+                  LEFT JOIN server_process_type spt USING (ProcessTypeID)
                   WHERE 1=1";
 
         // Build ID where clause if needed
         if (!is_null($idsToMonitor)) {
             $idInClause = implode(',', $idsToMonitor);
-            $query      = "$query AND id IN ($idInClause)";
+            $query      = "$query AND sp.id IN ($idInClause)";
         }
 
         // Build userid where clause if needed
         $params = array();
         if (!is_null($userid)) {
-            $query = "$query AND userid =:requestUserid";
+            $query = "$query AND sp.userid =:requestUserid";
             $params['requestUserid'] = $userid;
         }
 
         // Build type clause if needed
         if (!is_null($type)) {
-            $query          = "$query AND type =:type";
+            $query          = "$query AND spt.Name =:type";
             $params['type'] = $type;
         }
 
@@ -143,7 +153,7 @@ class ServerProcessesMonitor
             $savedProcesses[$row['id']] = $serverProcessFactory->getServerProcess(
                 $row['id'],
                 $row['pid'],
-                $row['type'],
+                $row['Name'],
                 $row['stdout_file'],
                 $row['stderr_file'],
                 $row['exit_code_file'],
@@ -215,4 +225,3 @@ class ServerProcessesMonitor
     }
 }
 
-?>

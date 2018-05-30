@@ -51,8 +51,24 @@ class ServerProcessFactory
         $exitCodeFile, $exitCode, $userId,
         $startTime, $endTime, $exitText
     ) {
-        if ($type == MriUploadServerProcess::PROCESS_TYPE) {
+        switch ($type) {
+        case 'mri_upload':
             return new MriUploadServerProcess(
+                null,
+                null,
+                $id,
+                $pid,
+                $stdoutFile,
+                $stderrFile,
+                $exitCodeFile,
+                $exitCode,
+                $userId,
+                $startTime,
+                $endTime,
+                $exitText
+            );
+        case 'phantom_pipeline':
+            return new PhantomPipeline(
                 null,
                 null,
                 $id,

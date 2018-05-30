@@ -1,6 +1,6 @@
 <?php
-
-require_once('/var/www/loris_1/vendor/SwaggerClient-php/vendor/autoload.php');
+require_once __DIR__ . "/../vendor/autoload.php";
+require_once __DIR__ . "/../vendor/SwaggerClient-php/vendor/autoload.php";
 
 use \Swagger\Client\Configuration;
 use \Swagger\Client\Api\SessionsApi;
@@ -12,29 +12,32 @@ use \Swagger\Client\Api\DataProvidersApi;
 $config = new \Swagger\Client\Configuration();
 $config->setHost('https://portal.cbrain.mcgill.ca/');
 
+$loris_client = new NDB_Client();
+$loris_client->makeCommandLine();
+$loris_client->initialize();
+
+$factory       = \NDB_Factory::singleton();
+$loris_config  = \NDB_Config::singleton();
+$cbrain_config = $loris_config->getSetting('CBRAIN');
+
 /*
 * Create a session
 */
 $session_api      = new \Swagger\Client\Api\SessionsApi(null,$config);
-$rep_session_post = $session_api->sessionPost('loris_ccna','CCNA_pwd!123!');
+$rep_session_post = $session_api->sessionPost(
+    $cbrain_config['username'],
+    $cbrain_config['password']
+);
 $token            = $rep_session_post->getCbrainApiToken();
 $config->setApiKey('cbrain_api_token', $token);
 
+echo $token . PHP_EOL;
+exit(1);
 /*
 *************
 * Browse DP *
 *************
 */
-$apiInstance = new Swagger\Client\Api\DataProvidersApi(
-    new GuzzleHttp\Client(),
-    $config
-);
-
-/*
-* Register the files on the DataProvider
-*/
-$id     = 117;
-$dp_api = $apiInstance->dataProvidersIdBrowseGet($id);
 $newly_registered_userfiles_ids = [$argv[1]];
 
 /*

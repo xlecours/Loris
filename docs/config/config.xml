@@ -33,6 +33,11 @@
         <adminpass>%COUCH_PASSWORD%</adminpass>
     </CouchDB>
 
+    <CBRAIN>
+        <username></username>
+        <password></password>
+    </CBRAIN>
+
     <!-- study variables -->
     <study>
         <PSCID>

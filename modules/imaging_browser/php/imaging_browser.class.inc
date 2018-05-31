@@ -15,6 +15,8 @@
  */
 namespace LORIS\imaging_browser;
 
+use LORIS\CBRAIN_Hook;
+
 /**
  * Provides the PHP code for the menu filter for the imaging browser
  *
@@ -485,6 +487,29 @@ class Imaging_Browser extends \NDB_Menu_Filter
                 array_column($data['Data'], $index)
             );
         }
+
+        // Adding UserfileId from cbrain
+        $hook = new CBRAIN_Hook();
+        $tuples = array_reduce(
+            $hook->getUserfiles(),
+            function($carry, $f) {
+                $name = $f->getName();
+                $id = $f->getUserfileId();
+                $carry[$name] = $id;
+                return $carry;
+            },
+            []
+        );
+
+        array_push($data['Headers'], 'UserfileId');
+
+        $ivisitlabel = array_search('Visit Label', $data['Headers']);
+        $icandid     = array_search('DCCID', $data['Headers']);
+        array_walk($data['Data'], function(&$row) use ($ivisitlabel, $icandid, $tuples) {
+            $key = $row[$icandid] . '_' . $row[$ivisitlabel];
+            array_push($row, $tuples[$key] ?? '');
+        }, $tuples);
+
         return $data;
     }
 

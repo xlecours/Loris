@@ -27,6 +27,16 @@ function formatColumn(column, cell, rowData, rowHeaders) {
     return <td></td>;
   }
 
+  if (column === 'UserfileId') {
+    if (Number(cell) > 0) {
+      return (
+        <td><LaunchPhantomPipelineButton userfileId={cell} /></td>
+      );
+    } else {
+      return <td></td>;
+    }
+  }
+
   if (column === 'Links') {
     var cellTypes = cell.split(",");
     var cellLinks = [];

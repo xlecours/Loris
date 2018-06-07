@@ -107,7 +107,6 @@
     </form>
 </div>
 </div>
-            <div id="lauchPhantom"></div>
 </div>
 
 </div>
@@ -122,9 +121,5 @@ var table = RDynamicDataTable({
 });
 ReactDOM.render(table, document.getElementById("datatable"));
 
-const button = RLaunchPhantomPipelineButton({
-    userfileId : 123456
-});
-ReactDOM.render(button, document.getElementById("lauchPhantom"));
 </script>
 

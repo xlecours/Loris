@@ -56,7 +56,7 @@ foreach ($newly_registered_userfiles_ids as &$userfile_id) {
   $cbrain_task["cbrain_task"] = array(
     "params"=>array("interface_userfile_ids"=>array($userfile_id), "file_collect"=>$userfile_id),
     "tool_config_id"=>"633",
-    "results_data_provider_id"=>"3",
+    "results_data_provider_id"=>"129",
     "description"=>"Test in PHP with file: " . $userfile_id ,
     "user_id"=>"1",
     "group_id"=>"2");

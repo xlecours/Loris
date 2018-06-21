@@ -1,6 +1,8 @@
 <?php
 namespace LORIS;
 
+// FIXME:: This is temporary. The client should be dowloaded from a public repo
+//         using composer instead.
 require_once __DIR__ . "/../../vendor/SwaggerClient-php/vendor/autoload.php";
 
 use \Swagger\Client\Configuration;
@@ -11,29 +13,46 @@ class CBRAIN_Hook
 {
 
     private $config;
-    private $cbrain_config;
 
     public function __construct()
     {
-        $this->config  = new \Swagger\Client\Configuration();
+        $this->config = new Configuration();
 
-        $this->cbrain_config = (\NDB_Factory::singleton())->config()
+        $cbrain_config = (\NDB_Factory::singleton())->config()
             ->getSetting('CBRAIN');
 
-        $this->config->setHost($this->cbrain_config['host']);       
+        $this->config->setHost($cbrain_config['host']);
 
-        $session_api      = new \Swagger\Client\Api\SessionsApi(
+        $session_api = new SessionsApi(
             null,
             $this->config
         );
 
-        $rep_session_post = $session_api->sessionPost(
-            $this->cbrain_config['username'],
-            $this->cbrain_config['password']
-        );
+        if (!empty($_SESSION['cbrain_token'])) {
+            try {
+                $this->config->setApiKey(
+                    'cbrain_api_token',
+                    $_SESSION['cbrain_token']
+                );
+                $session_api->sessionGet();
+                // The cbrain_token is still valid
+                goto end;
+            } catch (\Swagger\Client\ApiException $e)  {
+                if ($e->getCode() != 401) {
+                    throw $e;
+                }
+            }
+        }
 
-        $token = $rep_session_post->getCbrainApiToken();
-        $this->config->setApiKey('cbrain_api_token', $token);
+        // Get a new token
+        $rep_session_post = $session_api->sessionPost(
+            $cbrain_config['username'],
+            $cbrain_config['password']
+        );
+        $_SESSION['cbrain_token'] = $rep_session_post->getCbrainApiToken();
+
+        end:
+        $this->config->setApiKey('cbrain_api_token', $_SESSION['cbrain_token']);
     }
 
     /**
@@ -41,12 +60,12 @@ class CBRAIN_Hook
      */
     public function getUserfiles()
     {
-       $apiInstance = new \Swagger\Client\Api\DataProvidersApi(
-          new \GuzzleHttp\Client(),
-          $this->config
-       ); 
-       $id     = 117;
-       $dp_api = $apiInstance->dataProvidersIdBrowseGet($id);
-       return $dp_api;
+        $apiInstance = new DataProvidersApi(
+            new \GuzzleHttp\Client(),
+            $this->config
+        );
+        $id          = 117;
+        $dp_api      = $apiInstance->dataProvidersIdBrowseGet($id);
+        return $dp_api;
     }
 }

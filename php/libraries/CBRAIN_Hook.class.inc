@@ -24,7 +24,7 @@ class CBRAIN_Hook
         $this->config->setHost($cbrain_config['host']);
 
         $session_api = new SessionsApi(
-            null,
+            null, // Will use Guzzle/Http/Client by default
             $this->config
         );
 
@@ -45,7 +45,7 @@ class CBRAIN_Hook
         }
 
         // Get a new token
-        $rep_session_post = $session_api->sessionPost(
+        $rep_session_post         = $session_api->sessionPost(
             $cbrain_config['username'],
             $cbrain_config['password']
         );
@@ -61,7 +61,7 @@ class CBRAIN_Hook
     public function getUserfiles()
     {
         $apiInstance = new DataProvidersApi(
-            new \GuzzleHttp\Client(),
+            null, // Will use Guzzle/Http/Client by default
             $this->config
         );
         $id          = 117;

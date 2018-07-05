@@ -96,41 +96,5 @@ class State
         }
         return null;
     }
-
-
-    /**
-     * Gets the last URL that was access to use as a "back" link.
-     *
-     * @return String URL suitable for adding to a link of for a "Back" link
-     */
-    function getLastURL()
-    {
-        $timepointSubMenus = array(
-                              'instrument_list',
-                              'create_timepoint',
-                              'demographics',
-                             );
-
-        $caller =& NDB_Caller::singleton();
-        if (isset($_REQUEST['test_name'])
-            && $_REQUEST['test_name'] == 'timepoint_list'
-        ) {
-            return 'main.php?test_name=candidate_list';
-        } elseif (!empty($_REQUEST['candID'])
-            && in_array($_REQUEST['test_name'], $timepointSubMenus)
-        ) {
-            return 'main.php?test_name=timepoint_list&candID='.$_REQUEST['candID'];
-        } elseif ($caller->type == 'instrument'
-            || (isset($_REQUEST['test_name'])
-            && $_REQUEST['test_name'] == 'next_stage')
-        ) {
-            if (isset($_REQUEST['candID']) && isset($_REQUEST['sessionID'])) {
-                return 'main.php?test_name=instrument_list&candID='
-                    .$_REQUEST['candID'].'&sessionID='.$_REQUEST['sessionID'];
-            }
-        }
-
-        return null;
-    }
 }
-?>
+

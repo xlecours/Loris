@@ -9,14 +9,28 @@ class Image_Processing extends \NDB_Page
 {
     public $skipTemplate = true;
 
-    public function _process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    public function _hasAccess()
     {
-        return parent::process($request, $handler);
+        return true;
     }
 
-    public function _handle(ServerRequestInterface $request): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return prent::handle($request);
+        switch($request->getMethod()) {
+            case 'HEAD':
+            case 'GET':
+                $response = $this->handleGET($request);
+                break;
+            default:
+                $response = new \LORIS\Http\Error($request, 405);
+        }
+        return $response;
+    }
+
+    private function handleGET(ServerRequestInterface $request): ResponseInterface
+    {
+        return (new \Zend\Diactoros\Response())
+            ->withBody(new \LORIS\Http\StringStream('1,2,3'));
     }
 
     public function getJSDependencies()

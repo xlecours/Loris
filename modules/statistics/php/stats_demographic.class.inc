@@ -313,7 +313,7 @@ class Stats_Demographic extends \NDB_Form
                           AND c.Active='Y'
                           AND (ps.participant_status=1 OR
                                ps.participant_status IS NULL)
-                          AND c.Gender='Male'
+                          AND c.Sex='Male'
                           $Param_Project
                           $Param_Site
                       GROUP BY s.subprojectid",
@@ -321,8 +321,8 @@ class Stats_Demographic extends \NDB_Form
         );
 
         foreach ($result as $row) {
-            $this->tpl_data['gender_male'][$row['rowid']] = $row['val'];
-            $this->tpl_data['gender_male']['total']      += $row['val'];
+            $this->tpl_data['sex_male'][$row['rowid']] = $row['val'];
+            $this->tpl_data['sex_male']['total']      += $row['val'];
         }
         //FEMALE
         $result = $DB->pselect(
@@ -337,7 +337,7 @@ class Stats_Demographic extends \NDB_Form
                           AND c.Active='Y'
                           AND (ps.participant_status=1
                                OR ps.participant_status IS NULL)
-                          AND c.Gender='Female'
+                          AND c.Sex='Female'
                           $Param_Project
                           $Param_Site
                       GROUP BY s.subprojectid",
@@ -345,8 +345,8 @@ class Stats_Demographic extends \NDB_Form
         );
 
         foreach ($result as $row) {
-            $this->tpl_data['gender_female'][$row['rowid']] = $row['val'];
-            $this->tpl_data['gender_female']['total']      += $row['val'];
+            $this->tpl_data['sex_female'][$row['rowid']] = $row['val'];
+            $this->tpl_data['sex_female']['total']      += $row['val'];
         }
 
         //AGE AVERAGE
@@ -446,7 +446,7 @@ class Stats_Demographic extends \NDB_Form
                 "SELECT c.CenterID as CenterID,
                     s.SubprojectID as SubprojectID,
                     s.visit_label as VLabel,
-                    c.gender as Subcat,
+                    c.sex as Subcat,
                     count(s.CandID) as val
                 FROM session s JOIN candidate c ON (s.CandID=c.CandID)
                 WHERE s.active='Y' AND s.CenterID <> '1'

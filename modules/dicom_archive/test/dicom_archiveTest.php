@@ -30,7 +30,7 @@ class DicomArchiveTestIntegrationTest extends LorisIntegrationTest
     static $patientID   = "#dicom_filter>div>div:nth-child(1)>div>div>input";
     static $PatientName = "#dicom_filter>div>div:nth-child(2)>div>div>input";
     static $site        = "select.form-control";
-    static $Gender      = "#dicom_filter>div>div:nth-child(4)>div>div>input";
+    static $Sex      = "#dicom_filter>div>div:nth-child(4)>div>div>input";
     static $dateOfBirth = "#dicom_filter>div>div:nth-child(5)>div>div>input";
     static $Acquisition = "#dicom_filter>div>div:nth-child(6)>div>div>input";
     static $Archive     = "#dicom_filter>div>div:nth-child(7)>div>div>input";
@@ -117,7 +117,7 @@ class DicomArchiveTestIntegrationTest extends LorisIntegrationTest
             "ibis"
         );
         $this-> _filter('site', "2", self::$site, "ibis");
-        $this-> _filter('gender', "M", self::$Gender, "D568405");
+        $this-> _filter('sex', "M", self::$Sex, "D568405");
         $this-> _filter(
             'dateOfBirth',
             '2011-10-20',
@@ -185,7 +185,7 @@ class DicomArchiveTestIntegrationTest extends LorisIntegrationTest
         $this->_clear('patientID', self::$patientID, 'testtesttest');
         $this->_clear('patientName', self::$PatientName, 'testtesttest');
         $this->_clear('site', self::$site, 'testtesttest');
-        $this->_clear('gender', self::$Gender, 'testtesttest');
+        $this->_clear('sex', self::$Sex, 'testtesttest');
         $this->_clear('dateOfBirth', self::$dateOfBirth, 'testtesttest');
         $this->_clear('acquisition', self::$Acquisition, 'testtesttest');
         $this->_clear('archiveLocation', self::$Archive, 'testtesttest');

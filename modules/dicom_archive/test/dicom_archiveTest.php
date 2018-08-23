@@ -30,7 +30,7 @@ class DicomArchiveTestIntegrationTest extends LorisIntegrationTest
     static $patientID   = "#dicom_filter>div>div:nth-child(1)>div>div>input";
     static $PatientName = "#dicom_filter>div>div:nth-child(2)>div>div>input";
     static $site        = "select.form-control";
-    static $Sex      = "#dicom_filter>div>div:nth-child(4)>div>div>input";
+    static $Sex         = "#dicom_filter>div>div:nth-child(4)>div>div>input";
     static $dateOfBirth = "#dicom_filter>div>div:nth-child(5)>div>div>input";
     static $Acquisition = "#dicom_filter>div>div:nth-child(6)>div>div>input";
     static $Archive     = "#dicom_filter>div>div:nth-child(7)>div>div>input";

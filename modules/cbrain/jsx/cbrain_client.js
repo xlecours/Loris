@@ -1,3 +1,4 @@
+import LoginPage from './views/login.js';
 /**
  * CBRAIN Page.
  *
@@ -16,37 +17,52 @@ class CBRAIN extends React.Component {
     super(props);
 
     this.state = {
-      isLoaded: false,
+      authenticated: false,
     };
 
     // Bind component instance to custom methods
-    this.fetchData = this.fetchData.bind(this);
+    this.setApiToken = this.setApiToken.bind(this);
   }
 
   componentDidMount() {
-    this.fetchData();
   }
 
-  fetchData() {
-    this.setState({isLoaded: true});
+  setApiToken(token) {
+    const defaultClient = this.props.client.ApiClient.instance;
+    const BrainPortalSession = defaultClient.authentications['BrainPortalSession'];
+    BrainPortalSession.apiKey = token;
+
+    this.setState({
+      authenticated: true,
+    });
   }
 
   render() {
-    return (
-      <h1>YEAH!</h1>
-    );
+    if (!this.state.authenticated) {
+      return (
+        <div>
+          <LoginPage client={this.props.client} setApiToken={this.setApiToken} />
+        </div>
+      );
+    } else {
+      return (
+        <h1>Not Implemented</h1>
+      ); 
+    }
   }
 }
 
 CBRAIN.propTypes = {
+  client: React.PropTypes.object.isRequired
 };
 
 /**
  * Render CBRAIN on page load
  */
 window.onload = function() {
+  const CbrainClient = require('cbrain_api');
   const cbrain  = (
-    <CBRAIN />
+    <CBRAIN client={CbrainClient}/>
   );
 
   ReactDOM.render(cbrain, document.getElementById("lorisworkspace"));

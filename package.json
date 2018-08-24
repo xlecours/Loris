@@ -6,7 +6,9 @@
     "doc": "docs",
     "test": "test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "cbrain_api": "xlecours/cbrain_javascript_client"
+  },
   "devDependencies": {
     "babel-cli": "^6.8.0",
     "babel-loader": "6.2.10",

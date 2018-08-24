@@ -64,6 +64,13 @@ var config = [{
         exclude: /node_modules/,
         loader: 'babel-loader'
       }
+    ],
+    rules: [
+      {
+        parser: {
+          amd: false
+        }
+      }
     ]
   },
   resolve: {

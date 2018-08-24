@@ -1,4 +1,6 @@
 import LoginPage from './views/login.js';
+import ProjectsPage from './views/projects.js';
+
 /**
  * CBRAIN Page.
  *
@@ -22,9 +24,7 @@ class CBRAIN extends React.Component {
 
     // Bind component instance to custom methods
     this.setApiToken = this.setApiToken.bind(this);
-  }
-
-  componentDidMount() {
+    this.setActivePage = this.setActivePage.bind(this);
   }
 
   setApiToken(token) {
@@ -37,6 +37,10 @@ class CBRAIN extends React.Component {
     this.setState({
       authenticated: true
     });
+  }
+
+  setActivePage(page) {
+    console.log(page);
   }
 
   render() {
@@ -52,7 +56,12 @@ class CBRAIN extends React.Component {
     }
 
     return (
-      <h1>Not Implemented</h1>
+      <div>
+        <ProjectsPage
+          client={this.props.client}
+          setActivePage={this.setActivePage}
+        />
+      </div>
     );
   }
 }

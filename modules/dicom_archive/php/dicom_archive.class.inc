@@ -120,7 +120,7 @@ class Dicom_Archive extends \NDB_Menu_Filter
              'Headers'       => [
                                  'Patient ID',
                                  'Patient Name',
-                                 'Biological Sex',
+                                 'Sex',
                                  'Date Of Birth',
                                  'Acquisition',
                                  'Archive Location',

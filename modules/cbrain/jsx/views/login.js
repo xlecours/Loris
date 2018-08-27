@@ -45,7 +45,8 @@ class LoginPage extends React.Component {
 }
 
 LoginPage.propTypes = {
-  client: React.PropTypes.object.isRequired
+  client: React.PropTypes.object.isRequired,
+  setApiToken: React.PropTypes.func.isRequired
 };
 
 export default LoginPage;

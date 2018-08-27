@@ -2,23 +2,24 @@ class Project extends React.Component {
 
   constructor(props) {
     super(props);
-
+console.log('Project');
     this.handleClick = this.handleClick.bind(this);
   }
 
   handleClick() {
-    const page = (
-      <ProjectPage
-        id={this.props.data.id}
-        name={this.props.data.name}
-      />
-    );
-    this.props.setActivePage(page);
+    this.props.setActivePage('project', {id: this.props.data.id});
   }
 
   render() {
+    console.log('models/project.js');
+    console.log(this.props);
     return (
-      <span onClick={this.handleClick}>{this.props.projectId}</span>
+      <tr>
+        <td>project</td>
+        <td>
+          <span onClick={this.handleClick}>{this.props.data.id}</span>
+        </td>
+      </tr>
     );
   }
 }
@@ -27,3 +28,6 @@ Project.propTypes = {
   setActivePage: React.PropTypes.func.isRequired,
   data: React.PropTypes.object.isRequired
 };
+
+export default Project;
+

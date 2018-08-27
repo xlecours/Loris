@@ -45,23 +45,20 @@ class ProjectsPage extends React.Component {
         <h3>Loading...</h3>
       );
     }
-    
-    const rows = this.state.data.map(p => (
-      <tr>
-        <td>{JSON.stringify(p)}</td>
-        <td>
-          <Project
-            setActivePage={this.props.setActivePage}
-            data={p} 
-          />
-        </td>
-      </tr>
-    ));
+
+    const rows = this.state.data.map(function(p,i) {
+      const project = (
+        <Project setActivePage={this.props.setActivePage} data={p} key={i}/>
+      );
+      return project;
+    }, this);
+
+console.log(rows);
 
     return (
-      <table>
+      <table><tbody>
         {rows}
-      </table>
+      </tbody></table>
     );
   }
 }

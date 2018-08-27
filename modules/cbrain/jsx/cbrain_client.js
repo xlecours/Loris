@@ -1,4 +1,5 @@
 import LoginPage from './views/login.js';
+import ProjectPage from './views/project.js';
 import ProjectsPage from './views/projects.js';
 
 /**
@@ -19,7 +20,9 @@ class CBRAIN extends React.Component {
     super(props);
 
     this.state = {
-      authenticated: false
+      authenticated: false,
+      activePage: 'login',
+      activePageProps: {}
     };
 
     // Bind component instance to custom methods
@@ -35,32 +38,50 @@ class CBRAIN extends React.Component {
       .apiKey = token;
 
     this.setState({
-      authenticated: true
+      authenticated: true,
+      activePage: 'projects'
     });
   }
 
-  setActivePage(page) {
-    console.log(page);
+  setActivePage(page, props) {
+    this.setState({
+      activePage: page,
+      activePageProps: props
+    });
   }
 
   render() {
-    if (!this.state.authenticated) {
-      return (
-        <div>
+    let page;
+    switch(this.state.activePage) {
+      case 'login':
+        page = (
           <LoginPage
             client={this.props.client}
             setApiToken={this.setApiToken}
           />
-        </div>
-      );
+        );
+        break;
+      case 'projects':
+        page = (
+          <ProjectsPage
+            client={this.props.client}
+            setActivePage={this.setActivePage}
+          />
+        );
+        break;
+      case 'project':
+        page = (
+          <ProjectPage
+            client={this.props.client}
+            setActivePage={this.setActivePage}
+            {...this.state.activePageProps}
+          />
+        )
     }
 
     return (
       <div>
-        <ProjectsPage
-          client={this.props.client}
-          setActivePage={this.setActivePage}
-        />
+        {page}
       </div>
     );
   }

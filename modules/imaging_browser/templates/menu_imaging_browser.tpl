@@ -120,6 +120,5 @@ var table = RDynamicDataTable({
         "onSort" : onSort
 });
 ReactDOM.render(table, document.getElementById("datatable"));
-
 </script>
 

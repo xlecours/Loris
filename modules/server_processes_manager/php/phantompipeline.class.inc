@@ -2,11 +2,11 @@
 /**
  * This file contains code to perform a complete MRI upload on the server.
  *
- * PHP Version 5
+ * PHP Version 7
  *
- * @category ServerProcessLauncher
- * @package  Loris
- * @author   Nicolas Brossard <nicolasbrossard.mni@gmail.com>
+ * @category Processing
+ * @package  Imaging
+ * @author   Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris
  */
@@ -16,9 +16,9 @@ namespace LORIS\server_processes_manager;
  * A class for holding a set of functions to perform a complete MRI
  * upload on the server.
  *
- * @category ServerProcessLauncher
- * @package  Loris
- * @author   Nicolas Brossard <nicolasbrossard.mni@gmail.com>
+ * @category Processing
+ * @package  Imaging
+ * @author   Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris
  */

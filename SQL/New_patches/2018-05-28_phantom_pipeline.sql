@@ -24,3 +24,12 @@ ALTER TABLE server_processes ADD CONSTRAINT
 
 ALTER TABLE `server_processes` DROP COLUMN `type`;
 
+CREATE TABLE `session_server_processes_rel` (
+  `sessionID` int(10) unsigned NOT NULL,
+  `processID` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`sessionID`,`processID`),
+  KEY `FK_server_process_ID` (`processID`),
+  CONSTRAINT `FK_server_process_ID` FOREIGN KEY (`processID`) REFERENCES `server_processes` (`id`),
+  CONSTRAINT `FK_session_ID` FOREIGN KEY (`sessionID`) REFERENCES `session` (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

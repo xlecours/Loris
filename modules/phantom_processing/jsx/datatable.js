@@ -23,24 +23,23 @@ class PhantomsDataTable extends React.Component {
   }
 
   render() {
-    const data = this.props.data.Data.map(function(e,i) {
-      return Object.keys(e).map(function(k) {return e[k];})
-    });
+    const data = this.props.data.Data.reduce(function(carry, item) {
+      carry[item.visit_label] = [
+        item.visit_label,
+        item.insert_date,
+        item.status,
+        item.link
+      ];
+      return carry;
+    }, {});
 
-    let filter = this.props.filter;
-    console.log(Object.keys(filter).reduce(
-      function(carry, item) {
-        carry[item] = filter[item]; 
-        return carry;
-      },
-      {}
-    ));
+    const headers = ['Visit Label','Insert Date','Status','SPM Link'];
 
     return (
       <div>
         <StaticDataTable
-          Data={data}
-          Headers={this.props.data.Headers}
+          Data={Object.values(data)}
+          Headers={headers}
           Filter={this.props.filter}
           getFormattedCell={this.formatCell}
         />

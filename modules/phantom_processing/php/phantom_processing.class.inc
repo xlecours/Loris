@@ -91,6 +91,7 @@ class Phantom_Processing extends \NDB_Menu_Filter
      */
     function toJSON()
     {
+        // TODO :: This should go in a dataProvisionner
         $database = (\NDB_Factory::singleton())->database();
         $stmt     = $database->prepare(
           '

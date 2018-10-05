@@ -36,9 +36,11 @@ class Client
         curl_setopt($handle, CURLOPT_POSTFIELDS, '{"username": "demo", "password": "demo"}');
 
         $data = curl_exec($handle);
-if ($data === false) {
-    print curl_error($handle);
-}
+
+        if ($data === false) {
+            print curl_error($handle);
+        }
+
         $reponse = (new \Zend\Diactoros\Response())
             ->withBody(new StringStream($data))
             ->withStatus(curl_getinfo($handle, CURLINFO_HTTP_CODE));

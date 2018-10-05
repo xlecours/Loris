@@ -6,10 +6,7 @@ var config = [{
   entry: {
     './htdocs/js/components/LaunchPhantomPipelineButton.js':'jsx/LaunchPhantomPipelineButton.js',
     './htdocs/js/components/DynamicDataTable.js': './jsx/DynamicDataTable.js',
-    './htdocs/js/components/PaginationLinks.js': './jsx/PaginationLinks.js',
-    './htdocs/js/components/StaticDataTable.js': './jsx/StaticDataTable.js',
     './htdocs/js/components/Breadcrumbs.js': './jsx/Breadcrumbs.js',
-    './htdocs/js/components/Form.js': './jsx/Form.js',
     './htdocs/js/components/Markdown.js': './jsx/Markdown.js',
     './modules/media/js/mediaIndex.js': './modules/media/jsx/mediaIndex.js',
     './modules/media/js/editFormIndex.js': './modules/media/jsx/editFormIndex.js',
@@ -51,6 +48,7 @@ var config = [{
     './modules/brainbrowser/js/Brainbrowser.js': './modules/brainbrowser/jsx/Brainbrowser.js',
     './modules/data_integrity_flag/js/index.js': './modules/data_integrity_flag/jsx/index.js',
     './modules/imaging_uploader/js/index.js': './modules/imaging_uploader/jsx/index.js',
+    './modules/phantom_processing/js/index.js': './modules/phantom_processing/jsx/index.js',
     './modules/acknowledgements/js/columnFormatter.js': './modules/acknowledgements/jsx/columnFormatter.js'
   },
   output: {

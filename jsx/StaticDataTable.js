@@ -1,3 +1,4 @@
+import PaginationLinks from 'PaginationLinks';
 /* exported RStaticDataTable */
 
 /**

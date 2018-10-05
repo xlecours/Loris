@@ -1,20 +1,25 @@
 <?php
 namespace LORIS;
 
-// FIXME:: This is temporary. The client should be dowloaded from a public repo
-//         using composer instead.
-require_once __DIR__ . "/../../vendor/SwaggerClient-php/vendor/autoload.php";
-
 use \Swagger\Client\Configuration;
 use \Swagger\Client\Api\SessionsApi;
 use \Swagger\Client\Api\DataProvidersApi;
 
 class CBRAIN_Hook
 {
+    private static $instance = null;
 
     private $config;
 
-    public function __construct()
+    public static function getInstance(): CBRAIN_Hook
+    {
+        if (self::$instance === null) {
+            self::$instance = new CBRAIN_Hook();
+        }
+        return self::$instance;
+    }
+
+    private function __construct()
     {
         $this->config = new Configuration();
 
@@ -56,16 +61,30 @@ class CBRAIN_Hook
     }
 
     /**
-     * @return \Swagger\\Client\\Model\\FileInfo[]
+     * @return \Swagger\Client\Model\FileInfo[]
      */
-    public function getUserfiles()
+    public function getUserfilesFromDataProvider(int $dataproviderid): array
     {
-        $apiInstance = new DataProvidersApi(
-            null, // Will use Guzzle/Http/Client by default
-            $this->config
+        return (new DataProvidersApi(null, $this->config))
+            ->dataProvidersIdBrowseGet($dataproviderid);
+    }
+
+    /**
+     * Return an array of CBRAIN's dataproviders that fits the InputDataProvider
+     * value defined in the configs.
+     *
+     * @return \Swagger\Client\Model\DataProvider[]
+     */
+    public function getInputDataProvider(): array
+    {
+        $dataprovidername = $cbrain_config = (\NDB_Factory::singleton())->config()
+            ->getSetting('CBRAIN')['InputDataProviderName'];
+
+        return array_filter(
+            (new DataProvidersApi(null, $this->config))->dataProvidersGet(),
+            function ($dp) use ($dataprovidername) {
+                return $dp['name'] == $dataprovidername;
+            }
         );
-        $id          = 117;
-        $dp_api      = $apiInstance->dataProvidersIdBrowseGet($id);
-        return $dp_api;
     }
 }

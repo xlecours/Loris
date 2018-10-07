@@ -14,6 +14,7 @@ class PhantomsDataTable extends React.Component {
     super(props);
 
     this.formatCell = this.formatCell.bind(this);
+    this.bob = this.bob.bind(this);
   }
 
   formatCell(header, value, row, headers) {
@@ -22,24 +23,16 @@ class PhantomsDataTable extends React.Component {
     );
   }
 
+  bob(x) {
+    console.log('bob');
+  }
+
   render() {
-    const data = this.props.data.Data.reduce(function(carry, item) {
-      carry[item.visit_label] = [
-        item.visit_label,
-        item.insert_date,
-        item.status,
-        item.link
-      ];
-      return carry;
-    }, {});
-
-    const headers = ['Visit Label','Insert Date','Status','SPM Link'];
-
     return (
       <div>
         <StaticDataTable
-          Data={Object.values(data)}
-          Headers={headers}
+          Data={this.props.data}
+          Headers={this.props.headers}
           Filter={this.props.filter}
           getFormattedCell={this.formatCell}
         />

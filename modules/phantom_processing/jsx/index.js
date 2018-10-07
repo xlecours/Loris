@@ -7,57 +7,53 @@ class PhantomProcessingApp extends React.Component
     super(props);
 
     this.state = {
-        phantoms: {},
-        cbrain: {},
-        isLoaded: false,
-        filter: {}
+      phantoms: {},
+      cbrain: {},
+      isLoaded: false,
+      filter: {}
     };
 
-    this.getPhantoms  = this.getPhantoms.bind(this);
-    this.getCBRAIN = this.getCBRAIN.bind(this);
+    this.getData  = this.getData.bind(this);
     this.updateFilter = this.updateFilter.bind(this);
   }
 
-  getPhantoms() {
-    fetch(this.props.baseurl.concat('?format=json'), {headers: {'Accept': 'application/json'}})
+  getData() {
+    const that = this;
+    var p1 = fetch(this.props.baseurl.concat('?format=json'), {headers: {'Accept': 'application/json'}})
       .then(res => res.json())
       .then(
         (result) => {
-          this.setState({
-            isLoaded: true,
-            phantoms: result
-          });
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
+          return result;
         }
       );
-  }
 
-  getCBRAIN() {
-    fetch(this.props.baseurl.concat('/cbrain'), {headers: {'Accept': 'application/json'}}) 
+    var p2 = fetch(this.props.baseurl.concat('/cbrain'), {headers: {'Accept': 'application/json'}}) 
       .then(res => res.json())
       .then(
-        (result) => {
-          this.setState({
-            cbrain: Object.keys(result).map(function(dpindex) {
-              return {
-                dataprovider: JSON.parse(result[dpindex].dp),
-                files: Object.keys(result[dpindex].files).map(function(fileindex) {
-                  return JSON.parse(result[dpindex].files[fileindex]);
-                })
-              };
-            })
-          });
+         (result) => {
+           return Object.keys(result).map(function(dpindex) {
+             return {
+               dataprovider: JSON.parse(result[dpindex].dp),
+               files: Object.keys(result[dpindex].files).map(function(fileindex) {
+                 return JSON.parse(result[dpindex].files[fileindex]);
+               })
+             };
+           });
+         }
+      );
+
+    Promise.all([p1,p2]).then(function(value) {
+      that.setState({
+        phantoms: value[0],
+        cbrain: value[1],
+        isLoaded: true
       });
+      //that.forceUpdate();
+    });
   }
 
   componentDidMount(){
-    this.getPhantoms();
-    this.getCBRAIN();
+    this.getData();
   }
 
   updateFilter(filter) {
@@ -67,14 +63,39 @@ class PhantomProcessingApp extends React.Component
   render() {
     if (!this.state.isLoaded) {
       return (
-        <h3>Loading</h3>
+        <span>Loading...</span>
       );
     }
 
+    if (this.state.error) {
+      return (
+        <span>{error}</span>
+      );
+    }
+
+    const cbraindata = this.state.cbrain;
+    const tableheaders = [
+      'Visit Label',
+      'Insert Date',
+      'Status',
+      'Bob',
+      'Details'
+    ];
+
+    let tabledata = Object.values(this.state.phantoms.Data.reduce(function(carry, item) {
+      carry[item.visit_label] = [
+        item.visit_label,
+        item.insert_date,
+      ];
+      return carry;
+    }, {})).map(function (row) {
+      return row.concat(['123','abc']);
+    });
+
     return (
       <div>
-        <PhantomsFilters filter={this.state.filter} updateFilter={this.updateFilter} form={this.state.phantoms.form}/>
-        <PhantomsDataTable data={this.state.phantoms} filter={this.state.filter}/>
+        <PhantomsFilters updateFilter={this.updateFilter} form={this.state.phantoms.form} filter={this.state.filter}/>
+        <PhantomsDataTable data={tabledata} headers={tableheaders} filter={this.state.filter}/>
       </div>
     );
   }

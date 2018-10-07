@@ -37,6 +37,8 @@
         <host></host>
         <username></username>
         <password></password>
+        <InputDataProviderName></InputDataProviderName>
+        <OutputDataProviderName></OutputDataProviderName>
     </CBRAIN>
 
     <!-- study variables -->

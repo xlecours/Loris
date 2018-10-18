@@ -48,7 +48,6 @@ class PhantomProcessingApp extends React.Component
         cbrain: value[1],
         isLoaded: true
       });
-      //that.forceUpdate();
     });
   }
 
@@ -78,7 +77,6 @@ class PhantomProcessingApp extends React.Component
       'Visit Label',
       'Insert Date',
       'Status',
-      'Bob',
       'Details'
     ];
 
@@ -89,7 +87,12 @@ class PhantomProcessingApp extends React.Component
       ];
       return carry;
     }, {})).map(function (row) {
-      return row.concat(['123','abc']);
+      const userfile = cbraindata[0].files.filter(function(f) {
+        const re = new RegExp('[0-9]{6}_' + row[0]);
+        return re.test(f.name);
+      });
+      // TODO :: userfile[0].userfile_id will break if no files are found
+      return row.concat(['', <LaunchPhantomPipelineButton userfileId={userfile[0].userfile_id}/>]);
     });
 
     return (

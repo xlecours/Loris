@@ -4,6 +4,7 @@ namespace LORIS;
 use \Swagger\Client\Configuration;
 use \Swagger\Client\Api\SessionsApi;
 use \Swagger\Client\Api\DataProvidersApi;
+use \Swagger\Client\Api\ToolConfigsApi;
 
 class CBRAIN_Hook
 {
@@ -86,5 +87,10 @@ class CBRAIN_Hook
                 return $dp['name'] == $dataprovidername;
             }
         );
+    }
+
+    public function getAvailableTools(): array
+    {
+        return (new ToolConfigsApi(null, $this->config))->toolConfigsGet();
     }
 }

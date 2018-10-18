@@ -11,6 +11,16 @@ import {TextAreaInput} from 'Form';
  *
  * */
 class PhantomsFilters extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.resetFilter = this.resetFilter.bind(this);
+  }
+
+  resetFilter() {
+    this.refs.phantomsFilters.clearFilter();
+  }
+
   render() {
     return (
       <FilterForm
@@ -26,7 +36,7 @@ class PhantomsFilters extends React.Component {
         <ButtonElement
           label="Clear Filters"
           type="reset"
-          onUserInput={this.props.resetFilters}
+          onUserInput={this.resetFilter}
         />
       </FilterForm>
     );

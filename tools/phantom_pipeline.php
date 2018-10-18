@@ -1,35 +1,17 @@
 <?php
 require_once __DIR__ . "/../vendor/autoload.php";
-require_once __DIR__ . "/../vendor/SwaggerClient-php/vendor/autoload.php";
-
-use \Swagger\Client\Configuration;
-use \Swagger\Client\Api\SessionsApi;
-use \Swagger\Client\Api\DataProvidersApi;
-
-/*
-* Set the config
-*/
-$config = new \Swagger\Client\Configuration();
-$config->setHost('https://portal.cbrain.mcgill.ca/');
 
 $loris_client = new NDB_Client();
 $loris_client->makeCommandLine();
-$loris_client->initialize();
+$loris_client->initialize(__DIR__ . "/../project/config.xml");
+$hook = \LORIS\CBRAIN_Hook::getInstance();
 
-$factory       = \NDB_Factory::singleton();
-$loris_config  = \NDB_Config::singleton();
-$cbrain_config = $loris_config->getSetting('CBRAIN');
-
-/*
-* Create a session
-*/
-$session_api      = new \Swagger\Client\Api\SessionsApi(null,$config);
-$rep_session_post = $session_api->sessionPost(
-    $cbrain_config['username'],
-    $cbrain_config['password']
+$tool = array_filter(
+    $hook->getAvailableTools(),
+    function ($t) {
+        return $t->getDescription() == 'PhantomProc_09 0.9 on Graham';
+    }
 );
-$token            = $rep_session_post->getCbrainApiToken();
-$config->setApiKey('cbrain_api_token', $token);
 
 /*
 *************
@@ -44,15 +26,19 @@ $newly_registered_userfiles_ids = [$argv[1]];
 *******************************
 */
 
+// TODO :: use the hook to lauch a task
+var_dump('Check todo!!!');
+exit;
+
 $apiInstance = new Swagger\Client\Api\TasksApi(
-    new GuzzleHttp\Client(),
+    null,
     $config
 );
 
-$task_ids = [];
-foreach ($newly_registered_userfiles_ids as &$userfile_id) {
+  $task_ids = [];
+
   $cbrain_task = new \Swagger\Client\Model\CbrainTask(); // \Swagger\Client\Model\CbrainTask | The task to create.
-  $cbrain_task["tool_id"] = 91;
+  $cbrain_task["tool_id"] = $tool->getId();;
   $cbrain_task["cbrain_task"] = array(
     "params"=>array("interface_userfile_ids"=>array($userfile_id), "file_collect"=>$userfile_id),
     "tool_config_id"=>"633",
@@ -60,11 +46,12 @@ foreach ($newly_registered_userfiles_ids as &$userfile_id) {
     "description"=>"Test in PHP with file: " . $userfile_id ,
     "user_id"=>"1",
     "group_id"=>"2");
+
   $tasks = $apiInstance->tasksPost($cbrain_task);
+
   foreach ($tasks as &$task) {
     array_push($task_ids, $task["id"]);
   }
-}
 
 /*
 ******************************

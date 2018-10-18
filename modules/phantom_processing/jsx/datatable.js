@@ -14,17 +14,12 @@ class PhantomsDataTable extends React.Component {
     super(props);
 
     this.formatCell = this.formatCell.bind(this);
-    this.bob = this.bob.bind(this);
   }
 
   formatCell(header, value, row, headers) {
     return (
       <td>{value}</td>
     );
-  }
-
-  bob(x) {
-    console.log('bob');
   }
 
   render() {

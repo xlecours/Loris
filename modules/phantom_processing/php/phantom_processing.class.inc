@@ -139,6 +139,7 @@ class Phantom_Processing extends \NDB_Menu_Filter
         return array_merge(
             $deps,
             array(
+             $baseURL . '/js/components/LaunchPhantomPipelineButton.js',
              $baseURL . "/phantom_processing/js/index.js",
             )
         );

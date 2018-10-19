@@ -6,20 +6,23 @@ $loris_client->makeCommandLine();
 $loris_client->initialize(__DIR__ . "/../project/config.xml");
 $hook = \LORIS\CBRAIN_Hook::getInstance();
 
-$tool = array_filter(
-    $hook->getAvailableTools(),
-    function ($t) {
-        return $t->getDescription() == 'PhantomProc_09 0.9 on Graham';
-    }
-);
+$userfile_id = [$argv[1]];
 
-/*
-*************
-* Browse DP *
-*************
-*/
-$newly_registered_userfiles_ids = [$argv[1]];
-
+$cbrain_task = (new \Swagger\Client\Model\CbrainTask())
+    ->setToolId(91)
+    ->setCbrainTask(array(
+      'params' => array(
+          'interface_userfile_ids' => $userfile_id,
+          'file_collect'           => $userfile_id 
+      ),
+      'tool_config_id'           => 924, //Phantom Pipeline with the proper image from Shawn
+      'results_data_provider_id' => 129,
+      'description'              => 'LORIS CBRAIN Hook test',
+      'user_id'                  => 1,
+      'group_id'                 => 2
+    ));
+var_dump($cbrain_task);
+exit;
 /*
 *******************************
 * Launch a task on this files *
@@ -27,8 +30,6 @@ $newly_registered_userfiles_ids = [$argv[1]];
 */
 
 // TODO :: use the hook to lauch a task
-var_dump('Check todo!!!');
-exit;
 
 $apiInstance = new Swagger\Client\Api\TasksApi(
     null,

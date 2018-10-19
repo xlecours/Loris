@@ -5,6 +5,8 @@ use \Swagger\Client\Configuration;
 use \Swagger\Client\Api\SessionsApi;
 use \Swagger\Client\Api\DataProvidersApi;
 use \Swagger\Client\Api\ToolConfigsApi;
+use \Swagger\Client\Api\ToolsApi;
+use \Swagger\Client\Api\TasksApi;
 
 class CBRAIN_Hook
 {
@@ -89,8 +91,27 @@ class CBRAIN_Hook
         );
     }
 
+    /**
+     * Return an array of CBRAIN's dataproviders that fits the InputDataProvider
+     * value defined in the configs.
+     *
+     * @return \Swagger\Client\Model\DataProvider[]
+     */
+    public function getOutputDataProvider(): array
+    {
+        $dataprovidername = $cbrain_config = (\NDB_Factory::singleton())->config()
+            ->getSetting('CBRAIN')['OutputDataProviderName'];
+
+        return array_filter(
+            (new DataProvidersApi(null, $this->config))->dataProvidersGet(),
+            function ($dp) use ($dataprovidername) {
+                return $dp['name'] == $dataprovidername;
+            }
+        );
+    }
     public function getAvailableTools(): array
     {
+        var_dump((new ToolsApi(null, $this->config))->toolsGet());
         return (new ToolConfigsApi(null, $this->config))->toolConfigsGet();
     }
 }

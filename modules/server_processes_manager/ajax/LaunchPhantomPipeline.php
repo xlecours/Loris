@@ -8,8 +8,13 @@ if (!$user->hasPermission('server_processes_manager')) {
     header("HTTP/1.1 403 Forbidden");
     exit;
 }
-$userfileId = JSON_decode(file_get_contents("php://input"),true)['userfileId'] ?? null;
-if (empty($userfileId)) {
+
+$params = JSON_decode(file_get_contents("php://input"), true);
+
+$userfileId = $params['userfileId'] ?? null;
+$sessionId  = $params['sessionId'] ?? null;
+
+if (!is_int($userfileId) || !is_int($sessionId)) {
     header('HTTP/1.0 400 Bad Request');
     exit;
 }
@@ -20,7 +25,7 @@ $serverProcessLauncher = new ServerProcessLauncher();
 try {
     $serverProcessLauncher->phantomPipeline(
         $userfileId,
-        '/var/www/loris_1/tools/phantom_pipeline.php'
+        $sessionId
     );
     header('HTTP/1.0 201 Created');
 } catch (\Exception $e) {

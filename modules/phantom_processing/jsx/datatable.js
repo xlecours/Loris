@@ -17,9 +17,22 @@ class PhantomsDataTable extends React.Component {
   }
 
   formatCell(header, value, row, headers) {
-    return (
-      <td>{value}</td>
-    );
+    switch(header) {
+      case 'Details':
+        return (
+          <td>
+            <LaunchPhantomPipelineButton
+              userfileId={value}
+              sessionId={row[headers.indexOf('Session Id')]}
+            />
+          </td>
+        );
+        break;
+      default:
+        return (
+          <td>{value}</td>
+        );
+    }
   }
 
   render() {

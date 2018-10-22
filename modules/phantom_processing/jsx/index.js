@@ -74,6 +74,7 @@ class PhantomProcessingApp extends React.Component
 
     const cbraindata = this.state.cbrain;
     const tableheaders = [
+      'Session Id',
       'Visit Label',
       'Insert Date',
       'Status',
@@ -82,17 +83,18 @@ class PhantomProcessingApp extends React.Component
 
     let tabledata = Object.values(this.state.phantoms.Data.reduce(function(carry, item) {
       carry[item.visit_label] = [
+        item.session_id,
         item.visit_label,
         item.insert_date,
       ];
       return carry;
     }, {})).map(function (row) {
       const userfile = cbraindata[0].files.filter(function(f) {
-        const re = new RegExp('[0-9]{6}_' + row[0]);
+        const re = new RegExp('[0-9]{6}_' + row[1]);
         return re.test(f.name);
       });
       // TODO :: userfile[0].userfile_id will break if no files are found
-      return row.concat(['', <LaunchPhantomPipelineButton userfileId={userfile[0].userfile_id}/>]);
+      return row.concat(['status unknown',userfile[0].userfile_id]);
     });
 
     return (

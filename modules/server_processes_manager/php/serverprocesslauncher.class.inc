@@ -182,7 +182,10 @@ class ServerProcessLauncher
             $userfileId,
             $sourceLocation
         );
-        return $this->_launch($process);
+        $recordid = $this->_launch($process);
+        $process->addSessionProcessRel();
+
+        return $recordid;
     }
 }
 

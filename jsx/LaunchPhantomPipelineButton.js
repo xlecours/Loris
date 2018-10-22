@@ -28,7 +28,10 @@ class LaunchPhantomPipelineButton extends React.Component {
 
     xhr.setRequestHeader("Content-type", "application/json");
     xhr.send(JSON.stringify(
-      {userfileId : this.props.userfileId}
+      {
+        userfileId : Number(this.props.userfileId),
+        sessionId : Number(this.props.sessionId)
+      }
     ));
   }
 
@@ -41,7 +44,8 @@ class LaunchPhantomPipelineButton extends React.Component {
 }
 
 LaunchPhantomPipelineButton.propTypes = {
-  userfileId: React.PropTypes.number.isRequired
+  userfileId: React.PropTypes.number.isRequired,
+  sessionId: React.PropTypes.number.isRequired
 };
 
 window.RLaunchPhantomPipelineButton = React.createFactory(LaunchPhantomPipelineButton);

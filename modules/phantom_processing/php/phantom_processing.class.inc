@@ -96,6 +96,7 @@ class Phantom_Processing extends \NDB_Menu_Filter
         $stmt     = $database->prepare(
           '
             SELECT 
+              session.ID as session_id,
               session.Visit_label as visit_label,
               session.Testdate as insert_date,
               files.File as filename,
@@ -114,6 +115,7 @@ class Phantom_Processing extends \NDB_Menu_Filter
         return json_encode(
             array(
              'Headers' => array(
+                           'Session ID',
                            'Visit Label',
                            'Insert Date',
                            'Filename',

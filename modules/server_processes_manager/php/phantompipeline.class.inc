@@ -1,6 +1,6 @@
 <?php
 /**
- * This file contains code to perform a complete MRI upload on the server.
+ * This file contains code to lauch the phantom_pipeline tool.
  *
  * PHP Version 7
  *
@@ -13,8 +13,7 @@
 namespace LORIS\server_processes_manager;
 
 /**
- * A class for holding a set of functions to perform a complete MRI
- * upload on the server.
+ * Class specific to the phantom pipeline tool server process
  *
  * @category Processing
  * @package  Imaging
@@ -31,22 +30,29 @@ class PhantomPipeline extends AbstractServerProcess
     const PROCESS_TYPE = 'phantom_pipeline';
 
     /**
-     * Basename of the file used to set the environment variables before the
-     * upload can take place.
+     * Phantom pipeline source location
+     * TODO :: This should come from the database
      */
-    const ENVIRONMENT_BASENAME = 'environment';
+    const SOURCE_LOCATION = __DIR__ . '/../../../tools/phantom_pipeline.php';
 
     /**
-     * Location of the MRI file uploaded.
+     * The sessionid associated to the cbrain userfileid
      *
-     * @var string
+     * @var integer
      */
-    private $_sourceLocation;
+    private $sessionId;
 
     /**
-     * Builds a new MriUploadServerProcess
+     * The CBRAIN userfile_id
      *
-     * @param int    $userfileID     CBRAIN userfileID.
+     * @var integer
+     */
+    private $userfileId;
+
+    /**
+     * Builds a new PhantomPipeline process
+     *
+     * @param int    $userfileId     CBRAIN userfile_id.
      * @param string $sourceLocation Source full path
      * @param int    $id             ID of the process in the database.
      * @param int    $pid            PID for this process
@@ -63,14 +69,13 @@ class PhantomPipeline extends AbstractServerProcess
      * @param string $exitText       result of the process in text form
      */
     public function __construct(
-        $userfileID = null, $sourceLocation= null, $id = null, $pid = null,
+        $userfileId = null, $sessionId= null, $id = null, $pid = null,
         $stdoutFile = null, $stderrFile = null,
         $exitCodeFile = null, $exitCode = null, $userid = null,
         $startTime = null, $endTime = null, $exitText = null
     ) {
-        //FIXME :: this should come from configs or database
-        $this->_sourceLocation = $sourceLocation;
-        $this->userfileId      = $userfileID;
+        $this->sessionId  = $sessionId;
+        $this->userfileId = $userfileId;
 
         parent::__construct(
             $id,
@@ -94,7 +99,8 @@ class PhantomPipeline extends AbstractServerProcess
      */
     public function getShellCommand()
     {
-        return "php $this->_sourceLocation $this->userfileId";
+        $script_absolute_path = self::SOURCE_LOCATION;
+        return "php $script_absolute_path $this->userfileId";
     }
 
     /**
@@ -105,6 +111,7 @@ class PhantomPipeline extends AbstractServerProcess
     public function getProgress()
     {
         // To be implemented in a later stage
+        error_log('PhantomPipeline::getProgress');
         return '';
     }
 
@@ -118,6 +125,7 @@ class PhantomPipeline extends AbstractServerProcess
      */
     public function computeExitText($exitCode, $endTime)
     {
+        // TODO
         if (is_null($exitCode)) {
             return null;
         } elseif (is_numeric($exitCode) && $exitCode == 0) {
@@ -148,9 +156,31 @@ class PhantomPipeline extends AbstractServerProcess
      */
     public function deleteProcessFiles()
     {
-        $exitCode = parent::getExitCode();
+        return false;
+    }
 
-        return !is_null($exitCode) && is_numeric($exitCode) && $exitCode == 0;
+    public function addSessionProcessRel()
+    {
+        $database = $this->getDatabaseProvider()->getDatabase();
+
+        $stmt = $database->prepare(
+            '
+          INSERT INTO session_server_processes_rel 
+            (sessionID, processID) 
+          SELECT :v_session_id, id 
+          FROM server_processes 
+          WHERE pid = :v_process_id
+        '
+        );
+
+        $database->execute(
+            $stmt,
+            array(
+             'v_session_id' => $this->sessionId,
+             'v_process_id' => $this->getPid(),
+            ),
+            array('nofetch' => true)
+        );
     }
 }
 

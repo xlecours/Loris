@@ -8,6 +8,8 @@ use \Swagger\Client\Api\ToolConfigsApi;
 use \Swagger\Client\Api\ToolsApi;
 use \Swagger\Client\Api\TasksApi;
 
+use \Swagger\Client\Model\CbrainTask;
+
 class CBRAIN_Hook
 {
     private static $instance = null;
@@ -109,9 +111,15 @@ class CBRAIN_Hook
             }
         );
     }
+
     public function getAvailableTools(): array
     {
-        var_dump((new ToolsApi(null, $this->config))->toolsGet());
         return (new ToolConfigsApi(null, $this->config))->toolConfigsGet();
+    }
+
+    
+    public function launchTask(CbrainTask $task): array
+    {
+        return (new TasksApi(null, $this->config))->tasksPost($task);
     }
 }

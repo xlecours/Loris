@@ -6,61 +6,42 @@ $loris_client->makeCommandLine();
 $loris_client->initialize(__DIR__ . "/../project/config.xml");
 $hook = \LORIS\CBRAIN_Hook::getInstance();
 
-$userfile_id = [$argv[1]];
+$userfile_id = $argv[1];
 
+/**
+ *
+ * var_dump(array_filter($hook->getAvailableTools(), function ($t) {
+ *     return $t->getDescription() == 'Phantom Pipeline with the proper image from Shawn'; 
+ * }));
+ */
+
+/**
+ * To find the dataprovider_id
+ * var_dump($hook->getOutputDataProvider());
+ */
 $cbrain_task = (new \Swagger\Client\Model\CbrainTask())
     ->setToolId(91)
     ->setCbrainTask(array(
       'params' => array(
-          'interface_userfile_ids' => $userfile_id,
+          'interface_userfile_ids' => array($userfile_id),
           'file_collect'           => $userfile_id 
       ),
       'tool_config_id'           => 924, //Phantom Pipeline with the proper image from Shawn
-      'results_data_provider_id' => 129,
+      'results_data_provider_id' => 129, // Test for Phantom Pipeline (output directories)
       'description'              => 'LORIS CBRAIN Hook test',
-      'user_id'                  => 1,
-      'group_id'                 => 2
+      'user_id'                  => 930,
+      'group_id'                 => 3154
     ));
-var_dump($cbrain_task);
-exit;
-/*
-*******************************
-* Launch a task on this files *
-*******************************
-*/
 
-// TODO :: use the hook to lauch a task
-
-$apiInstance = new Swagger\Client\Api\TasksApi(
-    null,
-    $config
-);
-
-  $task_ids = [];
-
-  $cbrain_task = new \Swagger\Client\Model\CbrainTask(); // \Swagger\Client\Model\CbrainTask | The task to create.
-  $cbrain_task["tool_id"] = $tool->getId();;
-  $cbrain_task["cbrain_task"] = array(
-    "params"=>array("interface_userfile_ids"=>array($userfile_id), "file_collect"=>$userfile_id),
-    "tool_config_id"=>"633",
-    "results_data_provider_id"=>"129",
-    "description"=>"Test in PHP with file: " . $userfile_id ,
-    "user_id"=>"1",
-    "group_id"=>"2");
-
-  $tasks = $apiInstance->tasksPost($cbrain_task);
-
-  foreach ($tasks as &$task) {
-    array_push($task_ids, $task["id"]);
-  }
-
-/*
-******************************
-* Monitoring of tasks status *
-******************************
-*/
-
-$number_initial_task = sizeof($task_ids);
+try {
+    $task = $hook->launchTask($cbrain_task)[0]; // There should only be one task created
+    echo "# CBRIAN task created.\n";
+    echo "task_id=$task['id']\n";
+    exit(0);
+} catch (\Swagger\Client\ApiException $e) {
+    fwrite(STDERR, $e->getMessage() . PHP_EOL);
+    exit(1);
+}
 
 do {
   $remaining_tasks = $number_initial_task - sizeof($task_ids);

@@ -38,7 +38,7 @@ class LaunchPhantomPipelineButton extends React.Component {
   render() {
     const buttonid = ''.concat(this.props.userfileId);
     return (
-      <button id={buttonid} disabled={this.state.launched} onClick={this.launch}>Launch</button>
+      <button {...this.props} disabled={this.state.launched} onClick={this.launch}>Launch</button>
     );
   }
 }

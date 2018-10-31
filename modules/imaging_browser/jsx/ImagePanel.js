@@ -602,6 +602,7 @@ window.ImageQCCommentsButton = ImageQCCommentsButton;
 window.LongitudinalViewButton = LongitudinalViewButton;
 window.ImageDownloadButtons = ImageDownloadButtons;
 window.ImagePanelBody = ImagePanelBody;
+window.ImagePanel = ImagePanel;
 window.RImagePanel = RImagePanel;
 
 export default {
@@ -619,5 +620,6 @@ export default {
   LongitudinalViewButton,
   ImageDownloadButtons,
   ImagePanelBody,
+  ImagePanel,
   RImagePanel
 };

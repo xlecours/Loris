@@ -753,6 +753,7 @@ class ViewSession extends \NDB_Form
         $depends = array_merge(
             $depends,
             array(
+             $baseurl . "/imaging_browser/js/PhantomProcessingPanel.js",
              $baseurl . "/imaging_browser/js/jiv_and_imaging_browser.js",
              $baseurl . "/imaging_browser/js/ImagePanel.js",
             )

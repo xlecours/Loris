@@ -33,6 +33,7 @@ var config = [{
     './modules/imaging_browser/js/ImagePanel.js': './modules/imaging_browser/jsx/ImagePanel.js',
     './modules/imaging_browser/js/columnFormatter.js': './modules/imaging_browser/jsx/columnFormatter.js',
     './modules/imaging_browser/js/onSort.js': './modules/imaging_browser/jsx/onSort.js',
+    './modules/imaging_browser/js/PhantomProcessingPanel.js': './modules/imaging_browser/jsx/PhantomProcessingPanel.js',
     './modules/instrument_builder/js/react.instrument_builder.js': './modules/instrument_builder/jsx/react.instrument_builder.js',
     './modules/instrument_builder/js/react.questions.js': './modules/instrument_builder/jsx/react.questions.js',
     './modules/survey_accounts/js/columnFormatter.js': './modules/survey_accounts/jsx/columnFormatter.js',

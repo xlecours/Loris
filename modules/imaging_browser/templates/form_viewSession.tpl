@@ -9,6 +9,7 @@
 <div class="row">
 {$headerTable}
 </div>
+<div id="phantomsessiontable" class="row"></div>
 
 <div class="panel panel-default">
     <div class="panel-heading" id="panel-main-heading">

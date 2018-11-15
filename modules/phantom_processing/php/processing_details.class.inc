@@ -41,7 +41,11 @@ class Processing_Details implements RequestHandlerInterface
     {
         $session = $request->getAttribute('session');
         $MySQLAccessor = new PhantomProcessMySQLAccessor((\NDB_Factory::singleton())->database());
-        var_dump($MySQLAccessor->getSessionServerProcesses($session));
+        return (new \Zend\Diactoros\Response())
+            ->withBody(new \LORIS\Http\StringStream(json_encode(
+                $MySQLAccessor->getSessionServerProcesses($session)
+            ))
+        );
     }
 }
 

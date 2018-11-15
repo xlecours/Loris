@@ -19,21 +19,12 @@ class PhantomProcessingPanel extends React.Component {
   }
 
   fetchData() {
-    const url = loris.BaseURL.concat('/phantom_processing?sessionid=', this.props.sessionid);
+    const url = loris.BaseURL.concat('/phantom_processing?sessionid=', this.props.sessionid, '&format=json');
 
     fetch(url)
       .then(res => res.json())
       .then(json => this.setState(json))
-      .catch(error => console.log(error))
-/*
-    this.setState({
-      isPhantom: true,
-      pipelineRuns: [
-        {taskid: 603756, server:'AceLab-VH-2', status: 'Failed', run: 1, startts: '2018-11-14 16:55:37 EST', lastts: '2018-11-14 20:14:32 EST'},
-        {taskid: 603780, server:'AceLab-VH-2', status: 'Completed', run: 1, startts: '2018-11-14 20:53:06 EST', lastts: '2018-11-15 00:11:54 EST'}
-      ]
-    });
-*/
+      .catch(error => console.log(error));
   }
 
   gotoTaskDetails(taskid) {

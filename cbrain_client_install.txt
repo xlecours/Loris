@@ -1,0 +1,3 @@
+# ~$ (dependancy) :: sudo apt-get install php7.3-curl
+# ~$ composer config repositories.xlecours/cbrain-php-client vcs https://github.com/xlecours/cbrain-php-client.git
+# ~$ composer require xlecours/cbrain-php-client:5.1.0

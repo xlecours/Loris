@@ -42,6 +42,7 @@ class Genomic_Browser extends \NDB_Menu_Filter
     var $AjaxModule = true;
     public $fieldOptions;
 
+    public $skipTemplate = true;
     /**
      * Overloading this method to allow access to site users (own site only)
      * and users w/ multisite privs
@@ -254,6 +255,11 @@ class Genomic_Browser extends \NDB_Menu_Filter
         return true;
     }
 
+    public function toJSON(): string
+    {
+        return json_encode($this->toArray());
+    }
+
     /**
      * Adds filters
      * This function overrides filters to enable display of brief/full results
@@ -308,8 +314,7 @@ class Genomic_Browser extends \NDB_Menu_Filter
         return array_merge(
             $deps,
             array(
-             $baseURL . "/genomic_browser/js/genomic_browser.js",
-             $baseURL . "/genomic_browser/js/profileColumnFormatter.js",
+             $baseURL . "/genomic_browser/js/genomicBrowserIndex.js",
             )
         );
     }

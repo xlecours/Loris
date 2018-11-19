@@ -2,6 +2,7 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const fs = require('fs');
 
+const mode = 'development';
 const config = [{
   entry: {
     './htdocs/js/components/DynamicDataTable.js': './jsx/DynamicDataTable.js',
@@ -30,8 +31,7 @@ const config = [{
     './modules/dataquery/js/react.sidebar.js': './modules/dataquery/jsx/react.sidebar.js',
     './modules/dataquery/js/react.tabs.js': './modules/dataquery/jsx/react.tabs.js',
     './modules/dicom_archive/js/dicom_archive.js': './modules/dicom_archive/jsx/dicom_archive.js',
-    './modules/genomic_browser/js/FileUploadModal.js': './modules/genomic_browser/jsx/FileUploadModal.js',
-    './modules/genomic_browser/js/profileColumnFormatter.js': './modules/genomic_browser/jsx/profileColumnFormatter.js',
+    './modules/genomic_browser/js/genomicBrowserIndex.js': './modules/genomic_browser/jsx/genomicBrowserIndex.js',
     './modules/imaging_browser/js/ImagePanel.js': './modules/imaging_browser/jsx/ImagePanel.js',
     './modules/imaging_browser/js/columnFormatter.js': './modules/imaging_browser/jsx/columnFormatter.js',
     './modules/imaging_browser/js/onSort.js': './modules/imaging_browser/jsx/onSort.js',

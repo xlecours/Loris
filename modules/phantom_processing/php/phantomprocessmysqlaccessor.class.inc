@@ -47,6 +47,7 @@ class PhantomProcessMySQLAccessor
            sspr.sessionID = :v_sessionid
         ');
 
+    //    return ['isPhantom' => true, 'pipelineRuns' => []];
         return [
         'isPhantom' => true,
         'pipelineRuns' => [

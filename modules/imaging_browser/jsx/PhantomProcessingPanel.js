@@ -28,12 +28,16 @@ class PhantomProcessingPanel extends React.Component {
   }
 
   gotoTaskDetails(taskid) {
-    window.location.assign(loris.BaseURL.concat(
+    let url = loris.BaseURL.concat(
       '/phantom_processing?sessionid=',
-      this.props.sessionid,
-      '#',
-      taskid
-    ));
+      this.props.sessionid
+    );
+
+    if (typeof taskid == 'number') {
+      url = url.concat('#', taskid);
+    }
+
+    window.location.assign(url);
   }
 
   render() {
@@ -47,13 +51,22 @@ class PhantomProcessingPanel extends React.Component {
       );
     }, this);
 
+    if (rows.length == 0) {
+      rows = (
+        <tr onClick={this.gotoTaskDetails}>
+          <td colSpan='5'>Start new process</td>
+        </tr>
+      );
+    }
+
     return (
       <div className='col-xs-12'>
       <table className="table">
         <thead>
           <tr className='info'>
-            <th>server</th>
-            <th>status</th>
+            <th>Phantom processing task details</th>
+            <th>Server</th>
+            <th>Status</th>
             <th>Start</th>
             <th>Last update</th>
           </tr>
@@ -76,17 +89,21 @@ export default PhantomProcessingPanel;
 class Run extends React.Component {
   constructor(props) {
     super(props);
-    this.gotoTaskDetail = this.gotoTaskDetail.bind(this);
+    this.gotoTaskDetails = this.gotoTaskDetails.bind(this);
   }
 
-  gotoTaskDetail() {
+  gotoTaskDetails() {
     this.props.goto(this.props.data.taskid);
   }
 
   render() {
     return (
-      <tr onClick={this.gotoTaskDetail} data={this.props.data.taskid}>
+      <tr onClick={this.gotoTaskDetails} data={this.props.data.taskid}>
         <td>{this.props.data.taskid}</td>
+        <td>{this.props.data.server}</td>
+        <td>{this.props.data.status}</td>
+        <td>{this.props.data.startts}</td>
+        <td>{this.props.data.lastts}</td>
       </tr>
     )
   }

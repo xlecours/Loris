@@ -39,11 +39,34 @@ class Processing_Details implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        switch($request->getMethod()) {
+            case 'POST':
+                return $this->handlePOST($request);
+
+            case 'GET':
+            default:
+                return $this->handleGET($request);
+        }
+    }
+
+    public function handleGET(ServerRequestInterface $request): ResponseInterface
+    {
         $session = $request->getAttribute('session');
         $MySQLAccessor = new PhantomProcessMySQLAccessor((\NDB_Factory::singleton())->database());
         return (new \Zend\Diactoros\Response())
             ->withBody(new \LORIS\Http\StringStream(json_encode(
                 $MySQLAccessor->getSessionServerProcesses($session)
+            ))
+        );
+    }
+
+    public function handlePOST(ServerRequestInterface $request): ResponseInterface
+    {
+        $session = $request->getAttribute('session');
+        $MySQLAccessor = new PhantomProcessMySQLAccessor((\NDB_Factory::singleton())->database());
+        return (new \Zend\Diactoros\Response())
+            ->withBody(new \LORIS\Http\StringStream(json_encode(
+[1,2,3]
             ))
         );
     }

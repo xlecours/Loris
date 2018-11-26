@@ -40,6 +40,12 @@ class PhantomProcessingPanel extends React.Component {
     window.location.assign(url);
   }
 
+  gotoNewTask() {
+    window.location.assign(
+      loris.BaseURL.concat('/phantom_processing/')
+    );
+  }
+
   render() {
     if (!this.state.isPhantom) {
       return null;
@@ -53,8 +59,8 @@ class PhantomProcessingPanel extends React.Component {
 
     if (rows.length == 0) {
       rows = (
-        <tr onClick={this.gotoTaskDetails}>
-          <td colSpan='5'>Start new process</td>
+        <tr>
+          <td colSpan='5'><button onCLick={this.gotoTaskDetails}>Start new process</button></td>
         </tr>
       );
     }

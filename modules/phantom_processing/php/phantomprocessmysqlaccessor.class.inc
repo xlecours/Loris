@@ -48,7 +48,7 @@ class PhantomProcessMySQLAccessor
          JOIN server_process_type spt
            ON (sp.ProcessTypeID = spt.ProcessTypeID)
          WHERE
-           spt.Name = "phantom_pipeline" AND
+           spt.Name = "lego_phantom_pipeline" AND
            sspr.sessionID = :v_sessionid
         ');
 

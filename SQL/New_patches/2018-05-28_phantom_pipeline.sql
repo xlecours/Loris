@@ -7,7 +7,7 @@ CREATE TABLE `server_process_type` (
 
 INSERT INTO `server_process_type` (Name) VALUES 
   ('mri_upload'),
-  ('phantom_pipeline')
+  ('lego_phantom_pipeline')
 ;
 
 ALTER TABLE `server_processes` ADD COLUMN

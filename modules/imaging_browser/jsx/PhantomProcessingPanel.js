@@ -1,4 +1,3 @@
-import LaunchPhantomPipelineButton from 'LaunchPhantomPipelineButton';
 /**
  * This add a table containing summary details about phantom processing
  * on cbrain. It gets its data from the /phantom_processing endpoint.

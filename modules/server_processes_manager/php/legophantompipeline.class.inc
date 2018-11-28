@@ -27,7 +27,7 @@ class LegoPhantomPipeline extends AbstractServerProcess
     /**
      * String identifying the type of process for all objects of this class.
      */
-    const PROCESS_TYPE = 'phantom_pipeline';
+    const PROCESS_TYPE = 'lego_phantom_pipeline';
 
     /**
      * Phantom pipeline source location

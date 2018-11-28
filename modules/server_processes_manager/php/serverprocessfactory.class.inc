@@ -68,7 +68,6 @@ class ServerProcessFactory
                 $exitText
             );
         case 'lego_phantom_pipeline':
-// TODO :: This should be lego_phantom_pipeline
             return new LegoPhantomPipeline(
                 null,
                 $id,

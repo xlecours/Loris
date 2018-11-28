@@ -91,9 +91,10 @@ class LegoPhantomPipeline extends AbstractServerProcess
      */
     public function getShellCommand()
     {
+        $username = $this->getUserId();
         $script_path = self::SOURCE_LOCATION;
         $cbrainfilename = $this->timepoint->getVisitLabel();
-        return "php $script_path $cbrainfilename";
+        return "USER=$username php $script_path $cbrainfilename";
     }
 
     /**

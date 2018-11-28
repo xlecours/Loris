@@ -1,6 +1,10 @@
 <?php
 
 require_once __DIR__ . "/../vendor/autoload.php";
+$configFile = __DIR__."/../project/config.xml";
+$client     = new NDB_Client();
+$client->makeCommandLine();
+$client->initialize($configFile);
 
 $filename = $argv[1];
 

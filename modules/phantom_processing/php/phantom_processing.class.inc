@@ -40,22 +40,9 @@ class Phantom_Processing extends \NDB_Page
      * @return ResponseInterface the PSR15 response
      */
     public function handle(ServerRequestInterface $request): ResponseInterface {
-        $sessionid = $request->getQueryParams()['sessionid'] ?? null;
-        if ($sessionid !== null) {
-            return (new Processing_Details())->handle(
-                $request->withAttribute(
-                    'session',
-                    (\NDB_Factory::singleton())->timepoint($sessionid)
-                )
-            );
-        }
-
-        return (new \LORIS\Middleware\PageDecorationMiddleware(
-            $request->getAttribute('user'))
-        )->process(
-            $request,
-            new \LORIS\Http\StringStream("Not Implemented")
-        )->withStatus(501);
+        return (new \Zend\Diactoros\Response())
+            ->withBody(new \LORIS\Http\StringStream(json_encode('Not Implemented')))
+            ->withStatus(501);
     }
 }
 

@@ -53,32 +53,34 @@ class Server_Processes_Manager extends \NDB_Menu_Filter
 
         // Columns displayed in the result table
         $this->columns = array(
-                          'pid',
-                          'type',
-                          'stdout_file',
-                          'stderr_file',
-                          'exit_code_file',
-                          'exit_code',
-                          'userid',
-                          'start_time',
-                          'end_time',
-                          'exit_text',
+                          'sp.pid',
+                          'spt.Name as type',
+                          'sp.stdout_file',
+                          'sp.stderr_file',
+                          'sp.exit_code_file',
+                          'sp.exit_code',
+                          'sp.userid',
+                          'sp.start_time',
+                          'sp.end_time',
+                          'sp.exit_text',
                          );
 
         // Allow to sort on pid, type and userid
         $this->validFilters = array(
-                               'pid',
-                               'type',
-                               'userid',
+                               'sp.pid',
+                               'spt.Name',
+                               'sp.userid',
                               );
 
-        $this->query = " FROM server_processes 
+        $this->query = " FROM server_processes sp 
+                         LEFT JOIN server_process_type spt
+                           USING (ProcessTypeID)
                          WHERE 1=1";
 
         $this->formToFilter = array(
-                               'pid'    => 'pid',
-                               'type'   => 'type',
-                               'userid' => 'userid',
+                               'pid'    => 'sp.pid',
+                               'type'   => 'spt.Name',
+                               'userid' => 'sp.userid',
                               );
 
     }

@@ -36,7 +36,12 @@ class PhantomProcessMySQLAccessor
     {
         $stmt = $this->database->prepare('
          SELECT
-           sp.*
+           sp.id,
+           sp.exit_code,
+           sp.exit_text,
+           sp.userid,
+           sp.start_time,
+           sp.end_time
          FROM session_server_processes_rel sspr
          LEFT JOIN server_processes sp
            ON (sp.id = sspr.processID)
@@ -46,15 +51,6 @@ class PhantomProcessMySQLAccessor
            spt.Name = "phantom_pipeline" AND
            sspr.sessionID = :v_sessionid
         ');
-
-    //    return ['isPhantom' => true, 'pipelineRuns' => []];
-        return [
-        'isPhantom' => true,
-        'pipelineRuns' => [
-            ['taskid'=> 603756, 'server'=>'AceLab-VH-2', 'status'=> 'Failed', 'run'=> 1, 'startts'=> '2018-11-14 16:55:37 EST', 'lastts'=> '2018-11-14 20:14:32 EST'],
-            ['taskid'=> 603780, 'server'=>'AceLab-VH-2', 'status'=> 'Completed', 'run'=> 1, 'startts'=> '2018-11-14 20:53:06 EST', 'lastts'=> '2018-11-15 00:11:54 EST']
-        ]
-      ];
 
         return $this->database->execute($stmt, array('v_sessionid' => $session->getSessionID()));
     }

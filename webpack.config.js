@@ -78,6 +78,7 @@ var config = [{
       Loader: 'jsx/Loader',
       Markdown: 'jsx/Markdown',
       PaginationLinks: 'jsx/PaginationLinks',
+      LaunchPhantomPipelineButton: 'jsx/LaunchPhantomPipelineButton',
       Panel: 'jsx/Panel',
       ProgressBar: 'jsx/ProgressBar',
       StaticDataTable: 'jsx/StaticDataTable',

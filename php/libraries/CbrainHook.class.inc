@@ -457,9 +457,9 @@ class CbrainHook
         );
 
         // TaskPost returns an array of tasks.
-        return array_pop(
-            (new TasksApi(null, $this->_config))->tasksPost($param)
-        );
+        $results = (new TasksApi(null, $this->_config))->tasksPost($param);
+
+        return array_pop($results);
     }
 
     /**

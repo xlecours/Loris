@@ -75,7 +75,7 @@ class LegoPhantomPipelineLauncher
 
     public function launch(): CbrainTask
     {
-        $this->task = $this->cbrainhook->launchTask($this->task)[0];
+        $this->task = $this->cbrainhook->launchTask($this->task);
         return $this->task;
     }
 } // LegoPhantomPipelineLauncher

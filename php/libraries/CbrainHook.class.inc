@@ -4,7 +4,7 @@
  *
  * PHP Version 7
  *
- * @category   API
+ * @category   CBRAIN
  * @package    ExternalClient
  * @subpackage Processing
  * @author     Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
@@ -43,7 +43,7 @@ use \Swagger\Client\Model\UserFile;
  *
  * PHP Version 7
  *
- * @category   API
+ * @category   CBRAIN
  * @package    ExternalClient
  * @subpackage Processing
  * @author     Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
@@ -141,8 +141,6 @@ class CbrainHook
     /**
      * This looks for a specific bourreau
      *
-     * @category bourreau
-     *
      * @param string $name The bourreau name
      *
      * @throws \RuntimeException If the bourreau is not found of if there is
@@ -171,81 +169,29 @@ class CbrainHook
     }
 
     /**
-     * DataProvidersApi wrapper to get a list of files
+     * Return the current CBRAIN user. Since this class is doing login upon
+     * instranciation, there will always be an authenticated user if this method
+     * is called
      *
-     * @param DataProvider $dataprovider The DataProvider to query
+     * @category user
      *
-     * @return FileInfo[]
+     * @return User
      */
-    public function getFileinfosFromDataProvider(DataProvider $dataprovider): array
+    public function getCurrentUser(): User
     {
-        return (new DataProvidersApi(null, $this->_config))
-            ->dataProvidersIdBrowseGet($dataprovider->getId());
+        return (new UsersApi(null, $this->_config))
+            ->usersIdGet($_SESSION['cbrain_user_id']);
     }
 
     /**
+     * Looks for a specific dataprovider
      *
-     */
-    public function getFileinfoFromDataProviderByFilename(DataProvider $dataprovider, string $filename): FileInfo
-    {
-        $userfiles = array_filter(
-            $this->getFileinfosFromDataProvider($dataprovider),
-            function ($f) use ($filename) {
-                return $f->getName() == $filename;
-            }
-        );
-
-        if (count($userfiles) < 1) {
-            throw new \RuntimeException('Filename not found');
-        }
-
-        if (count($userfiles) > 1) {
-            throw new \RuntimeException('Filename not unique');
-        }
-
-        return array_pop($userfiles);
-    }
-
-    /**
+     * @param string $name The dataprovider name
      *
-     */
-    public function getUserFileByFileinfo(FileInfo $fileinfo): Userfile
-    {
-        return (new UserfilesApi(null, $this->_config))->userfilesIdGet(
-            $fileinfo->getUserfileId()
-        );
-    }
-
-    /**
-     * Return an array of CBRAIN's dataproviders that fits the InputDataProvider
-     * value defined in the configs.
+     * @throws \RuntimeException If the dataprovider is not found of if there is
+     *                           ambiguity between multiple dataprovider names
      *
      * @return DataProvider
-     */
-    public function getInputDataProvider(): DataProvider
-    {
-        $dataprovidername = $cbrain_config = (\NDB_Factory::singleton())->config()
-            ->getSetting('CBRAIN')['InputDataProviderName'];
-
-        return $this->getDataproviderByName($dataprovidername);
-    }
-
-    /**
-     * Return an array of CBRAIN's dataproviders that fits the InputDataProvider
-     * value defined in the configs.
-     *
-     * @return DataProvider
-     */
-    public function getOutputDataProvider(): DataProvider
-    {
-        $dataprovidername = $cbrain_config = (\NDB_Factory::singleton())->config()
-            ->getSetting('CBRAIN')['OutputDataProviderName'];
-
-        return $this->getDataproviderByName($dataprovidername);
-    }
-
-    /**
-     *
      */
     public function getDataproviderByName(string $name): DataProvider
     {
@@ -268,82 +214,84 @@ class CbrainHook
     }
 
     /**
+     * Return a CBRAIN's dataprovider that fits the input data provider
+     * value defined in the configs.
      *
+     * @return DataProvider
      */
-    public function getTools(): array
+    public function getInputDataProvider(): DataProvider
     {
-        return (new ToolsApi(null, $this->_config))->toolsGet();
+        $dataprovidername = $cbrain_config = (\NDB_Factory::singleton())
+            ->config()
+            ->getSetting('CBRAIN')['InputDataProviderName'];
+
+        return $this->getDataproviderByName($dataprovidername);
     }
 
     /**
+     * Return a CBRAIN's dataprovider that fits the output data provider
+     * value defined in the configs.
      *
+     * @return DataProvider
      */
-    public function getToolbyName(string $name): Tool
+    public function getOutputDataProvider(): DataProvider
     {
-        $tools = array_filter(
-            $this->getTools(),
-            function ($dp) use ($name) {
-                return $dp['name'] == $name;
+        $dataprovidername = $cbrain_config = (\NDB_Factory::singleton())
+            ->config()
+            ->getSetting('CBRAIN')['OutputDataProviderName'];
+
+        return $this->getDataproviderByName($dataprovidername);
+    }
+
+    /**
+     * DataProvidersApi wrapper to get a list of files
+     *
+     * @param DataProvider $dataprovider The DataProvider to query
+     *
+     * @return FileInfo[]
+     */
+    public function getFileinfosFromDataProvider(
+        DataProvider $dataprovider
+    ): array {
+        return (new DataProvidersApi(null, $this->_config))
+            ->dataProvidersIdBrowseGet($dataprovider->getId());
+    }
+
+    /**
+     * This looks for a specific file on a dataprovider
+     *
+     * @param DataProvider $dataprovider The DataProvider to query
+     * @param string       $filename     The file name
+     *
+     * @throws \RuntimeException If the file is not found of if there is
+     *                           ambiguity between multiple file names
+     *
+     * @return FileInfo
+     */
+    public function getFileinfoFromDataProviderByFilename(
+        DataProvider $dataprovider,
+        string $filename
+    ): FileInfo {
+        $userfiles = array_filter(
+            $this->getFileinfosFromDataProvider($dataprovider),
+            function ($f) use ($filename) {
+                return $f->getName() == $filename;
             }
         );
 
-        if (count($tools) < 1) {
-            throw new \RuntimeException('Tool not found');
+        if (count($userfiles) < 1) {
+            throw new \RuntimeException('Filename not found');
         }
 
-        if (count($tools) > 1) {
-            throw new \RuntimeException('Tool name not unique');
+        if (count($userfiles) > 1) {
+            throw new \RuntimeException('Filename not unique');
         }
 
-        return array_pop($tools);
-    }
-
-    /**
-     * @return ToolConfig[]
-     */
-    public function getToolConfigs(): array
-    {
-        return (new ToolConfigsApi(null, $this->_config))->toolConfigsGet();
-    }
-
-    /**
-     * @return ToolConfig
-     */
-    public function getToolConfigByToolAndBourreau($tool, $bourreau): ToolConfig
-    {
-        $toolConfigs = array_filter(
-            $this->getToolConfigs(),
-            function ($tc) use ($tool, $bourreau) {
-                return $tc->getToolId() == $tool->getId() && $tc->getBourreauId() == $bourreau->getId();
-            }
-        );
-
-        if (count($toolConfigs) < 1) {
-            throw new \RuntimeException('ToolConfig not found');
-        }
-
-        if (count($toolConfigs) > 1) {
-            throw new \RuntimeException('ToolConfig not unique');
-        }
-
-        return array_pop($toolConfigs);
-    }
-
-    /**
-     *
-     */
-    public function launchTask(CbrainTask $task): array
-    {
-        $param = new CbrainTaskModReq(
-            array('cbrain_task' => $task)
-        );
-        return (new TasksApi(null, $this->_config))->tasksPost($param);
+        return array_pop($userfiles);
     }
 
     /**
      * GroupsApi wrapper to get a list of groups
-     *
-     * @category group
      *
      * @return Group[]
      */
@@ -354,8 +302,6 @@ class CbrainHook
 
     /**
      * This looks for a specific group
-     *
-     * @category group
      *
      * @param string $name The group name
      *
@@ -385,23 +331,156 @@ class CbrainHook
     }
 
     /**
-     * Register a file from a DataProvider as a Userfile for the current user.
+     * ToolsApi wrapper to get a list of tools
      *
-     * @category registration
-     * @see      MultiRegistrationModReq::$filetypes
+     * @return Tool[]
+     */
+    public function getTools(): array
+    {
+        return (new ToolsApi(null, $this->_config))->toolsGet();
+    }
+
+    /**
+     * This looks for a specific tool
+     *
+     * @param string $name The tool name
+     *
+     * @throws \RuntimeException If the tool is not found of if there is
+     *                           ambiguity between multiple tool names
+     *
+     * @return Tool
+     */
+    public function getToolbyName(string $name): Tool
+    {
+        $tools = array_filter(
+            $this->getTools(),
+            function ($dp) use ($name) {
+                return $dp['name'] == $name;
+            }
+        );
+
+        if (count($tools) < 1) {
+            throw new \RuntimeException('Tool not found');
+        }
+
+        if (count($tools) > 1) {
+            throw new \RuntimeException('Tool name not unique');
+        }
+
+        return array_pop($tools);
+    }
+
+    /**
+     * ToolConfigsApi wrapper to get a list of toolconfigs
+     *
+     * @return ToolConfig[]
+     */
+    public function getToolConfigs(): array
+    {
+        return (new ToolConfigsApi(null, $this->_config))->toolConfigsGet();
+    }
+
+    /**
+     * This looks for a specific tool corresponding to a tool installed on a
+     * bourreau
+     *
+     * @param Tool     $tool     The tool to look for
+     * @param Bourreau $bourreau The bourreau on which that tool should be
+     *                           installed
+     *
+     * @throws \RuntimeException If the tool is not found of if there is
+     *                           ambiguity between multiple tool names
+     *
+     * @return ToolConfig
+     */
+    public function getToolConfigByToolAndBourreau(
+        Tool $tool,
+        Bourreau $bourreau
+    ): ToolConfig {
+        $toolConfigs = array_filter(
+            $this->getToolConfigs(),
+            function ($tc) use ($tool, $bourreau) {
+                $sametoolid     = $tc->getToolId() == $tool->getId();
+                $samebourreauid = $tc->getBourreauId() == $bourreau->getId();
+                return $sametoolid && $samebourreauid;
+            }
+        );
+
+        if (count($toolConfigs) < 1) {
+            throw new \RuntimeException('ToolConfig not found');
+        }
+
+        if (count($toolConfigs) > 1) {
+            throw new \RuntimeException('ToolConfig not unique');
+        }
+
+        return array_pop($toolConfigs);
+    }
+
+    /**
+     * Gets the corresponding Userfile of a fileinfo
+     * That file must have been registered first.
+     *
+     * @param FileInfo $fileinfo The fileinfo to match against
+     *
+     * @throws \RuntimeException If the fileinfo do not contain a userfileid.
+     *                           This will happen for unregistered files.
+     *
+     * @return Userfile
+     */
+    public function getUserFileByFileinfo(FileInfo $fileinfo): Userfile
+    {
+        $userfileid = $fileinfo->getUserfileId();
+
+        if ($userfileid === null) {
+            throw new \RuntimeException(
+                'The provided fileinfo is missing a userfileid'
+            );
+        }
+
+        return (new UserfilesApi(null, $this->_config))->userfilesIdGet(
+            $fileinfo->getUserfileId()
+        );
+    }
+
+    /**
+     * TaskApi wrapper to launch a cbrain task
+     *
+     * @param CbrainTask $task The task to launch
+     *
+     * @return CbrainTask
+     */
+    public function launchTask(CbrainTask $task): array
+    {
+        $param = new CbrainTaskModReq(
+            array('cbrain_task' => $task)
+        );
+
+        // TaskPost returns an array of tasks.
+        return array_pop(
+            (new TasksApi(null, $this->_config))->tasksPost($param)
+        );
+    }
+
+    /**
+     * Register a file from a DataProvider as a Userfile for the current user.
      *
      * @param DataProvider $dataprovider The DataProvider from which to register
      *                                   the file
      * @param Fileinfo     $file         The file to transform into a Userfile
-     * @param string       $type         The userfile type to register the file as. as.
+     * @param string       $type         The userfile type to register the file
      *                                   as.
      *
      * @throws \RuntimeException         If an error occured on CBRAIN
      *
      * @return Userfile
+     * @see    MultiRegistrationModReq::$filetypes
      */
-    public function registerFile(DataProvider $dataprovider, Fileinfo $file, string $type): Userfile
-    {
+    public function registerFile(
+        DataProvider $dataprovider,
+        Fileinfo $file,
+        string $type
+    ): Userfile {
         $params            = new MultiRegistrationModReq(
             array(
              'basenames'  => array($file->getName()),
@@ -428,35 +507,22 @@ class CbrainHook
      * Specialized wrapper for LorisBySubjectAndVisit file type registration
      * that takes care of CBRAIN perticular format of file types
      *
-     * @category registration
-     * @see      MultiRegistrationModReq::$filetypes
+     * @param DataProvider $dataprovider The DataProvider from which to
+     *                                    register the file
+     * @param Fileinfo     $file         The file to transform into a Userfile
      *
-     * @param  DataProvider $dataprovider The DataProvider from which to register
-     *                                   the file
-     * @param  Fileinfo     $file         The file to transform into a Userfile
      * @throws \RuntimeException         If an error occured on CBRAIN
      *
      * @return Userfile
+     * @see    MultiRegistrationModReq::$filetypes
      */
-    public function registerLorisBySubjectAndVisitFile(DataProvider $dataprovider, Fileinfo $file): Userfile
-    {
+    public function registerLorisBySubjectAndVisitFile(
+        DataProvider $dataprovider,
+        Fileinfo $file
+    ): Userfile {
         $filetype = 'LorisBySubjectAndVisit-' . $file->getName();
 
         return $this->registerFile($dataprovider, $file, $filetype);
-    }
-
-    /**
-     * Return the current CBRAIN user. Since this class is doing login upon
-     * instranciation, there will always be an authenticated user if this method
-     * is called
-     *
-     * @category user
-     *
-     * @return User
-     */
-    public function getCurrentUser(): User
-    {
-        return (new UsersApi(null, $this->_config))->usersIdGet($_SESSION['cbrain_user_id']);
     }
 
 }

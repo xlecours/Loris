@@ -96,10 +96,12 @@ $client->initialize($configFile);
 
 $filename = $argv[1];
 
+$groupname = $cbrain_config = (\NDB_Factory::singleton())->config()
+            ->getSetting('CBRAIN')['groupname'];
 try {
     $launcher = new LegoPhantomPipelineLauncher(
         $filename,
-        'loris_ccna',
+        $groupname,
         'PhantomProc_09',
         'AceLab-VH-2'
     );

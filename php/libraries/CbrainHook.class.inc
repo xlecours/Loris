@@ -450,7 +450,7 @@ class CbrainHook
      *
      * @return CbrainTask
      */
-    public function launchTask(CbrainTask $task): array
+    public function launchTask(CbrainTask $task): CbrainTask
     {
         $param = new CbrainTaskModReq(
             array('cbrain_task' => $task)

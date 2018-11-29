@@ -1,7 +1,20 @@
 <?php
+/**
+ * This file contains a wrapper class for CBRAIN's API client.
+ *
+ * PHP Version 7
+ *
+ * @category   API
+ * @package    ExternalClient
+ * @subpackage Processing
+ * @author     Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
+ * @license    http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
+ * @link       https://www.github.com/aces/Loris-Trunk/
+ */
 namespace LORIS;
 
 use \Swagger\Client\Configuration;
+
 use \Swagger\Client\Api\BourreauxApi;
 use \Swagger\Client\Api\DataProvidersApi;
 use \Swagger\Client\Api\GroupsApi;
@@ -25,37 +38,67 @@ use \Swagger\Client\Model\ToolConfig;
 use \Swagger\Client\Model\User;
 use \Swagger\Client\Model\UserFile;
 
+/**
+ * Singleton for CBRAIN API interactions
+ *
+ * PHP Version 7
+ *
+ * @category   API
+ * @package    ExternalClient
+ * @subpackage Processing
+ * @author     Xavier Lecours Boucher <xavier.lecoursboucher@mcgill.ca>
+ * @license    http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
+ * @link       https://www.github.com/aces/Loris-Trunk/
+ */
 class CbrainHook
 {
-    private static $instance = null;
+    /**
+     * This singleton instance
+     *
+     * @var CbrainHook
+     */
+    private static $_instance = null;
 
-    private $config;
+    /**
+     * Parameters for api calls
+     *
+     * @var Configuration
+     */
+    private $_config;
 
+    /**
+     * Singleton method that return this instance or initiate the instanciation
+     *
+     * @return CbrainHook This instance
+     */
     public static function getInstance(): CbrainHook
     {
-        if (self::$instance === null) {
-            self::$instance = new CbrainHook();
+        if (self::$_instance === null) {
+            self::$_instance = new CbrainHook();
         }
-        return self::$instance;
+        return self::$_instance;
     }
 
+    /**
+     * Private contructor for singleton
+     */
     private function __construct()
     {
-        $this->config = new Configuration();
+        $this->_config = new Configuration();
 
         $cbrain_config = (\NDB_Factory::singleton())->config()
             ->getSetting('CBRAIN');
 
-        $this->config->setHost($cbrain_config['host']);
+        $this->_config->setHost($cbrain_config['host']);
 
         $session_api = new SessionsApi(
             null, // Will use Guzzle/Http/Client by default
-            $this->config
+            $this->_config
         );
 
         if (!empty($_SESSION['cbrain_token'])) {
             try {
-                $this->config->setApiKey(
+                $this->_config->setApiKey(
                     'cbrain_api_token',
                     $_SESSION['cbrain_token']
                 );
@@ -71,7 +114,7 @@ class CbrainHook
         }
 
         // Get a new token
-        $rep_session_post         = $session_api->sessionPost(
+        $rep_session_post           = $session_api->sessionPost(
             $cbrain_config['username'],
             $cbrain_config['password']
         );
@@ -79,19 +122,32 @@ class CbrainHook
         $_SESSION['cbrain_user_id'] = $rep_session_post->getUserId();
 
         end:
-        $this->config->setApiKey('cbrain_api_token', $_SESSION['cbrain_token']);
+        $this->_config->setApiKey('cbrain_api_token', $_SESSION['cbrain_token']);
     }
 
     /**
+     * BourreauxApi wrapper to get a list of bourreaux
+     *
+     * @category bourreau
+     *
      * @return Bourreau[]
      */
     public function getBourreaux() : array
     {
-        return (new BourreauxApi(null, $this->config))
+        return (new BourreauxApi(null, $this->_config))
             ->bourreauxGet();
     }
 
     /**
+     * This looks for a specific bourreau
+     *
+     * @category bourreau
+     *
+     * @param string $name The bourreau name
+     *
+     * @throws \RuntimeException If the bourreau is not found of if there is
+     *                           ambiguity between multiple bourreau names
+     *
      * @return Bourreau
      */
     public function getBourreauByName(string $name) : Bourreau
@@ -115,14 +171,21 @@ class CbrainHook
     }
 
     /**
+     * DataProvidersApi wrapper to get a list of files
+     *
+     * @param DataProvider $dataprovider The DataProvider to query
+     *
      * @return FileInfo[]
      */
     public function getFileinfosFromDataProvider(DataProvider $dataprovider): array
     {
-        return (new DataProvidersApi(null, $this->config))
+        return (new DataProvidersApi(null, $this->_config))
             ->dataProvidersIdBrowseGet($dataprovider->getId());
     }
 
+    /**
+     *
+     */
     public function getFileinfoFromDataProviderByFilename(DataProvider $dataprovider, string $filename): FileInfo
     {
         $userfiles = array_filter(
@@ -143,9 +206,12 @@ class CbrainHook
         return array_pop($userfiles);
     }
 
+    /**
+     *
+     */
     public function getUserFileByFileinfo(FileInfo $fileinfo): Userfile
     {
-        return (new UserfilesApi(null, $this->config))->userfilesIdGet(
+        return (new UserfilesApi(null, $this->_config))->userfilesIdGet(
             $fileinfo->getUserfileId()
         );
     }
@@ -178,10 +244,13 @@ class CbrainHook
         return $this->getDataproviderByName($dataprovidername);
     }
 
+    /**
+     *
+     */
     public function getDataproviderByName(string $name): DataProvider
     {
         $dataproviders = array_filter(
-            (new DataProvidersApi(null, $this->config))->dataProvidersGet(),
+            (new DataProvidersApi(null, $this->_config))->dataProvidersGet(),
             function ($dp) use ($name) {
                 return $dp->getName() == $name;
             }
@@ -198,11 +267,17 @@ class CbrainHook
         return array_pop($dataproviders);
     }
 
+    /**
+     *
+     */
     public function getTools(): array
     {
-        return (new ToolsApi(null, $this->config))->toolsGet();
+        return (new ToolsApi(null, $this->_config))->toolsGet();
     }
 
+    /**
+     *
+     */
     public function getToolbyName(string $name): Tool
     {
         $tools = array_filter(
@@ -228,7 +303,7 @@ class CbrainHook
      */
     public function getToolConfigs(): array
     {
-        return (new ToolConfigsApi(null, $this->config))->toolConfigsGet();
+        return (new ToolConfigsApi(null, $this->_config))->toolConfigsGet();
     }
 
     /**
@@ -253,26 +328,44 @@ class CbrainHook
 
         return array_pop($toolConfigs);
     }
-    
+
+    /**
+     *
+     */
     public function launchTask(CbrainTask $task): array
     {
-        $param = new CbrainTaskModReq(array(
-            'cbrain_task' =>  $task
-        ));
-        return (new TasksApi(null, $this->config))->tasksPost($param);
+        $param = new CbrainTaskModReq(
+            array('cbrain_task' => $task)
+        );
+        return (new TasksApi(null, $this->_config))->tasksPost($param);
     }
 
-    public function getCurrentUser(): User
-    {
-        return (new UsersApi(null, $this->config))->usersIdGet($_SESSION['cbrain_user_id']);
-    }
-
+    /**
+     * GroupsApi wrapper to get a list of groups
+     *
+     * @category group
+     *
+     * @return Group[]
+     */
     public function getGroups(): array
     {
-        return (new GroupsApi(null, $this->config))->groupsGet();
+        return (new GroupsApi(null, $this->_config))->groupsGet();
     }
 
-    public function getGroupByName(string $name) {
+    /**
+     * This looks for a specific group
+     *
+     * @category group
+     *
+     * @param string $name The group name
+     *
+     * @throws \RuntimeException If the group is not found of if there is
+     *                           ambiguity between multiple group names
+     *
+     * @return Group
+     */
+    public function getGroupByName(string $name): Group
+    {
         $groups = array_filter(
             $this->getGroups(),
             function ($g) use ($name) {
@@ -291,14 +384,32 @@ class CbrainHook
         return array_pop($groups);
     }
 
+    /**
+     * Register a file from a DataProvider as a Userfile for the current user.
+     *
+     * @category registration
+     * @see      MultiRegistrationModReq::$filetypes
+     *
+     * @param DataProvider $dataprovider The DataProvider from which to register
+     *                                   the file
+     * @param Fileinfo     $file         The file to transform into a Userfile
+     * @param string       $type         The userfile type to register the file as. as.
+     *                                   as.
+     *
+     * @throws \RuntimeException         If an error occured on CBRAIN
+     *
+     * @return Userfile
+     */
     public function registerFile(DataProvider $dataprovider, Fileinfo $file, string $type): Userfile
     {
-        $params = new MultiRegistrationModReq(array(
-            'basenames'  => array($file->getName()),
-            'filetypes'  => array($type),
-            'as_user_id' => $this->getCurrentUser()->getId(),
-        ));
-        $registrationinfos = (new DataProvidersApi(null, $this->config))
+        $params            = new MultiRegistrationModReq(
+            array(
+             'basenames'  => array($file->getName()),
+             'filetypes'  => array($type),
+             'as_user_id' => $this->getCurrentUser()->getId(),
+            )
+        );
+        $registrationinfos = (new DataProvidersApi(null, $this->_config))
             ->dataProvidersIdRegisterPost($dataprovider->getId(), $params);
 
         if ($registrationinfos->getError() !== null) {
@@ -313,10 +424,40 @@ class CbrainHook
         return $userfiles[0];
     }
 
-    public function registerLorisBySubjectAndVisitFile(DataProvider $dataprovider, Fileinfo $file): Userfile 
+    /**
+     * Specialized wrapper for LorisBySubjectAndVisit file type registration
+     * that takes care of CBRAIN perticular format of file types
+     *
+     * @category registration
+     * @see      MultiRegistrationModReq::$filetypes
+     *
+     * @param  DataProvider $dataprovider The DataProvider from which to register
+     *                                   the file
+     * @param  Fileinfo     $file         The file to transform into a Userfile
+     * @throws \RuntimeException         If an error occured on CBRAIN
+     *
+     * @return Userfile
+     */
+    public function registerLorisBySubjectAndVisitFile(DataProvider $dataprovider, Fileinfo $file): Userfile
     {
         $filetype = 'LorisBySubjectAndVisit-' . $file->getName();
+
         return $this->registerFile($dataprovider, $file, $filetype);
     }
+
+    /**
+     * Return the current CBRAIN user. Since this class is doing login upon
+     * instranciation, there will always be an authenticated user if this method
+     * is called
+     *
+     * @category user
+     *
+     * @return User
+     */
+    public function getCurrentUser(): User
+    {
+        return (new UsersApi(null, $this->_config))->usersIdGet($_SESSION['cbrain_user_id']);
+    }
+
 }
 

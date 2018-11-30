@@ -221,7 +221,7 @@ class CbrainHook
      */
     public function getInputDataProvider(): DataProvider
     {
-        $dataprovidername = $cbrain_config = (\NDB_Factory::singleton())
+        $dataprovidername = (\NDB_Factory::singleton())
             ->config()
             ->getSetting('CBRAIN')['InputDataProviderName'];
 
@@ -236,7 +236,7 @@ class CbrainHook
      */
     public function getOutputDataProvider(): DataProvider
     {
-        $dataprovidername = $cbrain_config = (\NDB_Factory::singleton())
+        $dataprovidername = (\NDB_Factory::singleton())
             ->config()
             ->getSetting('CBRAIN')['OutputDataProviderName'];
 

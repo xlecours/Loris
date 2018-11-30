@@ -34,7 +34,14 @@ class Processing_Details extends \NDB_Page
 {
     public $skipTemplate = true;
 
-    public function _hasAccess()
+    protected $timepoint;
+
+    /**
+     * Returns false if user does not have access to page.
+     *
+     * @return bool
+     */
+    function _hasAccess()
     {
         return \NDB_Factory::singleton()
             ->user()
@@ -61,55 +68,62 @@ class Processing_Details extends \NDB_Page
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ) : ResponseInterface {
-        if (preg_match('/application\/json/',$request->getHeaderLine('Accept')) === 0 ) {
-           return parent::handle($request);
+        $this->timepoint = \TimePoint::singleton(
+            $request->getQueryParams()['sessionid'] ?? null
+        );
+
+        $accept = $request->getHeaderLine('Accept');
+        if (preg_match('/application\/json/', $accept) === 1) {
+            return $this->handle($request)
+                ->withHeader('Content-Type', 'application/json');
         }
 
-        $sessionid = $request->getQueryParams()['sessionid'] ?? null;
-        return $this->handle($request->withAttribute(
-            'session',
-            \TimePoint::singleton($sessionid)
-        ));
+        $request = $request->withAttribute(
+            'pageclass',
+            $this
+        );
+        $user    = $request->getAttribute("user");
+        return (new \LORIS\Middleware\PageDecorationMiddleware($user))
+            ->process(
+                $request,
+                new \LORIS\Http\StringStream('')
+            )->withHeader("Content-Type", "text/html");
     }
 
     /**
      * Handles a request and produces a response.
      *
-     * @param ServerRequestInterface  $request The PSR7 request being processed.
+     * @param ServerRequestInterface $request The PSR7 request being processed.
      *
      * @return ResponseInterface the PSR15 response
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         switch($request->getMethod()) {
-            case 'POST':
-                return $this->handlePOST($request);
+        case 'POST':
+            return $this->handlePOST($request);
 
-            case 'GET':
-            default:
-                return $this->handleGET($request);
+        case 'GET':
+        default:
+            return $this->handleGET($request);
         }
     }
 
     public function handleGET(ServerRequestInterface $request): ResponseInterface
     {
-        $session = $request->getAttribute('session');
         $MySQLAccessor = new PhantomProcessMySQLAccessor((\NDB_Factory::singleton())->database());
 
-        
         return (new \Zend\Diactoros\Response())
-            ->withBody(new \LORIS\Http\StringStream(json_encode(array(
-                'isPhantom'    => true, 
-                'pipelineRuns' => $MySQLAccessor->getSessionServerProcesses($session)
-            )))
-        );
+            ->withBody(
+                new \LORIS\Http\StringStream($this->toJSON())
+            );
     }
 
     public function handlePOST(ServerRequestInterface $request): ResponseInterface
     {
-        $spm_module = \Module::factory('server_processes_manager');
+        $spm_module        = \Module::factory('server_processes_manager');
         $server_process_id = (new ServerProcessLauncher())->legoPhantomPipeline(
-            $request->getAttribute('session')
+            $this->timepoint
         );
         do {
             $process_state = (new ServerProcessesMonitor())
@@ -117,12 +131,48 @@ class Processing_Details extends \NDB_Page
         } while (trim($process_state[0]['STATE']) === 'RUNNING');
 
         // TODO :: an array with error and data would be better
-        // TODO :: The 200 response signify that a server_rpocess was created. 
+        // TODO :: The 200 response signify that a server_rpocess was created.
         return (new \Zend\Diactoros\Response())
-            ->withBody(new \LORIS\Http\StringStream(
-                json_encode($process_state[0]['STATE'])
-            ))
+            ->withBody(
+                new \LORIS\Http\StringStream(
+                    json_encode($process_state[0]['STATE'])
+                )
+            )
             ->withStatus(200);
     }
+
+    protected function toJSON(): string
+    {
+        return json_encode($this->toArray());
+    }
+
+    protected function toArray(): array
+    {
+        $MySQLAccessor = new PhantomProcessMySQLAccessor((\NDB_Factory::singleton())->database());
+        return array(
+                'isPhantom'    => true,
+                'pipelineRuns' => $MySQLAccessor->getSessionServerProcesses($this->timepoint),
+               );
+    }
+
+    /**
+     * Overrides base getJSDependencies()
+     *
+     * @return array of extra JS files that this page depends on
+     */
+    function getJSDependencies()
+    {
+        $factory = \NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
+        $deps    = parent::getJSDependencies();
+        return array_merge(
+            $deps,
+            array(
+             $baseURL . "/phantom_processing/js/processingDetailsIndex.js",
+            )
+        );
+    }
+
+
 }
 

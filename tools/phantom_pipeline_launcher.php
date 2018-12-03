@@ -106,7 +106,7 @@ try {
         'AceLab-VH-2'
     );
     $task     = $launcher->launch();
-    fprintf(STDOUT, '%s#%s created' . PHP_EOL, $task->getType(), $task->getId());
+    fwrite(STDOUT, $task);
     exit(0);
 } catch (\Runtimeexception $e) {
     fwrite(STDERR, $e->getMessage() . PHP_EOL);

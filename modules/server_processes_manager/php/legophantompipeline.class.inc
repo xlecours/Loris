@@ -33,33 +33,33 @@ class LegoPhantomPipeline extends AbstractServerProcess
      * Phantom pipeline source location
      * TODO :: This should come from the database
      */
-    const SOURCE_LOCATION = __DIR__ . '/../../../tools/phantom_pipeline_launcher.php';
+    const SOURCE_LOCATION = __DIR__ .
+        '/../../../tools/phantom_pipeline_launcher.php';
 
     /**
      * The session to call the pipeline on
      *
      * @var integer
      */
-    private $timepoint;
+    protected $timepoint;
 
     /**
      * Builds a new PhantomPipeline process
      *
-     * @param int    $userfileId     CBRAIN userfile_id.
-     * @param string $sourceLocation Source full path
-     * @param int    $id             ID of the process in the database.
-     * @param int    $pid            PID for this process
-     * @param string $stdoutFile     full path of file used to store the process's
-     *                               stdout
-     * @param string $stderrFile     full path of file used to store the process's
-     *                               stderr
-     * @param string $exitCodeFile   full path of file used to store the process's
-     *                               exit code
-     * @param int    $exitCode       process's exit code
-     * @param string $userid         ID of the user who launched the process
-     * @param string $startTime      time at which the process was started
-     * @param string $endTime        time at which the process ended
-     * @param string $exitText       result of the process in text form
+     * @param \Timepoint $timepoint    The session to run the pipeline on.
+     * @param int        $id           ID of the process in the database.
+     * @param int        $pid          PID for this process
+     * @param string     $stdoutFile   full path of file used to store the
+     *                                 process's stdout stdout
+     * @param string     $stderrFile   full path of file used to store the
+     *                                 process's stderr stderr
+     * @param string     $exitCodeFile full path of file used to store the
+     *                                 process's exit code exit code
+     * @param int        $exitCode     process's exit code
+     * @param string     $userid       ID of the user who launched the process
+     * @param string     $startTime    time at which the process was started
+     * @param string     $endTime      time at which the process ended
+     * @param string     $exitText     result of the process in text form
      */
     public function __construct(
         \Timepoint $timepoint = null, $id = null, $pid = null,
@@ -67,7 +67,7 @@ class LegoPhantomPipeline extends AbstractServerProcess
         $exitCodeFile = null, $exitCode = null, $userid = null,
         $startTime = null, $endTime = null, $exitText = null
     ) {
-        $this->timepoint  = $timepoint;
+        $this->timepoint = $timepoint;
 
         parent::__construct(
             $id,
@@ -91,8 +91,8 @@ class LegoPhantomPipeline extends AbstractServerProcess
      */
     public function getShellCommand()
     {
-        $username = $this->getUserId();
-        $script_path = self::SOURCE_LOCATION;
+        $username       = $this->getUserId();
+        $script_path    = self::SOURCE_LOCATION;
         $cbrainfilename = $this->timepoint->getVisitLabel();
         return "USER=$username php $script_path $cbrainfilename";
     }
@@ -134,7 +134,13 @@ class LegoPhantomPipeline extends AbstractServerProcess
         }
 
         $file = $fileinfo->openFile('r');
-        return $file->fread($file->getSize());
+        $arr  = json_decode($file->fread($file->getSize()), JSON_OBJECT_AS_ARRAY);
+        $task = new \Swagger\Client\Model\CbrainTask($arr);
+
+        $cbraintasktype  = $task->getType();
+        $cbrainprocessid = $task->getId();
+
+        return "$cbraintasktype#$cbrainprocessid created";
     }
 
     /**
@@ -159,6 +165,11 @@ class LegoPhantomPipeline extends AbstractServerProcess
         return false;
     }
 
+    /**
+     * Adds a record linking this new process to the session
+     *
+     * @return void
+     */
     public function addSessionProcessRel()
     {
         $database = $this->getDatabaseProvider()->getDatabase();

@@ -12,11 +12,13 @@
  * @link       https://www.github.com/aces/Loris-Trunk/
  */
 namespace LORIS\phantom_processing;
+
 use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
 use \Psr\Http\Server\RequestHandlerInterface;
 use \LORIS\server_processes_manager\ServerProcessLauncher;
 use \LORIS\server_processes_manager\ServerProcessesMonitor;
+use \Swagger\Client\Model\CbrainTask;
 
 /**
  * Endpoint handler for phantom_processing
@@ -109,16 +111,29 @@ class Processing_Details extends \NDB_Page
         }
     }
 
+    /**
+     * Specialized handler for GET requests
+     *
+     * @param ServerRequestInterface $request The PSR7 request being processed.
+     *
+     * @return ResponseInterface the PSR15 response
+     */
     public function handleGET(ServerRequestInterface $request): ResponseInterface
     {
-        $MySQLAccessor = new PhantomProcessMySQLAccessor((\NDB_Factory::singleton())->database());
-
         return (new \Zend\Diactoros\Response())
             ->withBody(
                 new \LORIS\Http\StringStream($this->toJSON())
             );
     }
 
+    /**
+     * Specialized handler for POST requests that launch a phantom_pipeline
+     * using the server process manager module.
+     *
+     * @param ServerRequestInterface $request The PSR7 request being processed.
+     *
+     * @return ResponseInterface the PSR15 response
+     */
     public function handlePOST(ServerRequestInterface $request): ResponseInterface
     {
         $spm_module        = \Module::factory('server_processes_manager');
@@ -131,7 +146,6 @@ class Processing_Details extends \NDB_Page
         } while (trim($process_state[0]['STATE']) === 'RUNNING');
 
         // TODO :: an array with error and data would be better
-        // TODO :: The 200 response signify that a server_rpocess was created.
         return (new \Zend\Diactoros\Response())
             ->withBody(
                 new \LORIS\Http\StringStream(
@@ -141,18 +155,83 @@ class Processing_Details extends \NDB_Page
             ->withStatus(200);
     }
 
+    /**
+     * Returns a json string representation of this page's data
+     *
+     * @return string
+     */
     protected function toJSON(): string
     {
         return json_encode($this->toArray());
     }
 
+    /**
+     * Returns an array representation of this page's data
+     *
+     * @return array
+     */
     protected function toArray(): array
     {
-        $MySQLAccessor = new PhantomProcessMySQLAccessor((\NDB_Factory::singleton())->database());
+
+        $isPhantom = $this->_isPhantomSession();
+        $runs      = [];
+
+        if ($isPhantom) {
+            $MySQLAccessor = new PhantomProcessMySQLAccessor(
+                \NDB_Factory::singleton()->database()
+            );
+
+            $processes = $MySQLAccessor->getSessionServerProcesses(
+                $this->timepoint
+            );
+
+            $runs = array_map(
+                function ($p) {
+                    if ($p['exit_code'] != '0') {
+                        $p['cbraintask'] = '{"error": "no task"}';
+                        return $p;
+                    }
+
+                    $fileinfo = new \SplFileInfo($p['stdout_file']);
+                    if (!$fileinfo->isReadable()) {
+                        $p['cbraintask'] = '{"error": ' .
+                            '"Process output file not readable"}';
+                        return $p;
+                    }
+
+                    $fileobject = $fileinfo->openFile();
+                    $arr        = json_decode(
+                        $fileobject->fread($fileobject->getSize()),
+                        JSON_OBJECT_AS_ARRAY
+                    );
+                    $task       = new CbrainTask($arr);
+                    $hook       = \LORIS\CbrainHook::getinstance();
+                    $p['cbraintask'] = (string) $hook->updateTask($task);
+                    return $p;
+                },
+                $processes
+            );
+        }
+
         return array(
-                'isPhantom'    => true,
-                'pipelineRuns' => $MySQLAccessor->getSessionServerProcesses($this->timepoint),
+                'isPhantom' => $isPhantom,
+                'runs'      => $runs,
                );
+    }
+
+    /**
+     * Utility function that tells if this timepoint is a phantom
+     *
+     * @return bool
+     */
+    private function _isPhantomSession(): bool
+    {
+        // This should be done from the Timepoint
+        $entity_type = \NDB_Factory::singleton()
+            ->candidate($this->timepoint->getCandID())
+            ->getData('Entity_type');
+
+        return $entity_type == 'Scanner';
     }
 
     /**

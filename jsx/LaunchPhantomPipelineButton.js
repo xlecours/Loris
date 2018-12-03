@@ -1,14 +1,17 @@
+import Loader from 'Loader';
+
 class LaunchPhantomPipelineButton extends React.Component {
   constructor(props) {
     super(props);
-this.state = {
-  endpoint: loris.BaseURL.concat('/phantom_processing/processing_details/'),
-};
+    this.state = {
+      clicked: false,
+      endpoint: loris.BaseURL.concat('/phantom_processing/processing_details/'),
+    };
     this.launch = this.launch.bind(this);
   }
 
   launch(event) {
-    event.stopPropagation();
+    this.setState({clicked: true});
 
     const endpoint = this.state.endpoint.concat(
       '?sessionid=',
@@ -30,8 +33,14 @@ this.state = {
   }
 
   render() {
+    if (this.state.clicked) {
+      return (
+        <Loader/>
+      );
+    }
+
     return (
-      <input type='button' onClick={this.launch} value='Launch Phantom Pipeline' />
+      <input type='button' className='btn btn-primary' onClick={this.launch} value='Launch Phantom Pipeline' />
     );
   }
 }

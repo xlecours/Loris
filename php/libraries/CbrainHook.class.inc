@@ -330,6 +330,20 @@ class CbrainHook
         return array_pop($groups);
     }
 
+
+    /**
+     * Refreshes a cbrain task
+     *
+     * @param CbrainTask $task The task to refresh
+     *
+     * @return CbrainTask
+     */
+    public function updateTask(CbrainTask $task ): CbrainTask
+    {
+        return (new TasksApi(null, $this->_config))
+            ->tasksIdGet($task->getId());
+    }
+
     /**
      * ToolsApi wrapper to get a list of tools
      *

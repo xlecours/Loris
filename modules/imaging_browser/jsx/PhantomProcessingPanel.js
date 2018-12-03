@@ -24,7 +24,7 @@ class PhantomProcessingPanel extends React.Component {
     fetch(url, {headers: {'Accept': 'application/json'}})
       .then(res => res.json())
       .then((json) => {
-        if (json.pipelineRuns) {
+        if (json.runs) {
           this.setState(json);
         }
       })
@@ -45,7 +45,7 @@ class PhantomProcessingPanel extends React.Component {
       return null;
     }
 
-    let rows = this.state.pipelineRuns.map(function(t,i){
+    let rows = this.state.runs.map(function(t,i){
       return (
         <Run key={i} data={t} goto={this.gotoTaskDetails}/>
       );
@@ -54,8 +54,8 @@ class PhantomProcessingPanel extends React.Component {
     if (rows.length == 0) {
       rows = (
         <tr>
-          <td colSpan='5'>
-            <LaunchPhantomPipelineButton sessionid={this.props.sessionid}/>
+          <td colSpan='6'>
+            Not executed
           </td>
         </tr>
       );
@@ -63,20 +63,24 @@ class PhantomProcessingPanel extends React.Component {
 
     return (
       <div className='col-xs-12'>
-      <table className="table">
-        <thead>
-          <tr className='info'>
-            <th>Link</th>
-            <th>Exit text</th>
-            <th>Start time</th>
-            <th>End time</th>
-            <th>Userid</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows}
-        </tbody>
-      </table>
+        <table className="table">
+          <thead>
+            <tr className='info'>
+              <th>Link</th>
+              <th>Exit text</th>
+              <th>Start time</th>
+              <th>End time</th>
+              <th>Userid</th>
+              <th>CBRAIN status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </table>
+        <div className='col-xs-12'>
+          <LaunchPhantomPipelineButton sessionid={this.props.sessionid}/>
+        </div>
       </div>
     );
   }
@@ -90,13 +94,16 @@ export default PhantomProcessingPanel;
 
 class Run extends React.Component {
   render() {
+    const cbraintask = JSON.parse(this.props.data.cbraintask);
+    const cbrainstatus = cbraintask.status || cbraintask.error;
     return (
       <tr>
-        <td><input type='button' onClick={this.props.goto} value='See details' className='btn btn-primary'/></td>
+        <td><input type='button' onClick={this.props.goto} value='See details' className='btn'/></td>
         <td>{this.props.data.exit_text}</td>
         <td>{this.props.data.start_time}</td>
         <td>{this.props.data.end_time}</td>
         <td>{this.props.data.userid}</td>
+        <td>{cbrainstatus}</td>
       </tr>
     )
   }

@@ -31,11 +31,8 @@ class LegoPhantomPipeline extends AbstractServerProcess
 
     /**
      * Phantom pipeline source location
-     * TODO :: This should come from the database
      */
-    const SOURCE_LOCATION = __DIR__ .
-        '/../../../tools/phantom_pipeline_launcher.php';
-
+    protected $sourcelocation;
     /**
      * The session to call the pipeline on
      *
@@ -69,6 +66,10 @@ class LegoPhantomPipeline extends AbstractServerProcess
     ) {
         $this->timepoint = $timepoint;
 
+        $basedir = \NDB_Factory::singleton()->config()
+            ->getSetting('base');
+        $this->sourcelocation = $basedir.'tools/phantom_pipeline_launcher.php';
+
         parent::__construct(
             $id,
             $pid,
@@ -92,7 +93,7 @@ class LegoPhantomPipeline extends AbstractServerProcess
     public function getShellCommand()
     {
         $username       = $this->getUserId();
-        $script_path    = self::SOURCE_LOCATION;
+        $script_path    = $this->sourcelocation;
         $cbrainfilename = $this->timepoint->getVisitLabel();
         return "USER=$username php $script_path $cbrainfilename";
     }
@@ -151,6 +152,19 @@ class LegoPhantomPipeline extends AbstractServerProcess
     public function getType()
     {
         return self::PROCESS_TYPE;
+    }
+
+    /**
+      * Gets directory where all temporary files created by this task should go
+      *
+      * @return string full path to the temporary directory
+      */
+    protected function getTmpDir()
+    {
+        $base = \NDB_Factory::singleton()->config()->getSetting('base');
+        error_log($base);
+        error_log($base . 'tools/logs');
+        return '/var/www/loris_1/tools/logs';
     }
 
     /**

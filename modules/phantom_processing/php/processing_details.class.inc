@@ -173,8 +173,9 @@ class Processing_Details extends \NDB_Page
     protected function toArray(): array
     {
 
-        $isPhantom = $this->_isPhantomSession();
-        $runs      = [];
+        $isPhantom   = $this->_isPhantomSession();
+        $runs        = [];
+        $filesStatus = [];
 
         if ($isPhantom) {
             $MySQLAccessor = new PhantomProcessMySQLAccessor(
@@ -200,21 +201,26 @@ class Processing_Details extends \NDB_Page
                     }
 
                     $fileobject = $fileinfo->openFile();
+
                     $arr        = json_decode(
                         $fileobject->fread($fileobject->getSize()),
                         JSON_OBJECT_AS_ARRAY
                     );
                     $task       = new CbrainTask($arr);
-                    $hook       = \LORIS\CbrainHook::getinstance();
+                    $hook       = \LORIS\CbrainHook::getInstance();
                     $p['cbraintask'] = (string) $hook->updateTask($task);
                     return $p;
                 },
                 $processes
             );
+
+            $filesStatus = $this->_getFilesStatus();
         }
 
         return array(
                 'isPhantom' => $isPhantom,
+                'timepoint' => $this->timepoint->_timePointInfo,
+                'filesStatus' => $filesStatus, 
                 'runs'      => $runs,
                );
     }
@@ -234,6 +240,26 @@ class Processing_Details extends \NDB_Page
         return $entity_type == 'Scanner';
     }
 
+    /**
+     * Checks if this timepoint scans have been uploaded and if they are visible
+     * by cbrain.
+     *
+     * @return \stdClass
+     */
+    private function _getFilesStatus(): \stdClass
+    {
+        //TODO CBRIAN could throw an Exception if the fileInfo is not found....
+        
+        $hook = \LORIS\CbrainHook::getInstance();
+        $obj = array(
+            'localfileinfo' => new \SPLFileinfo('/data/loris/data/assembly/484341/lego_phantom_L1_UBC_20170307'),
+            'cbrainfileinfo' => $hook->getFileinfoFromDataProviderByFilename(
+                $hook->getInputDataProvider(),
+                '484341_lego_phantom_L1_UBC_20170307'
+            )
+        );
+        return (object) $obj;
+    }
     /**
      * Overrides base getJSDependencies()
      *

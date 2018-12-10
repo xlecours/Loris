@@ -37,6 +37,7 @@
         <host>%CBRAIN_PORTAL%</host>
         <username>%CBRAIN_USERNAME%</username>
         <password>%CBRAIN_PASSWORD%</password>
+        <groupname>%CBRAIN_GROUP%</groupname>
         <InputDataProviderName>%CBRAIN_INPUT_DP%</InputDataProviderName>
         <OutputDataProviderName>%CBRAIN_OUTPUT_DP%</OutputDataProviderName>
     </CBRAIN>

@@ -106,15 +106,45 @@ MetaPanel.propTypes = {
 
 class RunsPanel extends React.Component {
   render() {
-    const panels  = this.props.data.map(function(run, index) {
-        const cbraintask = JSON.parse(run.cbraintask);
-        const title = run.exit_text
-          .concat(' by ', run.userid, ' @ ', run.end_time);
-        return (
-          <Panel id={cbraintask.id} title={title}>
+    const panels  = this.props.data.sort((a,b) => {
+      // reverse chronological order
+      return new Date(b.start_time) - new Date(a.start_time);
+    }).map(function(run, index) {
+      const cbraintask = JSON.parse(run.cbraintask);
+      const title = run.exit_text
+        .concat(' by ', run.userid, ' @ ', run.end_time);
+
+      let color = null;
+      let results = null;
+      switch (cbraintask.status.trim()) {
+        case 'Completed':
+          results = (
             <ResultFileList cbraintaskid={cbraintask.id}/>
-          </Panel>
-        );
+          );
+          color = '#28a745'
+          break;
+        case 'Terminate':
+          color = 'ffc107';
+          break;
+        default:
+          color = '#6c757d';
+      }
+
+      const style = {
+        backgroundColor: color,
+        cursor: 'default'
+      };
+
+      let statusicon = (
+        <button className='btn' style={style}>{cbraintask.status}</button>
+      ); 
+
+      return (
+        <Panel id={cbraintask.id} title={title}>
+          {statusicon}
+          {results}
+        </Panel>
+      );
     });
 // add an anchor for each run
     return (
@@ -155,7 +185,12 @@ class ResultFileList extends React.Component {
     };
 
     return fetch(url,params)
-      .then((resp) => resp.json())
+      .then((resp) => {
+          if (resp.status == '204') {
+            return {};
+          }
+          return resp.json();
+      })
       .then((data) => this.setState({data}))
       .catch((error) => {
         this.setState({error: true});
@@ -213,29 +248,22 @@ class ResultFileList extends React.Component {
         f.filename
       );
       return (
-        <a className='list-group-item' href={url}>{f.filename}</a>
+        <a className='list-group-item' href={url}><span className='glyphicon glyphicon-file'/> {f.filename}</a>
       );
     });
 
-    const dirname = this.state.data.directory;
-    const icon = (
-      <span 
-        className="glyphicon glyphicon-download"
-        data-toggle="tooltip"
-        title="Download all files"
-        style={{cursor: 'pointer', color: '#064785'}}
-        onClick={this.fetchTargz}
-      />
-    );
+    const dirname = this.state.data.directory.concat('.tar.gz');
     return (
       <div className='col-md-12'>
       <div className='row'>
         <h4>Task results</h4>
-        {dirname} {icon}
+        <p>{dirname}</p>
+        <a href='#' className='btn btn-primary' onClick={this.fetchTargz}>Download all files</a>
       </div>
+      <hr/>
       <div className='row'>
-        <p className='text-muted'>click indivual files to download</p>
-        <div className='list-group'>
+        <span className='text-muted border-top'>click indivual files to download</span>
+        <div className='list-group list-group-flush'>
           {files}
         </div>
       </div>

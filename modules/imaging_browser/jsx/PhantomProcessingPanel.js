@@ -63,6 +63,8 @@ class PhantomProcessingPanel extends React.Component {
 
     return (
       <div className='col-xs-12'>
+        <hr/>
+        <div className='row'>
         <table className="table">
           <thead>
             <tr className='info'>
@@ -78,9 +80,13 @@ class PhantomProcessingPanel extends React.Component {
             {rows}
           </tbody>
         </table>
+        </div>
+        <div className='row'>
         <div className='col-xs-12'>
           <LaunchPhantomPipelineButton sessionid={this.props.sessionid}/>
         </div>
+        </div>
+        <hr/>
       </div>
     );
   }

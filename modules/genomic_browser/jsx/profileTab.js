@@ -20,8 +20,7 @@ class ProfileTab extends Component {
 
   componentDidMount() {
     this.fetchData()
-      .then(() => this.setState({isLoaded: true}))
-      .then(() => this.forceUpdate());
+      .then(() => this.setState({isLoaded: true}));
   }
 
   /**

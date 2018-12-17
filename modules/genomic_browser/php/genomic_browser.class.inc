@@ -261,46 +261,6 @@ class Genomic_Browser extends \NDB_Menu_Filter
     }
 
     /**
-     * Adds filters
-     * This function overrides filters to enable display of brief/full results
-     *
-     * @param string $prepared_key filter key
-     * @param string $field        filter field
-     * @param string $val          filter value
-     *
-     * @note overloaded function
-     *
-     * @return string
-     */
-    function _addValidFilters($prepared_key, $field, $val)
-    {
-        $query = ''; //initialize
-        if ($field == "show_brief_results") {
-            if ($val == "full") {
-                $this->_displayBrief = false;
-            }
-            return $query;
-        }
-        if ((!empty($val) || $val === '0') && $field != 'order') {
-            if (in_array($field, $this->CheckboxFilters) && $val) {
-                $query .= " AND $field";
-            } elseif (strtolower(substr($field, -8)) == 'centerid'
-                || strtolower(substr($field, -10)) == 'categoryid'
-                || strtolower(substr($field, -6)) == 'gender'
-                || (isset($this->EqualityFilters)
-                && in_array($field, $this->EqualityFilters))
-            ) {
-                 $query .= " AND $field = :v_$prepared_key";
-            } elseif ($field == "candidate.CandID") {
-                $query .= " AND $field = CONVERT( :v_$prepared_key, DECIMAL) ";
-            } else {
-                $query .= " AND $field LIKE CONCAT('%', :v_$prepared_key, '%') ";
-            }
-        }
-        return $query;
-    }
-
-    /**
      * Include the column formatter required to display the feedback link colours
      * in the candidate_list menu
      *

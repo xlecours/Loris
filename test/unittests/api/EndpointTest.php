@@ -16,10 +16,6 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 use \Mockery\Adapter\Phpunit\MockeryTestCase;
 use \Mockery as m;
 
-use \Psr\Http\Server\RequestHandlerInterface;
-use \Psr\Http\Message\ResponseInterface;
-use \Psr\Http\Message\ServerRequestInterface;
-
 /**
  * Unit test for SinglePointLogin class
  *
@@ -31,14 +27,11 @@ use \Psr\Http\Message\ServerRequestInterface;
  */
 class EndpointTest extends MockeryTestCase
 {
-    public function tearDown()
-    {
-        \Mockery::close();
-    }
-
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+     * Test that the endpoint abstract class process function is calling
+     * handle on the handler that it receive.
+     *
+     * @return void
      */
     function testProcessHandlerHandleIsCalled(): void
     {
@@ -64,8 +57,10 @@ class EndpointTest extends MockeryTestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+     * Test that the endpoint abstract class process function is not calling
+     * handle on the handler that it receive when it implements ETagCalculator.
+     *
+     * @return void
      */
     function testETagHandlerHandleIsNotCalled() : void
     {
@@ -86,7 +81,10 @@ class EndpointTest extends MockeryTestCase
             ->andReturn(new \LORIS\Http\Response())
             ->getMock();
 
-        $handler = m::mock('\Psr\Http\Server\RequestHandlerInterface', '\LORIS\Middleware\ETagCalculator')
+        $handler = m::mock(
+            '\Psr\Http\Server\RequestHandlerInterface',
+            '\LORIS\Middleware\ETagCalculator'
+        )
             ->shouldReceive('handle')
             ->never()
             ->getMock();

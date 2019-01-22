@@ -12,9 +12,6 @@
  */
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
-require_once __DIR__ . '/MockHandler.php';
-require_once __DIR__ . '/MockETagHandler.php';
-require_once __DIR__ . '/MockRequest.php';
 
 use \Mockery\Adapter\Phpunit\MockeryTestCase;
 use \Mockery as m;
@@ -53,10 +50,10 @@ class EndpointTest extends MockeryTestCase
             ->shouldReceive('supportedVersions')
             ->andReturn(array('test'));
 
-        $request = (new MockRequest())
+        $request = (new \Zend\Diactoros\ServerRequest())
             ->withattribute('LORIS-API-Version', 'test');
 
-        $handler = m::mock('MockHandler')
+        $handler = m::mock('\Psr\Http\Server\RequestHandlerInterface')
             ->shouldReceive('handle')
             ->once()
             ->with($request)
@@ -80,7 +77,7 @@ class EndpointTest extends MockeryTestCase
             ->shouldReceive('supportedVersions')
             ->andReturn(array('test'));
 
-        $request = (new MockRequest())
+        $request = (new \Zend\Diactoros\ServerRequest())
             ->withattribute('LORIS-API-Version', 'test');
 
         $etagcalculator = m::mock('overload:\LORIS\Middleware\Etag')
@@ -89,12 +86,12 @@ class EndpointTest extends MockeryTestCase
             ->andReturn(new \LORIS\Http\Response())
             ->getMock();
 
-        $handler = m::mock('MockETagHandler')
+        $handler = m::mock('\Psr\Http\Server\RequestHandlerInterface', '\LORIS\Middleware\ETagCalculator')
             ->shouldReceive('handle')
             ->never()
             ->getMock();
 
-        $response = $this->endpoint->process($request, $handler);
+        $response = $endpoint->process($request, $handler);
     }
 }
 

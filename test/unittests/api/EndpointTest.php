@@ -1,6 +1,6 @@
 <?php
 /**
- * Endpoint tests
+ * Endpoint abstract class tests
  *
  * PHP Version 7
  *
@@ -17,11 +17,11 @@ use \Mockery\Adapter\Phpunit\MockeryTestCase;
 use \Mockery as m;
 
 /**
- * Unit test for SinglePointLogin class
+ * Unit test for Endpoint class
  *
  * @category Tests
  * @package  Test
- * @author   Dave MacFarlane <david.macfarlane2@mcgill.ca>
+ * @author   Xavier Lecours <xavier.lecours@mcin.ca>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */

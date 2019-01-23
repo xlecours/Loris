@@ -86,7 +86,6 @@ class LoginTest extends MockeryTestCase
             ->andReturn($this->_valid_jwt_key);
 
         $factory = \NDB_Factory::singleton();
-        $factory->setTesting(true);
         $factory->setConfig($config);
 
         $login = m::mock('\LORIS\Api\Endpoints\Login')

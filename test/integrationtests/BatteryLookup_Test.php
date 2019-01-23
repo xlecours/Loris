@@ -26,11 +26,25 @@ use PHPUnit\Framework\TestCase;
 class NDB_BVL_Battery_Test extends TestCase
 {
     function setUp() {
-        $client = new NDB_Client();
-        $client->makeCommandLine();
-        $client->initialize();
+//        $client = new NDB_Client();
+//        $client->makeCommandLine();
+//        $client->initialize();
 
-        $this->DB = Database::singleton();
+        $factory = \NDB_Factory::singleton();
+        $factory->reset();
+        $factory->setTesting(false);
+
+        $config = $factory->config(CONFIG_XML);
+
+        $database = $config->getSetting('database');
+
+        $this->DB  = \Database::singleton(
+            $database['database'],
+            $database['username'],
+            $database['password'],
+            $database['host'],
+            1
+        );
 
         $this->DB->setFakeTableData(
             "test_names",

@@ -186,7 +186,7 @@ class Instrument_Manager extends \NDB_Menu_Filter
 
         $uploader = (new \LORIS\FilesUploadHandler($targetdir))
             ->withPermittedMIMETypes(
-                ...array('application/octet-stream')
+                'application/octet-stream'
             );
 
         $response = $uploader->handle($request);

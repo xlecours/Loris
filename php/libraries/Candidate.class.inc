@@ -21,10 +21,10 @@ define('PSCID_INVALID_STRUCTURE', 4);
 define('EDC_NOT_SPECIFIED', 5);
 
 // id ranges...
-define('CANDIDATE_MIN_CANDID', 100000);
-define('CANDIDATE_MAX_CANDID', 999999);
-define('CANDIDATE_MIN_PSCID', 1000);
-define('CANDIDATE_MAX_PSCID', 9999);
+define('CANDIDATE_MIN_CANDID', 1000000);
+define('CANDIDATE_MAX_CANDID', 9999999);
+define('CANDIDATE_MIN_PSCID', 10000000);
+define('CANDIDATE_MAX_PSCID', 99999999);
 
 /**
  * Wrapper around a candidate in Loris. Mostly, it gets information

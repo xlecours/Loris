@@ -45,8 +45,8 @@ class Candidate extends \Loris\API\APIBase
         parent::__construct($method);
 
         if (!is_numeric($CandID)
-            || $CandID < 100000
-            || $CandID > 999999
+            || $CandID < 1000000
+            || $CandID > 9999999
         ) {
             $this->header("HTTP/1.1 400 Bad Request");
             $this->error("Invalid CandID format");

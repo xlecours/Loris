@@ -244,8 +244,6 @@ class Candidate_List extends \NDB_Menu_Filter
                                         'Recycling Bin' => 'Recycling Bin',
                                        );
 
-        $participant_status_options = array(null => 'All')
-             + \Candidate::getParticipantStatusOptions();
         $scan_options = array(
                          null => 'All',
                          'Y'  => 'Yes',
@@ -297,11 +295,6 @@ class Candidate_List extends \NDB_Menu_Filter
             $latest_visit_status_options
         );
         $this->addSelect('Feedback', 'Feedback', $feedback_status_options);
-        $this->addSelect(
-            'Participant_Status',
-            'Participant Status',
-            $participant_status_options
-        );
         $this->addSelect('scan_done', 'Scan Done', $scan_options);
 
         // Project list, if applicable

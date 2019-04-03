@@ -101,7 +101,7 @@ class BaseRouter extends PrefixRouter implements RequestHandlerInterface
         // Legacy from .htaccess. A CandID goes to the timepoint_list
         // FIXME: This should all be one candidates module, not a bunch
         // of hacks in the base router.
-        if (preg_match("/^([0-9]{6})$/", $components[0])) {
+        if (preg_match("/^([0-9]{7})$/", $components[0])) {
             // FIXME: This assumes the baseURL is under /
             $path    = $uri->getPath();
             $baseurl = $uri->withPath("/")->withQuery("");

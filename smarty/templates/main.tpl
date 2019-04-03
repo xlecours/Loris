@@ -305,9 +305,6 @@
                                             <!-- candidate data -->
                                             <tbody>
                                                     <tr>
-                                                        <td>
-                                                            {$candidate.DoB}
-                                                        </td>
                                                         {if $candidate.EDC!=""}
                                                             <td>
                                                                 {$candidate.EDC}

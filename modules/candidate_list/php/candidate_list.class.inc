@@ -78,7 +78,6 @@ class Candidate_List extends \NDB_Menu_Filter
             $this->columns,
             array(
              'GROUP_CONCAT(DISTINCT sp.title) as Subproject',
-             'DATE_FORMAT(c.DoB,\'%Y-%m-%d\') AS DoB',
              'MAX(s.Scan_done) as scan_Done',
             )
         );
@@ -146,7 +145,6 @@ class Candidate_List extends \NDB_Menu_Filter
             $this->validFilters,
             array(
              's.SubprojectID',
-             'c.DoB',
              $VisitCountSQL,
              'max(s.Current_stage)',
              $FeedbackSQL,
@@ -180,7 +178,6 @@ class Candidate_List extends \NDB_Menu_Filter
         $this->formToFilter = array_merge(
             $this->formToFilter,
             array(
-             'dob'                 => 'c.DoB',
              'Visit_Count'         => $VisitCountSQL,
              'Latest_Visit_Status' => 'max(s.Current_stage)',
              'Feedback'            => $FeedbackSQL,

@@ -90,14 +90,6 @@
                             {$form.Participant_Status.html}
                         </div>
                     </div>
-                    <div class="form-group col-sm-4">
-                        <label class="col-sm-12 col-md-4">
-                            {$form.dob.label}
-                        </label>
-                        <div class="col-sm-12 col-md-8">
-                            {$form.dob.html}
-                        </div>
-                    </div>
                 </div>
                 <div class="row">
                     <div class="form-group col-sm-4">

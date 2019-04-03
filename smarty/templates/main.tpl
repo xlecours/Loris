@@ -250,9 +250,6 @@
                                             <!-- column headings -->
                                             <thead>
                                                 <tr class="info">
-                                                        <th>
-                                                            DOB
-                                                        </th>
                                                         {if $candidate.EDC!=""}
                                                             <th>
                                                                 EDC

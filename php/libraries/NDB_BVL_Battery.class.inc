@@ -118,7 +118,7 @@ class NDB_BVL_Battery
         $firstVisit=null
     ) {
         // assert that a battery has already been selected
-        $this->_assertBatterySelected();
+        $error = $this->_assertBatterySelected();
 
         // get the current battery (center id is irrelevant here,
         // as is stage probably)
@@ -153,7 +153,8 @@ class NDB_BVL_Battery
         // loop over the list of instruments
         foreach ($neededTests AS $testName) {
             // add the instrument
-            $this->addInstrument($testName);
+            $success = $this->addInstrument($testName);
+
         } // end looping over the list of instruments
     } // end createBattery()
 
@@ -170,13 +171,10 @@ class NDB_BVL_Battery
     {
         $DB = Database::singleton();
         // assert that a battery has already been selected
-        $this->_assertBatterySelected();
+        $error = $this->_assertBatterySelected();
 
         // assert that the instrument is valid
         $error = $this->_assertValidInstrument($testName);
-        if ($error !== true) {
-            throw new \LorisException("Invalid instrument");
-        }
 
         // get SessionID, UserID
         $query = "SELECT ID as SessionID, UserID FROM session WHERE ID=:SID";
@@ -262,15 +260,59 @@ class NDB_BVL_Battery
     {
         $DB = Database::singleton();
         // assert that a battery has already been selected
-        $this->_assertBatterySelected();
+        $error = $this->_assertBatterySelected();
 
         // craft the select query
-        $query   = "SELECT f.Test_name FROM flag f JOIN session s
+        $query = "SELECT f.Test_name FROM ";
+        if(!is_null($stage)) $query .= "test_battery AS b, test_names as t, ";
+        $query .= " flag f JOIN session s
             ON (s.ID=f.SessionID)
             JOIN candidate c ON (c.CandID=s.CandID)
             WHERE f.SessionID=:SID AND s.Active='Y' AND c.Active='Y'
                AND f.CommentID NOT LIKE 'DDE%'";
         $qparams = array('SID' => $this->sessionID);
+
+	$timepoint = '';
+	$originalvl = $visit_label;
+	if (strlen($visit_label) > 2 && substr_compare($visit_label, 'lego_phantom', 0, 12) != 0 && substr_compare($visit_label, 'living_phantom', 0, 14) != 0) {
+		$timepoint = substr($visit_label, 5, 2);
+		$visit_label = substr($visit_label, 3, 2);
+	}
+        //'scanner' phantom
+        if (substr_compare($visit_label, 'lego_phantom', 0, 12) == 0 || substr_compare($visit_label, 'living_phantom', 0, 14) == 0) {
+                $timepoint = '';
+                $visit_label = 'phantom';
+        }
+        if(!is_null($stage)) {
+            if(!is_null($visit_label)) {
+                $query .= " AND b.Visit_label = '$visit_label'";
+            } else {
+                $query .= " OR b.Visit_label IS NULL";
+            }
+        }
+        if($timepoint >= 60 && (substr($originalvl, 0, 3) != "PRE" || substr($originalvl, 0, 3) != "NAP")) {
+            $query .= " AND b.Test_name!='current_med_use'";
+        }
+	if(($timepoint == '06' || $timepoint == '18') && $visit_label != 'TL') {
+        	$query .= " AND b.Timepoint = 'other'";
+	}
+        if($visit_label == 'WA' || $visit_label == 'MA') {
+                if ($timepoint == '01' || $timepoint == '02' || $timepoint == '03') {
+                    $query .= " AND b.Timepoint = '$timepoint'";
+                } elseif ($timepoint == '00') {
+                    $query .= " AND b.Timepoint IS NULL";
+                }
+        }
+//        if ($timepoint == '60') {
+//                $query .= " AND b.Timepoint = '60'";
+//        }
+        if(!is_null($stage)) {
+            $query .= " AND t.Test_name=b.Test_name AND b.Stage='$stage'";
+            if(!is_null($SubprojectID)) {
+                $query .= " AND (b.SubprojectID IS NULL OR b.SubprojectID='$SubprojectID')";
+            }
+        }
+
         $rows    = $DB->pselect($query, $qparams);
 
         // repackage the array
@@ -299,7 +341,7 @@ class NDB_BVL_Battery
     {
         $DB = Database::singleton();
         // assert that a battery has already been selected
-        $this->_assertBatterySelected();
+        $error = $this->_assertBatterySelected();
 
         // craft the select query
         $query = "SELECT f.Test_name,
@@ -444,14 +486,26 @@ class NDB_BVL_Battery
                     AND b.Active='Y'
                     AND (SubprojectID=:SubprojID OR SubprojectID IS NULL)";
 
+        $timepoint = '';
+        $originalvl = $visit_label;
+        if (strlen($visit_label) > 2 && substr_compare($visit_label, 'lego_phantom', 0, 12) != 0 && substr_compare($visit_label, 'living_phantom', 0, 14) != 0) {
+            $timepoint = substr($visit_label, 5, 2);
+            $visit_label = substr($visit_label, 3, 2);
+	}
+        //'scanner' phantom
+        if (substr_compare($visit_label, 'lego_phantom', 0, 12) == 0 || substr_compare($visit_label, 'living_phantom', 0, 14) == 0) {
+            $timepoint = '';
+            $visit_label = 'phantom';
+        }
+
         if (!is_null($visit_label)) {
             $VisitBatteryExists = $DB->pselectOne(
                 "SELECT COUNT(*)
                     FROM test_battery
-                    WHERE Visit_label =:VL AND SubprojectID=:SubID",
+                    WHERE Visit_label =:VL", // AND SubprojectID=:SubID",
                 array(
                  'VL'    => $visit_label,
-                 'SubID' => $SubprojectID,
+                 //'SubID' => $SubprojectID,
                 )
             );
             if ($VisitBatteryExists > 0) {
@@ -465,7 +519,22 @@ class NDB_BVL_Battery
             $query         .= " AND b.Stage=:stg";
             $qparams['stg'] = $stage;
         }
-
+        if($timepoint >= 60 && (substr($originalvl, 0, 3) != "PRE" || substr($originalvl, 0, 3) != "NAP")) {
+            $query .= " AND b.Test_name!='current_med_use'";
+        }
+        if(($timepoint == '06' || $timepoint == '18') && $visit_label != 'TL') {
+                $query .= " AND b.Timepoint = 'other'";
+        }
+        if($visit_label == 'WA' || $visit_label == 'MA') {
+                if ($timepoint == '01' || $timepoint == '02' || $timepoint == '03') {
+                    $query .= " AND b.Timepoint = '$timepoint'";
+                } elseif ($timepoint == '00') {
+                    $query .= " AND b.Timepoint IS NULL";
+                }
+        }
+//        if ($timepoint == '60') {
+//                $query .= " AND b.Timepoint = '60'";
+//        }
         if (!is_null($center_ID)) {
             // return all instruments that match this center or all centers (null)
             $query         .= " AND (b.CenterID=:CID OR b.CenterID IS NULL)";
@@ -538,11 +607,19 @@ class NDB_BVL_Battery
      */
     function _createCommentID($testName)
     {
+        $DB = Database::singleton();
         // assert that a battery has already been selected
         $error = $this->_assertBatterySelected();
 
         // assert that the instrument is valid
         $error = $this->_assertValidInstrument($testName);
+
+        // create timepoint object
+        $timepoint =& TimePoint::singleton($this->sessionID);
+
+        // create candidate object
+        $candidate =& Candidate::singleton($timepoint->getCandID());
+
         return NDB_BVL_Battery::generateCommentID($this->sessionID, $testName);
     }
 

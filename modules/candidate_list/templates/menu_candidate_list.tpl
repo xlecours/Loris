@@ -82,14 +82,6 @@
                         {$form.scan_done.html}
                     </div>
                   </div>
-                    <div class="form-group col-sm-4">
-                        <label class="col-sm-12 col-md-4">
-                            {$form.Participant_Status.label}
-                        </label>
-                        <div class="col-sm-12 col-md-8">
-                            {$form.Participant_Status.html}
-                        </div>
-                    </div>
                 </div>
                 <div class="row">
                     <div class="form-group col-sm-4">
@@ -106,14 +98,6 @@
                         </label>
                         <div class="col-sm-12 col-md-8">
                             {$form.Visit_Count.html}
-                        </div>
-                    </div>
-                    <div class="form-group col-sm-4">
-                        <label class="col-sm-12 col-md-4">
-                            {$form.Feedback.label}
-                        </label>
-                        <div class="col-sm-12 col-md-8">
-                            {$form.Feedback.html}
                         </div>
                     </div>
 

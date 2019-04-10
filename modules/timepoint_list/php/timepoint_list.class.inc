@@ -116,11 +116,6 @@ class Timepoint_List extends \NDB_Menu
             $user     =& \User::singleton();
             $username = $user->getData('UserID');
 
-            $feedback_select_inactive = null;
-            if ($user->hasPermission('bvl_feedback')) {
-                $feedback_select_inactive = 'Y';
-            }
-
             /*
              * List of visits
              */
@@ -156,30 +151,6 @@ class Timepoint_List extends \NDB_Menu
                     array('cid' => $centerID)
                 );
                 $this->tpl_data['timePoints'][$x]['CenterName'] = $center['Alias'];
-
-                // create feedback object for the time point
-                $feedback = \NDB_BVL_Feedback::singleton(
-                    $username,
-                    null,
-                    $timePoint->getData('SessionID')
-                );
-
-                $feedback_status = $feedback->getMaxThreadStatus(
-                    $feedback_select_inactive
-                );
-
-                $feedback_count = $feedback->getThreadCount();
-
-                $this->tpl_data['timePoints'][$x]['feedbackCount']
-                    = (empty($feedback_count))
-                       ? $feedback_status
-                       : $feedback_count;
-
-                $this->tpl_data['timePoints'][$x]['feedbackStatus']
-                    = $feedback_status;
-
-                $this->tpl_data['timePoints'][$x]['feedbackColor']
-                    = $feedback->getThreadColor($feedback_status);
 
                 if (!in_array(
                     $timePoint->getCurrentStage(),

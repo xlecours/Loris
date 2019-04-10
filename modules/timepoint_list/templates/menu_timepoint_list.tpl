@@ -31,9 +31,6 @@
             <th>Date of Stage</th>
             <th>Sent To DCC</th>
             <th>Imaging Scan Done</th>
-            <th>Feedback</th>
-            <th>BVL QC</th>
-            <th>BVL Exclusion</th>
             <th>Registered By</th>
         </tr>
     </thead>
@@ -78,34 +75,6 @@
             {/if}
             </td>
    
-            <td bgColor="{$timePoints[timepoint].feedbackColor}">
-            {if $timePoints[timepoint].feedbackCount}
-                {$timePoints[timepoint].feedbackStatus}
-            {else}
-                -
-            {/if}
-            </td>
-
-            <td>
-            {if $timePoints[timepoint].BVLQCStatus}
-                {$timePoints[timepoint].BVLQCType}
-            {else}
-                <img src="{$baseurl}/images/delete.gif" border="0" />
-            {/if}
-            </td>
-
-            <td>
-            {if $timePoints[timepoint].BVLQCExclusion}
-                {if $timePoints[timepoint].BVLQCExclusion == 'Not Excluded'}
-                Pass
-                {else}
-                Fail
-                {/if}
-            {else}
-                <img src="{$baseurl}/images/delete.gif" border="0" />
-            {/if}
-            </td>
-
             <td>
                 {$timePoints[timepoint].Real_name}
             </td>

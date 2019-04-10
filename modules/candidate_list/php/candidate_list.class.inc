@@ -68,8 +68,6 @@ class Candidate_List extends \NDB_Menu_Filter
                           'c.PSCID',
                           'c.Gender',
                           'c.Entity_type',
-                          "COALESCE(pso.Description,'Active') "
-                          . " AS Participant_Status",
                          );
         if ($useProjects) {
             $this->columns[] = 'p.Name as Project';
@@ -105,25 +103,18 @@ class Candidate_List extends \NDB_Menu_Filter
 
         // Need distinct because of joining with feedback_bvl_thread
         $VisitCountSQL = 'COUNT(DISTINCT s.Visit_label)';
-        $FeedbackSQL   = 'IFNULL(MIN(feedback_bvl_thread.Status+0),0)';
 
         $this->columns = array_merge(
             $this->columns,
             array(
              "$VisitCountSQL as Visit_count",
              'max(s.Current_stage) as Latest_visit_status',
-             "$FeedbackSQL as Feedback",
             )
         );
 
         $this->query = " FROM candidate c
             LEFT JOIN psc ON (c.CenterID=psc.CenterID)
             LEFT JOIN session s ON (c.CandID = s.CandID AND s.Active = 'Y')
-            LEFT JOIN feedback_bvl_thread
-                ON (c.CandID=feedback_bvl_thread.CandID)
-            LEFT JOIN participant_status ps ON (ps.CandID=c.CandID)
-            LEFT JOIN participant_status_options pso
-                ON (ps.participant_status=pso.ID)
             LEFT JOIN Project p ON (c.ProjectID=p.ProjectID)
             LEFT JOIN subproject sp ON (s.SubprojectID=sp.SubprojectID)
             WHERE c.Active = 'Y'";
@@ -134,7 +125,6 @@ class Candidate_List extends \NDB_Menu_Filter
             $this->query .= " AND c.CenterID IN (" . $site_arr . ")";
         }
 
-        //'COALESCE(pso.ID,1) AS Participant_Status',
         $this->group_by = 'c.CandID, psc.Name, c.PSCID, c.Gender';
         $this->order_by = 'c.PSCID ASC';
 
@@ -147,7 +137,6 @@ class Candidate_List extends \NDB_Menu_Filter
              's.SubprojectID',
              $VisitCountSQL,
              'max(s.Current_stage)',
-             $FeedbackSQL,
              's.Scan_done',
              's.Visit_label',
              'c.Entity_type',
@@ -158,7 +147,6 @@ class Candidate_List extends \NDB_Menu_Filter
         $this->validHavingFilters = array(
                                      $VisitCountSQL,
                                      'max(s.Current_stage)',
-                                     $FeedbackSQL,
                                     );
         $this->EqualityFilters    = array(
                                      's.SubprojectID',
@@ -180,8 +168,6 @@ class Candidate_List extends \NDB_Menu_Filter
             array(
              'Visit_Count'         => $VisitCountSQL,
              'Latest_Visit_Status' => 'max(s.Current_stage)',
-             'Feedback'            => $FeedbackSQL,
-             'Participant_Status'  => 'COALESCE(pso.ID, 1)',
              'scan_done'           => 's.Scan_done',
              'Visit_label'         => 's.Visit_label',
              'Entity_type'         => 'c.Entity_type',
@@ -221,16 +207,6 @@ class Candidate_List extends \NDB_Menu_Filter
 
         // SubprojectID
         $list_of_subprojects = \Utility::getSubprojectList();
-
-        // list of feedback statuses
-        $feedback_status_options = array(
-                                    null => 'All',
-                                    '0'  => 'None',
-                                    '1'  => 'opened',
-                                    '2'  => 'answered',
-                                    '3'  => 'closed',
-                                    '4'  => 'comment',
-                                   );
 
         $latest_visit_status_options = array(
                                         null            => 'All',
@@ -291,7 +267,6 @@ class Candidate_List extends \NDB_Menu_Filter
             'Latest Visit Status',
             $latest_visit_status_options
         );
-        $this->addSelect('Feedback', 'Feedback', $feedback_status_options);
         $this->addSelect('scan_done', 'Scan Done', $scan_options);
 
         // Project list, if applicable
@@ -311,11 +286,6 @@ class Candidate_List extends \NDB_Menu_Filter
             );
             $this->tpl_data['useEDC'] = "true";
         }
-        $this->addSelect(
-            'feedback',
-            'Feedback Status',
-            array_merge(array('' => 'All'), $feedback_status_options)
-        );
 
         return true;
     }

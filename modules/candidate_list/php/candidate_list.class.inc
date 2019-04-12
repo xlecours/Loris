@@ -66,7 +66,7 @@ class Candidate_List extends \NDB_Menu_Filter
                           'psc.Name AS Site',
                           'c.CandID AS DCCID',
                           'c.PSCID',
-                          'c.test_language',
+                          'c.test_language as Language',
                           'c.Gender',
                           'c.Entity_type',
                          );

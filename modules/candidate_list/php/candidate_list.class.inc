@@ -66,6 +66,7 @@ class Candidate_List extends \NDB_Menu_Filter
                           'psc.Name AS Site',
                           'c.CandID AS DCCID',
                           'c.PSCID',
+                          'c.test_language',
                           'c.Gender',
                           'c.Entity_type',
                          );
@@ -84,6 +85,7 @@ class Candidate_List extends \NDB_Menu_Filter
                                'centerID'     => 'c.CenterID',
                                'DCCID'        => 'c.CandID',
                                'PSCID'        => 'c.PSCID',
+                               'test_language'=> 'c.test_language',
                                'gender'       => 'c.Gender',
                                'SubprojectID' => 's.SubprojectID',
                               );
@@ -93,6 +95,7 @@ class Candidate_List extends \NDB_Menu_Filter
                                'c.CenterID',
                                'c.CandID',
                                'c.PSCID',
+                               'c.test_language',
                                'c.Gender',
                               );
         if ($config->getSetting("useEDC")==="true") {
@@ -125,7 +128,7 @@ class Candidate_List extends \NDB_Menu_Filter
             $this->query .= " AND c.CenterID IN (" . $site_arr . ")";
         }
 
-        $this->group_by = 'c.CandID, psc.Name, c.PSCID, c.Gender';
+        $this->group_by = 'c.CandID, psc.Name, c.PSCID, c.test_language, c.Gender';
         $this->order_by = 'c.PSCID ASC';
 
         if ($useProjects) {
@@ -154,6 +157,7 @@ class Candidate_List extends \NDB_Menu_Filter
                                      'c.ProjectID',
                                      's.Scan_done',
                                      's.Visit_label',
+                                     'c.test_language',
                                      'c.Gender',
                                     );
 
@@ -235,6 +239,16 @@ class Candidate_List extends \NDB_Menu_Filter
             'Visit_label',
             'Visit Label',
             $visits
+        );
+
+        $this->addSelect(
+            'test_language',
+            'Language',
+            array(
+             ''       => 'All',
+             'English'   => 'English',
+             'French' => 'French',
+            )
         );
 
         $this->addSelect(

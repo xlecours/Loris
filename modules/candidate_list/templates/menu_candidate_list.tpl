@@ -82,6 +82,14 @@
                         {$form.scan_done.html}
                     </div>
                   </div>
+                    <div class="form-group col-sm-4">
+                        <label class="col-sm-12 col-md-4">
+                            {$form.test_language.label}
+                        </label>
+                        <div class="col-sm-12 col-md-8">
+                            {$form.test_language.html}
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="form-group col-sm-4">

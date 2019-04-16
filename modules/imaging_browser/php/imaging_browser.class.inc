@@ -135,7 +135,9 @@ class Imaging_Browser extends \NDB_Menu_Filter
             JOIN candidate c ON (c.CandID=s.CandID) 
             JOIN files f ON (f.SessionID=s.ID) 
             LEFT JOIN files_qcstatus fqc ON (fqc.FileID=f.FileID) 
-            JOIN mri_acquisition_dates md ON (md.SessionID=s.ID)";
+            JOIN mri_acquisition_dates md ON (md.SessionID=s.ID)
+            JOIN flag fl ON (fl.SessionID=s.ID)
+            LEFT JOIN handedness h ON (h.CommentID=fl.CommentID)";
 
         $left_joins = "";
         foreach ($case_desc as $key => $value) {
@@ -154,7 +156,10 @@ class Imaging_Browser extends \NDB_Menu_Filter
             WHERE 
             s.Active = 'Y' AND
             f.PendingStaging=0 AND 
-            f.FileType='mnc'";
+            f.FileType='mnc' AND " .
+//            'fl.CommentID NOT LIKE "DDE%" AND ' .
+//            "fl.test_name='handedness' AND " .
+//            's.Visit_label LIKE "%EN%"';
 
         $this->query .= $left_joins;
         $this->query .= $where;
@@ -204,12 +209,16 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'p.MRI_alias as Site',
                           'c.PSCID as PSCID',
                           'c.CandID as DCCID',
+                          'c.Gender as Gender',
+                          's.Age_At_MRI as Age_At_MRI',
+                          'c.test_language as test_language',
+                          'h.interpretation as interpretation',
                           's.visit_label as Visit_Label',
                           "$PendingFailSubquery as Visit_QC_Status",
                           'MIN(md.AcquisitionDate) as First_Acquisition',
                           'FROM_UNIXTIME(MIN(f.InsertTime)) as First_Insertion',
                           'FROM_UNIXTIME(MAX(fqc.QCLastChangeTime)) as Last_QC',
-                          "$NewDataSubquery as New_Data",
+                          "$NewDataSubquery as New_Data"
                          );
         $this->columns = array_merge(
             $this->columns,
@@ -225,6 +234,10 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'Site',
                           'PSCID',
                           'DCCID',
+                          'Gender',
+                          'Age At MRI',
+                          'Test Language',
+                          'Handedness Interpretation',
                           'Visit_Label',
                           'Visit_QC_Status',
                           'First_Acquisition',

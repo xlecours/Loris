@@ -137,7 +137,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
             LEFT JOIN files_qcstatus fqc ON (fqc.FileID=f.FileID) 
             JOIN mri_acquisition_dates md ON (md.SessionID=s.ID)
             LEFT JOIN (
-                SELECT interpretation, candidate.CandID, handedness.CommentID
+                SELECT interpretation, candidate.CandID, handedness.CommentID, session.ID as HSID
                 FROM handedness
                 JOIN flag USING (CommentID)
                 JOIN session ON (session.ID=flag.SessionID)
@@ -214,6 +214,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'c.Gender as Gender',
                           's.Age_At_MRI as Age_At_MRI',
                           'c.test_language as test_language',
+                          'h.HSID'
                           'h.CommentID as CommentID',
                           'h.interpretation as Handedness',
                           's.visit_label as Visit_Label',
@@ -239,6 +240,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'Gender',
                           'Age At MRI',
                           'Test Language',
+                          'HSID',
                           'CommentID',
                           'Handedness',
                           'Visit_Label',
@@ -298,7 +300,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                 function ($header) {
                     return ucwords(str_replace('_', ' ', $header));
                 },
-                array('sessionID', 'CommentID')
+                array('sessionID', 'CommentID', 'HSID')
             )
         );
     }

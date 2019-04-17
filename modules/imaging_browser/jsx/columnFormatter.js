@@ -32,7 +32,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
           "/instruments/handedness/?commentID=" +
           row.CommentID +
           "&sessionID=" +
-          row.SessionID +
+          row.HSID +
           "&candID=" +
           row.DCCID}>
       {row.Handedness}

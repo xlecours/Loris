@@ -29,7 +29,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
 
   if (column === 'Handedness') {
       return <td><a href={loris.BaseURL +
-          "/handedness/instruments/?commentID=" +
+          "/instruments/handedness/?commentID=" +
           row.CommentID +
           "&sessionID=" +
           row.SessionID +

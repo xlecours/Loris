@@ -364,7 +364,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
              'size'      => "10",
              "maxlength" => "25",
             )
-        )
+        );
         $this->addBasicText(
             'DCCID',
             'DCCID',

@@ -137,7 +137,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
             LEFT JOIN files_qcstatus fqc ON (fqc.FileID=f.FileID) 
             JOIN mri_acquisition_dates md ON (md.SessionID=s.ID)
             LEFT JOIN (
-                SELECT interpretation, candidate.CandID, handedness.CommentID, session.ID as HSID
+                SELECT interpretation, result, candidate.CandID, handedness.CommentID, session.ID as HSID
                 FROM handedness
                 JOIN flag USING (CommentID)
                 JOIN session ON (session.ID=flag.SessionID)
@@ -216,7 +216,8 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'c.test_language as test_language',
                           'h.HSID',
                           'h.CommentID as CommentID',
-                          'h.interpretation as Handedness',
+                          'h.interpretation as Handedness_Interpretation',
+                          'h.result as Handedness_Score',
                           's.visit_label as Visit_Label',
                           "$PendingFailSubquery as Visit_QC_Status",
                           'FROM_UNIXTIME(MIN(f.InsertTime)) as First_Insertion',
@@ -241,7 +242,8 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'Test Language',
                           'HSID',
                           'CommentID',
-                          'Handedness',
+                          'Handedness_Interpretation',
+                          'Handedness_Score',
                           'Visit_Label',
                           'Visit_QC_Status',
                           'First_Insertion',
@@ -272,6 +274,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                                'c.ProjectID',
                                's.CenterID',
                                'h.interpretation',
+                               'h.result',
                                'c.test_language',
                                's.Age_At_MRI_in_months',
                                's.MRIQCStatus',
@@ -285,7 +288,8 @@ class Imaging_Browser extends \NDB_Menu_Filter
                                   'DCCID'         => 'c.CandID',
                                   'ProjectID'     => 'c.ProjectID',
                                   'SiteID'        => 's.CenterID',
-                                  'Handedness'    => 'h.interpretation',
+                                  'Handedness_Interpretation'    => 'h.interpretation',
+                                  'Handedness_Score'    => 'h.result',
                                   'Language'      => 'c.test_language',
                                   'Age_At_MRI_in_months'    => 's.Age_At_MRI_in_months',
                                   'VisitQCStatus' => 's.MRIQCStatus',
@@ -357,7 +361,15 @@ class Imaging_Browser extends \NDB_Menu_Filter
         );
         $this->addBasicText(
             'Age_At_MRI_in_months',
-            'Age At MRI in months',
+            'Age At MRI',
+            array(
+             'size'      => "10",
+             "maxlength" => "25",
+            )
+        );
+        $this->addBasicText(
+            'Handedness_Score',
+            'Handedness Score',
             array(
              'size'      => "10",
              "maxlength" => "25",
@@ -413,8 +425,8 @@ class Imaging_Browser extends \NDB_Menu_Filter
             )
         );
         $this->addSelect(
-            'Handedness',
-            'Handedness',
+            'Handedness_Interpretation',
+            'Handedness Interpretation',
             array(
              ''   => 'All',
              'Ambidextrous' => 'Ambidextrous',

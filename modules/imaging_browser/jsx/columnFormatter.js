@@ -27,7 +27,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
     return <td></td>;
   }
 
-  if (column === 'Handedness') {
+  if (column === 'Handedness Interpretation') {
       return <td><a href={loris.BaseURL +
           "/instruments/handedness/?commentID=" +
           row.CommentID +
@@ -35,7 +35,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
           row.HSID +
           "&candID=" +
           row.DCCID}>
-      {row.Handedness}
+      {row.Handedness_Interpretation}
       </a></td>;
   }
 

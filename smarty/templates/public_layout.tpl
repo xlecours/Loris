@@ -25,16 +25,16 @@
     <div class="container">
       <div class="flex-wrapper">
         <div class="loris-logo">
-          <a href="{$baseurl}">
+          <a href="/http://loris.ca/">
             <img src="{$baseurl}/images/LORIS_logo_white.svg" class="loris-logo" alt="Loris Logo"/>
           </a>
         </div>
         <div class="study-title hidden-xs">
           {$study_title}
         </div>
-        <div class="github-logo">
-          <a href="https://github.com/aces/Loris" target="_blank">
-            <img src="{$baseurl}/images/GitHub-Mark-Light-64px.png" alt="Github"/>
+        <div class="mcgill-logo">
+          <a href="http://https://mcgill.ca/" target="_blank">
+            <img src="{$baseurl}/images/mcgill_logo.png" alt="McGill University"/>
           </a>
         </div>
       </div>

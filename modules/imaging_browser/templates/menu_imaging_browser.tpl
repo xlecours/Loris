@@ -65,16 +65,14 @@
                     {$form.VisitQCStatus.html}
                 </div>
             </div>
-            {if $form.ProjectID}
             <div class="form-group col-sm-4">
                 <label class="col-sm-12 col-md-4">
-                    {$form.ProjectID.label}
+                    {$form.Age_At_MRI.label}
                 </label>
                 <div class="col-sm-12 col-md-8">
-                    {$form.ProjectID.html}
+                    {$form.Age_At_MRI.html}
                 </div>
             </div>
-            {/if}
         </div>
         <div class="row">
             <div class="form-group col-sm-4">
@@ -91,6 +89,24 @@
                 </label>
                 <div class="col-sm-12 col-md-8">
                     {$form.Pending.html}
+                </div>
+            </div>
+            <div class="form-group col-sm-4">
+                <label class="col-sm-12 col-md-4">
+                    {$form.Language.label}
+                </label>
+                <div class="col-sm-12 col-md-8">
+                    {$form.Language.html}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-sm-4">
+                <label class="col-sm-12 col-md-4">
+                    {$form.Handedness.label}
+                </label>
+                <div class="col-sm-12 col-md-8">
+                    {$form.Handedness.html}
                 </div>
             </div>
             <div class="col-sm-2 col-sm-offset-8">

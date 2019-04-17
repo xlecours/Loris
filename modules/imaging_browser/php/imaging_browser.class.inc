@@ -273,6 +273,9 @@ class Imaging_Browser extends \NDB_Menu_Filter
                                'c.CandID',
                                'c.ProjectID',
                                's.CenterID',
+                               'h.interpretation',
+                               'c.test_language',
+                               's.Age_At_MRI',
                                's.MRIQCStatus',
                                'pending',
                                'f.AcquisitionProtocolID',
@@ -284,6 +287,9 @@ class Imaging_Browser extends \NDB_Menu_Filter
                                   'DCCID'         => 'c.CandID',
                                   'ProjectID'     => 'c.ProjectID',
                                   'SiteID'        => 's.CenterID',
+                                  'Handedness'    => 'h.interpretation',
+                                  'Language'      => 'c.test_language',
+                                  'Age_At_MRI'    => 's.Age_At_MRI',
                                   'VisitQCStatus' => 's.MRIQCStatus',
                                   'Pending'       => 'pending',
                                   'Scan_type'     => 'f.AcquisitionProtocolID',
@@ -352,6 +358,14 @@ class Imaging_Browser extends \NDB_Menu_Filter
             )
         );
         $this->addBasicText(
+            'Age_At_MRI',
+            'Age At MRI',
+            array(
+             'size'      => "10",
+             "maxlength" => "25",
+            )
+        )
+        $this->addBasicText(
             'DCCID',
             'DCCID',
             array(
@@ -389,6 +403,25 @@ class Imaging_Browser extends \NDB_Menu_Filter
              'P'  => 'Pending',
              'N'  => 'New',
              'PN' => 'Pending or New',
+            )
+        );
+        $this->addSelect(
+            'Language',
+            'Language',
+            array(
+             ''   => 'All',
+             'English'  => 'English',
+             'French'  => 'French',
+            )
+        );
+        $this->addSelect(
+            'Handedness',
+            'Handedness',
+            array(
+             ''   => 'All',
+             'Ambidextrous' => 'Ambidextrous',
+             'Left-handed'  => 'Left-handed',
+             'Right-handed'  => 'Right-handed',
             )
         );
 

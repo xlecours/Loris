@@ -214,7 +214,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'c.Gender as Gender',
                           's.Age_At_MRI as Age_At_MRI',
                           'c.test_language as test_language',
-                          'h.HSID'
+                          'h.HSID',
                           'h.CommentID as CommentID',
                           'h.interpretation as Handedness',
                           's.visit_label as Visit_Label',

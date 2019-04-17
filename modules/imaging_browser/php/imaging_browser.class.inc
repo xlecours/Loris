@@ -137,7 +137,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
             LEFT JOIN files_qcstatus fqc ON (fqc.FileID=f.FileID) 
             JOIN mri_acquisition_dates md ON (md.SessionID=s.ID)
             LEFT JOIN (
-                SELECT interpretation, candidate.CandID, h.CommentID
+                SELECT interpretation, candidate.CandID, handedness.CommentID
                 FROM handedness
                 JOIN flag USING (CommentID)
                 JOIN session ON (session.ID=flag.SessionID)

@@ -25,7 +25,7 @@
     <div class="container">
       <div class="flex-wrapper">
         <div class="loris-logo">
-          <a href="/http://loris.ca/">
+          <a href="http://loris.ca/">
             <img src="{$baseurl}/images/LORIS_logo_white.svg" class="loris-logo" alt="Loris Logo"/>
           </a>
         </div>
@@ -33,7 +33,7 @@
           {$study_title}
         </div>
         <div class="mcgill-logo">
-          <a href="http://https://mcgill.ca/" target="_blank">
+          <a href="https://mcgill.ca/" target="_blank">
             <img src="{$baseurl}/images/mcgill_logo.png" alt="McGill University"/>
           </a>
         </div>

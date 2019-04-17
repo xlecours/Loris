@@ -98,6 +98,20 @@ class Dashboard extends \NDB_Form
         }
 
         // Charts
+        $this->tpl_data['SubprojectsWithMRI'] = $DB->pselect(
+            "SELECT DISTINCT(title) 
+             FROM subproject 
+               JOIN session USING (SubprojectID) 
+               JOIN candidate c USING (CandID)
+             WHERE Scan_done='Y' AND c.Active='Y' AND c.Entity_type='Human' 
+               AND c.CenterID <> 1",
+            array()
+        );
+        $this->tpl_data['VisitLabelsWithMRI'] = array(
+            "EN00", "BL00", "FU03", "FU12", "FU24", "FU36", "FU48"
+        );
+
+
         $this->tpl_data['total_scans'] = $DB->pselectOne(
             "SELECT COUNT(*) FROM files f
 		LEFT JOIN session s ON (s.ID=f.SessionID)
@@ -366,8 +380,10 @@ class Dashboard extends \NDB_Form
         $total = $DB->pselectOne(
             "SELECT COUNT(c.CandID)
              FROM candidate c
-             WHERE c.test_language=:Language AND c.Active='Y' AND c.Entity_type='Human'
-             AND c.CenterID <> 1",
+             WHERE c.test_language=:Language 
+               AND c.Active='Y' 
+               AND c.Entity_type='Human'
+               AND c.CenterID <> 1",
             array('Language' => $language)
         );
         return $total;
@@ -388,13 +404,42 @@ class Dashboard extends \NDB_Form
              FROM candidate c
                JOIN session s USING (CandID) 
                JOIN flag f ON (f.SessionID=s.ID)
-               JOIN handedness USING (CommentID) 
-             WHERE h.interpretation=:Handedness AND c.Active='Y' AND c.Entity_type='Human'
-             AND c.CenterID <> 1",
+               JOIN handedness h USING (CommentID) 
+             WHERE h.interpretation=:Handedness 
+               AND c.Active='Y' 
+               AND c.Entity_type='Human'
+               AND c.CenterID <> 1",
             array('Language' => $handedness)
         );
         return $total;
     }
+
+    /**
+     * Gets the total count of MRI sessions per visit label and subproject
+     *
+     * @param string $visit_label visit label without the subproject prefix ("%EN00", "%BL00", "%FU03", "%FU12", "%FU24", "%FU36" or "%FU48")
+     *
+     * @return int
+     */
+    function getTotalMRISessions($visit_label, $subproject)
+    {
+        $DB    = \Database::singleton();
+        $total = $DB->pselectOne(
+            "SELECT COUNT(c.CandID)
+             FROM candidate c
+               JOIN session s USING (CandID) 
+               JOIN subproject sub USING (SubprojectID)
+             WHERE s.Visit_label LIKE :VisitLabel 
+               AND sub.title=:Subproject
+               AND Scan_done = 'Y' 
+               AND c.Active='Y' 
+               AND c.Entity_type='Human'
+               AND c.CenterID <> 1",
+            array('VisitLabel' => "%$visit_label", 'Subproject' => $subproject)
+        );
+        return $total;
+    }
+
 
     /**
      * Gets the total count of candidates of a specific gender,

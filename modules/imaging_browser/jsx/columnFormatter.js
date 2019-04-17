@@ -46,7 +46,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
         "/imaging_browser/viewSession/?sessionID=" +
         row.SessionID +
         "&backURL=/imaging_browser/"}>
-          all types
+          images
         </a>);
     return (<td>{cellLinks}</td>);
   }

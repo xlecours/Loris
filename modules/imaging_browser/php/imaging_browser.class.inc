@@ -220,7 +220,6 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           's.visit_label as Visit_Label',
                           "$PendingFailSubquery as Visit_QC_Status",
                           'FROM_UNIXTIME(MIN(f.InsertTime)) as First_Insertion',
-                          'FROM_UNIXTIME(MAX(fqc.QCLastChangeTime)) as Last_QC',
                           "$NewDataSubquery as New_Data"
                          );
         $this->columns = array_merge(
@@ -246,7 +245,6 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'Visit_Label',
                           'Visit_QC_Status',
                           'First_Insertion',
-                          'Last_QC',
                           'New_Data',
                           'Links',
                          );

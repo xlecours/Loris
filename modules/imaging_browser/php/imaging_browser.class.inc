@@ -136,8 +136,13 @@ class Imaging_Browser extends \NDB_Menu_Filter
             JOIN files f ON (f.SessionID=s.ID) 
             LEFT JOIN files_qcstatus fqc ON (fqc.FileID=f.FileID) 
             JOIN mri_acquisition_dates md ON (md.SessionID=s.ID)
-            JOIN flag fl ON (fl.SessionID=s.ID)
-            LEFT JOIN handedness h ON (h.CommentID=fl.CommentID)";
+            LEFT JOIN (
+                SELECT interpretation, candidate.CandID
+                FROM handedness
+                JOIN flag USING (CommentID)
+                JOIN session ON (session.ID=flag.SessionID)
+                JOIN candidate USING (Candid)
+            ) AS h ON h.CandID=c.CandID";
 
         $left_joins = "";
         foreach ($case_desc as $key => $value) {
@@ -157,9 +162,6 @@ class Imaging_Browser extends \NDB_Menu_Filter
             s.Active = 'Y' AND
             f.PendingStaging=0 AND 
             f.FileType='mnc'";
-//            'fl.CommentID NOT LIKE "DDE%" AND ' .
-//            "fl.test_name='handedness' AND " .
-//            's.Visit_label LIKE "%EN%"';
 
         $this->query .= $left_joins;
         $this->query .= $where;

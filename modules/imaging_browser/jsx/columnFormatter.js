@@ -27,26 +27,22 @@ function formatColumn(column, cell, rowData, rowHeaders) {
     return <td></td>;
   }
 
+  if (column === 'Handedness') {
+      console.log('Trying to populate handedness...');
+      return <td><a href={loris.BaseURL +
+          "/handedness/instruments/?commentID=" +
+          row.CommentID +
+          "&sessionID=" +
+          row.SessionID +
+          "&candID=" +
+          row.DCCID}>
+      {row.Handedness}
+      </a></td>;
+  }
+
   if (column === 'Links') {
     var cellTypes = cell.split(",");
     var cellLinks = [];
-    for (var i = 0; i < cellTypes.length; i += 1) {
-      cellLinks.push(<a key={i} href={loris.BaseURL +
-        "/imaging_browser/viewSession/?sessionID=" +
-        row.SessionID + "&outputType=" +
-        cellTypes[i] + "&backURL=/imaging_browser/"}>
-          {cellTypes[i]}
-        </a>);
-      cellLinks.push(" | ");
-    }
-    cellLinks.push(<a key="selected" href={loris.BaseURL +
-        "/imaging_browser/viewSession/?sessionID=" +
-        row.SessionID +
-        "&selectedOnly=1&backURL=/imaging_browser/"}>
-          selected
-      </a>);
-
-    cellLinks.push(" | ");
     cellLinks.push(<a key="all" href={loris.BaseURL +
         "/imaging_browser/viewSession/?sessionID=" +
         row.SessionID +

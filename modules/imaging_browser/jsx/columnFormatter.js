@@ -28,7 +28,6 @@ function formatColumn(column, cell, rowData, rowHeaders) {
   }
 
   if (column === 'Handedness') {
-      console.log('Trying to populate handedness...');
       return <td><a href={loris.BaseURL +
           "/handedness/instruments/?commentID=" +
           row.CommentID +

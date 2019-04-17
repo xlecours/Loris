@@ -212,7 +212,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'c.PSCID as PSCID',
                           'c.CandID as DCCID',
                           'c.Gender as Gender',
-                          's.Age_At_MRI as Age_At_MRI',
+                          's.Age_At_MRI as Age_At_MRI_in_months',
                           'c.test_language as test_language',
                           'h.HSID',
                           'h.CommentID as CommentID',
@@ -237,7 +237,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'PSCID',
                           'DCCID',
                           'Gender',
-                          'Age At MRI',
+                          'Age At MRI in months',
                           'Test Language',
                           'HSID',
                           'CommentID',
@@ -273,7 +273,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                                's.CenterID',
                                'h.interpretation',
                                'c.test_language',
-                               's.Age_At_MRI',
+                               's.Age_At_MRI_in_months',
                                's.MRIQCStatus',
                                'pending',
                                'f.AcquisitionProtocolID',
@@ -287,7 +287,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                                   'SiteID'        => 's.CenterID',
                                   'Handedness'    => 'h.interpretation',
                                   'Language'      => 'c.test_language',
-                                  'Age_At_MRI'    => 's.Age_At_MRI',
+                                  'Age_At_MRI_in_months'    => 's.Age_At_MRI_in_months',
                                   'VisitQCStatus' => 's.MRIQCStatus',
                                   'Pending'       => 'pending',
                                   'Scan_type'     => 'f.AcquisitionProtocolID',
@@ -356,8 +356,8 @@ class Imaging_Browser extends \NDB_Menu_Filter
             )
         );
         $this->addBasicText(
-            'Age_At_MRI',
-            'Age At MRI',
+            'Age_At_MRI_in_months',
+            'Age At MRI in months',
             array(
              'size'      => "10",
              "maxlength" => "25",

@@ -137,7 +137,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
             LEFT JOIN files_qcstatus fqc ON (fqc.FileID=f.FileID) 
             JOIN mri_acquisition_dates md ON (md.SessionID=s.ID)
             LEFT JOIN (
-                SELECT interpretation, candidate.CandID
+                SELECT interpretation, candidate.CandID, h.CommentID
                 FROM handedness
                 JOIN flag USING (CommentID)
                 JOIN session ON (session.ID=flag.SessionID)
@@ -214,10 +214,10 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'c.Gender as Gender',
                           's.Age_At_MRI as Age_At_MRI',
                           'c.test_language as test_language',
-                          'h.interpretation as interpretation',
+                          'h.CommentID as CommentID',
+                          'h.interpretation as Handedness',
                           's.visit_label as Visit_Label',
                           "$PendingFailSubquery as Visit_QC_Status",
-                          'MIN(md.AcquisitionDate) as First_Acquisition',
                           'FROM_UNIXTIME(MIN(f.InsertTime)) as First_Insertion',
                           'FROM_UNIXTIME(MAX(fqc.QCLastChangeTime)) as Last_QC',
                           "$NewDataSubquery as New_Data"
@@ -239,10 +239,10 @@ class Imaging_Browser extends \NDB_Menu_Filter
                           'Gender',
                           'Age At MRI',
                           'Test Language',
-                          'Handedness Interpretation',
+                          'CommentID',
+                          'Handedness',
                           'Visit_Label',
                           'Visit_QC_Status',
-                          'First_Acquisition',
                           'First_Insertion',
                           'Last_QC',
                           'New_Data',
@@ -298,7 +298,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
                 function ($header) {
                     return ucwords(str_replace('_', ' ', $header));
                 },
-                array('sessionID')
+                array('sessionID', 'CommentID')
             )
         );
     }

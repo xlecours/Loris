@@ -156,7 +156,7 @@ class Imaging_Browser extends \NDB_Menu_Filter
             WHERE 
             s.Active = 'Y' AND
             f.PendingStaging=0 AND 
-            f.FileType='mnc' AND " .
+            f.FileType='mnc'";
 //            'fl.CommentID NOT LIKE "DDE%" AND ' .
 //            "fl.test_name='handedness' AND " .
 //            's.Visit_label LIKE "%EN%"';

@@ -67,10 +67,10 @@
             </div>
             <div class="form-group col-sm-4">
                 <label class="col-sm-12 col-md-4">
-                    {$form.Age_At_MRI.label}
+                    {$form.Age_At_MRI_in_months.label}
                 </label>
                 <div class="col-sm-12 col-md-8">
-                    {$form.Age_At_MRI.html}
+                    {$form.Age_At_MRI_in_months.html}
                 </div>
             </div>
         </div>

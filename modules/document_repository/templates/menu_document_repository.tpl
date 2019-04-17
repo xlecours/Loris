@@ -111,7 +111,11 @@
                     </div>
                     <div class="row">
                         <div class="form-group">
+{if $button_permissions}
                             <div class="col-sm-2 col-sm-offset-4">
+{else}
+                            <div class="col-sm-2 col-sm-offset-8">
+{/if}
                                 <input type="submit" name="filter" value="Show Data" class="btn btn-sm btn-primary col-xs-12" />
                             </div>
                             <div class="visible-xs col-xs-12"> </div>

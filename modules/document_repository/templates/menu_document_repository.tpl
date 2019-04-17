@@ -121,6 +121,7 @@
                             <div class="col-sm-2">
                                 <input type="button" name="reset" value="Clear Form" class="btn btn-sm btn-primary col-xs-12" onclick="location.href='{$baseURL}/document_repository/?reset=true'" />
                             </div>
+{if $button_permissions}
                             <div class="visible-xs col-xs-12"> </div>
                             <div class="visible-xs col-xs-12"> </div>
                             <div class="visible-xs col-xs-12"> </div>
@@ -135,6 +136,7 @@
                             <div class="col-sm-2">
                                 <button type="button" name = "addCategory" class = "btn btn-sm btn-primary col-xs-12" data-toggle="modal" data-target="#addCategoryModal">Add Category</button>
                             </div>
+{/if}
                         </div>
                     </div>
                 </div>

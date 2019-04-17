@@ -60,6 +60,8 @@ class Document_Repository extends \NDB_Menu_Filter
             $this->centerIDMap[$row['CenterID']] = $row['Name'];
         }
 
+        $this->tpl_data['button_permissions'] = $user->hasPermission('document_repository_delete');
+
         $query  = " FROM document_repository v";
         $query .= " WHERE COALESCE(v.hide_video, false)=false";
 

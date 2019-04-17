@@ -440,6 +440,31 @@ class Dashboard extends \NDB_Form
         return $total;
     }
 
+    /**
+     * Gets the total count of candidates of a specific age range at the baseline
+     * visit.
+     *
+     * @param int $age_min minimum age
+     * @param int $age_max maximum age
+     */
+    function getTotalByAgeAtBL($age_min, $age_max)
+    {
+        $DB    = \Database::singleton();
+        $total = $DB->pselectOne(
+            "SELECT COUNT(c.CandID)
+             FROM candidate c
+               JOIN session s USING (CandID)
+             WHERE s.Age_At_MRI >=:Age_min*12 
+               AND s.Age_At_MRI <:Age_max*12
+               AND c.Active='Y' 
+               AND s.Visit_label LIKE '%BL00'
+               AND c.Entity_type='Human' 
+               AND c.CenterID <> 1",
+            array('Age_min' => $age_min, 'Age_max' => $age_max)
+        );
+        return $total;
+    }
+
 
     /**
      * Gets the total count of candidates of a specific gender,
@@ -456,7 +481,8 @@ class Dashboard extends \NDB_Form
         $total = $DB->pselectOne(
             "SELECT COUNT(c.CandID)
              FROM candidate c
-             WHERE c.Gender=:Gender AND c.Active='Y' AND c.ProjectID=:PID
+               JOIN session s USING (CandID)
+             WHERE s.Age_at=:Gender AND c.Active='Y' AND c.ProjectID=:PID
              AND c.Entity_type='Human' AND c.CenterID <> 1",
             array(
              'Gender' => $gender,

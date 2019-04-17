@@ -35,7 +35,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
           row.HSID +
           "&candID=" +
           row.DCCID}>
-      {row.Handedness_Interpretation}
+      {row["Handedness Interpretation"]}
       </a></td>;
   }
 

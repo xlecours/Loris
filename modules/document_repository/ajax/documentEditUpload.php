@@ -39,9 +39,7 @@ $uploadNotifier = new NDB_Notifier(
 $action = $_POST['action'] ?? null;
 
 //if user has document repository permission
-if ($userSingleton->hasPermission('document_repository_view')
-    || $userSingleton->hasPermission('document_repository_delete')
-) {
+if ($userSingleton->hasPermission('document_repository_delete')) {
     if ($action == 'upload') {
         $category   = $_POST['category']; // required
         $site       = $_POST['site']       !== '' ? $_POST['site'] : null;

@@ -39,9 +39,7 @@ if (get_magic_quotes_gpc()) {
 $user =& User::singleton();
 
 //if user has document repository permission
-if ($user->hasPermission('document_repository_view')
-    || $user->hasPermission('document_repository_delete')
-) {
+if ($user->hasPermission('document_repository_delete')) {
     $DB->update(
         'document_repository_categories',
         array('comments' => $comments),

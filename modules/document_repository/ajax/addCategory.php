@@ -59,9 +59,7 @@ if ($_POST['comments'] !== '') {
 
 $user =& User::singleton();
 //if user has document repository permission
-if ($user->hasPermission('document_repository_view')
-    || $user->hasPermission('document_repository_delete')
-) {
+if ($user->hasPermission('document_repository_delete')) {
     $DB->insert(
         "document_repository_categories",
         array(

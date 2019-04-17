@@ -77,7 +77,7 @@ class Dashboard extends \NDB_Form
         $recruitmentTarget = $config->getSetting('recruitmentTarget');
         $this->createProjectProgressBar(
             'overall',
-            "Overall Recruitment",
+            "Gender distribution",
             $recruitmentTarget,
             $this->getTotalRecruitment()
         );
@@ -349,6 +349,49 @@ class Dashboard extends \NDB_Form
              WHERE c.Gender=:Gender AND c.Active='Y' AND c.Entity_type='Human'
              AND c.CenterID <> 1",
             array('Gender' => $gender)
+        );
+        return $total;
+    }
+
+    /**
+     * Gets the total count of candidates of with a specific study language
+     *
+     * @param string $language study language (French or English)
+     *
+     * @return int
+     */
+    function getTotalLanguage($language)
+    {
+        $DB    = \Database::singleton();
+        $total = $DB->pselectOne(
+            "SELECT COUNT(c.CandID)
+             FROM candidate c
+             WHERE c.test_language=:Language AND c.Active='Y' AND c.Entity_type='Human'
+             AND c.CenterID <> 1",
+            array('Language' => $language)
+        );
+        return $total;
+    }
+
+    /**
+     * Gets the total count of candidates of a specific handedness
+     *
+     * @param string $handedness handedness interpretation (Right-handed, Left-handed or Ambidextrous)
+     *
+     * @return int
+     */
+    function getTotalHandedness($handedness)
+    {
+        $DB    = \Database::singleton();
+        $total = $DB->pselectOne(
+            "SELECT COUNT(c.CandID)
+             FROM candidate c
+               JOIN session s USING (CandID) 
+               JOIN flag f ON (f.SessionID=s.ID)
+               JOIN handedness USING (CommentID) 
+             WHERE h.interpretation=:Handedness AND c.Active='Y' AND c.Entity_type='Human'
+             AND c.CenterID <> 1",
+            array('Language' => $handedness)
         );
         return $total;
     }

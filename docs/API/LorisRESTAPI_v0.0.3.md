@@ -1,41 +1,33 @@
-# Loris API - v0.0.0-dev
+# Loris API - v0.0.3-dev
+
 ## 1.0 Overview
 
-This document specifies the Loris REST API.
+This document specifies the LORIS REST API.
 
 Any request sent to `$LorisRoot/api/$APIVERSION/$API_CALL` will return either a JSON object
-or no data. The Loris API uses standard HTTP error codes and the body of any response will
+or no data. The LORIS API uses standard HTTP error codes and the body of any response will
 either be empty or contain only a JSON object for any request.
 
 For brevity, the `$LorisRoot/api/$APIVERSION` is omitted from the definitions in this
 document. This document specifies $APIVERSION v0.0.3-dev and it
 MUST be included before the request in all requests.
 
-HTTP GET requests NEVER modify data. PUT, POST or PATCH requests MUST be used to modify
-data as per their definitions in the HTTP/1.1 specification. Any methods not supported
+HTTP GET requests NEVER modify data. PUT, POST or PATCH requested are not supported
+in this instance of LORIS except for login. Any methods not supported
 will respond with a 405 Method Not Allowed response and an appropriate Allow header set (as
 per HTTP documentation.)
 
-PUT requests either create or overwrite all data for a given resource (instrument/
-candidate/visit/etc.) Any fields not explicitly specified in the PUT request are nulled.
-
-PATCH requests are identical to PUT requests, but any fields not explicitly mentioned are
-unmodified from their current value.
-
-All GET requests include an ETag header. If a PUT or PATCH request is sent and it does
-not include an ETag, or the ETag does not match the currently existing ETag for that resource,
-it will result in a 403 Forbidden response. PUT or POST requests used for the creation of resources
-do not require ETags.
+All GET requests include an ETag header.
 
 DELETE is not supported on any resource defined in this API.
 
 ### 1.1 Authentication
 
-If a user is logged in to Loris and can be authenticated using the standard session mechanism,
+If a user is logged in to LORIS and can be authenticated using the standard session mechanism,
 no further authentication is required. Requests will be evaluated as requests from that user,
-so that standard Loris modules can simply use the API.
+so that standard LORIS modules can simply use the API.
 
-If a user is not logged in to Loris (for instance, in a third party app or a CORS application),
+If a user is not logged in to LORIS (for instance, in a third party app or a CORS application),
 they can be authenticated using [JSON Web Tokens](https://jwt.io).
 
 The client should POST a request to /login with a payload of the form:
@@ -64,36 +56,31 @@ for any future requests to authenciate the request.
 ## 2.0 Project API
 
 The Project API lives under the /projects portion of the API URL hierarchy. It is used to get
-project specific settings or data. PUT and PATCH are not currently supported for the part of
+project specific settings or data. PUT and PATCH are not supported for the part of
 the API living under /projects.
 
 ```
 GET /projects
 ```
 
-Will return a list of projects in this Loris instance. There is no corresponding PUT or PATCH
+Will return a list of projects in this LORIS instance. There is no corresponding PUT or PATCH
 request. The JSON returned is of the form:
 
 ```js
 {
     "Projects" : {
         "ProjectName1" : {
-            "useEDC" : boolean,
             "PSCID" : PSCIDSettings
         },
         "ProjectName2" : {
-            "useEDC" : boolean,
             "PSCID" : PSCIDSettings
         },
         ...
 }
 ```
 
-If the Loris instance does not use projects, the API will return a single project called "loris"
-with the appropriate settings for the Loris instance.
-
-useEDC represents a boolean determining whether the EDC date should be included
-in candidates returned by the API.
+If the LORIS instance does not use projects, the API will return a single project called "loris"
+with the appropriate settings for the LORIS instance.
 
 PSCID represents a JSON object with the configuration settings for PSCIDs in this
 project.
@@ -112,13 +99,13 @@ Where regex is a regular expression that can be used to validate a PSCID for thi
 If the type is "prompt", the user should be prompted to enter the PSCID for new candidates.
 If the type is "auto", the server will automatically generate the PSCID.
 
-Note that sometimes in Loris configurations "Site" is a part of the PSCID. This will be
+Note that sometimes in LORIS configurations "Site" is a part of the PSCID. This will be
 denoted by the string "SITE{1,1}" inside of the regex returned. This string should be replaced
 by the 3 letter site alias before attempting to pass this regex to a regular expression parser
 or it will result in false negatives.
 
 
-### 2.1 Single project 
+### 2.1 Single project
 
 ```
 GET /projects/$ProjectName
@@ -140,7 +127,7 @@ The body of the request to /projects/$ProjectName will be an entity of the form:
 }
 ```
 
-#### 2.1.1 Single project images  
+#### 2.1.1 Single project images
 ```
 GET /projects/$ProjectName/images/
 ```
@@ -245,7 +232,7 @@ GET /projects/$ProjectName/instruments/$InstrumentName
 ```
 
 Will return a 200 response on success and 404 Not Found if $InstrumentName is not a
-valid instrument for this instance of Loris.
+valid instrument for this instance of LORIS.
 
 This will return a JSON representation of the instrument form. If available, rules and form will
 be combined into a single JSON object. The format for the JSON returned is specified in the
@@ -254,11 +241,11 @@ to render the form by a client.
 
 PUT and PATCH are not supported for instrument forms.
 
-Methods for getting/putting data into specific candidates are specified in section 3.
+Methods for getting data from specific candidates are specified in section 3.
 
 ## 3.0 Candidate API
 
-The /candidate portion of the API is used for retrieving and modifying candidate data and
+The /candidate portion of the API is used for retrieving candidate data and
 data attached to a specific candidate or visit such as visits or instrument data. Portions
 of this reference a CandidateObject. A CandidateObject is a JSON object of the form:
 
@@ -268,13 +255,13 @@ of this reference a CandidateObject. A CandidateObject is a JSON object of the f
         "Project" : ProjectName,
         "PSCID"   : PSCID,
         "Site"    : Site,
-        "EDC"     : "YYYY-MM-DD",
         "DoB"     : "YYYY-MM-DD",
-        "Gender"  : "Male|Female"
+        "Gender"  : "Male|Female",
+        "Language": "French|English"
 }
 ```
 
-representing a candidate in Loris.
+representing a candidate in LORIS.
 
 ```
 GET /candidates/
@@ -288,41 +275,9 @@ will return a JSON object of the form:
 }
 ```
 
-containing ALL candidates present in this Loris instance.
+containing ALL candidates present in this LORIS instance.
 
-A new candidate can be created by sending a POST request to /candidates.
-
-The body of the POST request should be a candidate key with a JSON object of the form:
-
-```js
-{
-    "Candidate" : {
-        "Project" : ProjectName,
-        "PSCID"   : PSCID,
-        "EDC"     : "YYYY-MM-DD",
-        "DoB"     : "YYYY-MM-DD",
-        "Gender"  : "Male|Female",
-        "Site"    : SiteName,
-    }
-}
-```
-
-EDC is only required if useEDC is enabled for the project according to the
-project settings.
-
-PSCID is only required if the generation type in the Loris config is set to
-"prompt".
-
-A response code of 201 Created will be returned on success, 409 Conflict if
-the PSCID already exists, 403 Forbidden when the user is creating a candidate at 
-a site other than the list of sitenames the user is affiliated with, and a 400 
-Bad Request if any data provided is invalid (PSCID format, date format, gender 
-something other than Male|Female, invalid project name, invalid sitename, etc). 
-A successful POST request will return a CandidateObject for the newly created 
-candidate.
-
-PUT / PATCH methods are not supported on /candidate in this
-version of the Loris API.
+POST / PUT / PATCH methods are not supported on /candidate.
 
 ### 3.1 Specific Candidate
 
@@ -343,11 +298,9 @@ The JSON object is of the form:
 }
 ```
 
-where V1, V2, etc are the visit labels that are registered for this
-candidate.
+where V1, V2, etc are the visit labels that are registered for this candidate.
 
-PUT / PATCH are not supported for candidates in this version of the
-API.
+PUT / PATCH are not supported for candidates.
 
 It will return a 200 OK on success, a 404 if the candidate does not exist, and
 a 400 Bad Request if the CandID is invalid (not a 6 digit integer). The same is
@@ -368,10 +321,11 @@ The JSON object is of the form:
 ```js
 {
     "Meta" : {
-        "CandID" : CandID,
-        "Visit"  : VisitLabel,
-        "Site"   : SiteName,
-        "Battery": "NameOfSubproject"
+        "CandID"    : CandID,
+        "Visit"     : VisitLabel,
+        "Site"      : SiteName,
+        "Battery"   : "NameOfSubproject",
+        "Age_at_MRI": "Candidate_age_at_MRI_scan"
     },
     "Stages" : {
         "Screening" :  {
@@ -390,17 +344,12 @@ The JSON object is of the form:
 }
 ```
 
-A PUT of the same format but with only the Meta fields will create the VisitLabel
-for this candidate, in an unstarted stage if the Visit label provided is valid.
 
-PATCH is not supported for Visit Labels.
+POST / PUT / PATCH is not supported for Visit Labels.
 
 It will return a 404 Not Found if the visit label does not exist for this candidate
 (as well as anything under the /candidates/$CandID/$VisitLabel hierarchy)
 
-Any of the Stages may not be present in the returned result if the stage has not
-started yet or is not enabled for this project (ie. if useScreening is false in
-Loris, or Approval has not occurred)
 
 ### 3.3 Candidate Instruments
 ```
@@ -423,19 +372,13 @@ Where the instruments array represents the instruments that were administered fo
 candidate at that visit. InstrumentNames are the short names and the forms for them
 SHOULD all be retrievable through the `project` portion of the API.
 
-PUT / PATCH / POST are not currently supported for candidate instruments.
+PUT / PATCH / POST are not supported for candidate instruments.
 
 #### 3.3.1 The Candidate Instrument Data
 
 ```
-GET /candidates/$CandID/$VisitLabel/instruments/$InstrumentName[/dde]
-PUT /candidates/$CandID/$VisitLabel/instruments/$InstrumentName[/dde]
-PATCH /candidates/$CandID/$VisitLabel/instruments/$InstrumentName[/dde]
+GET /candidates/$CandID/$VisitLabel/instruments/$InstrumentName
 ```
-
-These will retrieve or modifiy the data for $InstrumentName. If /dde is present, the double data
-entry form of the data will be retrieved/modified. If absent, the "single data entry" version
-of the form is used instead.
 
 The format returned by a GET request is a JSON document of the form:
 
@@ -457,32 +400,16 @@ The format returned by a GET request is a JSON document of the form:
 
 Including the values of ALL fields for this instrument, including score field values.
 
-The body of a PUT request to the same URL MUST contain a JSON object of the same format. Data PUT
-to the URL SHOULD contain all fields with data entry. The server will null the data for keys not
-specified. A PUT request MAY not specify score columns that will be calculated/overwriten by
-server-side scoring. If the client attempted to score fields client-side and the value passed by the PUT
-request conflict with the server-side calculation of the score, the server-side calculation will win.
-Any keys specified in the document PUT that do not match a corresponding field in the form MAY be ignored.
+PUT / PATCH / POST are not supported for this.
 
-The specification for PATCH request is similar to a PUT request, with the exception that any
-fields not specified MUST be unmodified by the server rather than nulled. In most cases a series
-of PATCH requests SHOULD be used rather than a single PUT request for a client with pagination.
-
-A 200 OK will be returned on success, and a 404 Not Found if $InstrumentName is not a valid instrument installed in this Loris instance.
+A 200 OK will be returned on success, and a 404 Not Found if $InstrumentName is not a valid instrument installed in this LORIS instance.
 
 #### 3.3.2 Instrument Flags
 ```
-GET /candidates/$CandID/$VisitLabel/instruments/$InstrumentName[/dde]/flags
-PUT /candidates/$CandID/$VisitLabel/instruments/$InstrumentName[/dde]/flags
-PATCH /candidates/$CandID/$VisitLabel/instruments/$InstrumentName[/dde]/flags
+GET /candidates/$CandID/$VisitLabel/instruments/$InstrumentName/flags
 ```
 
-This URL is used to GET and modify flags for an instrument. The standard GET/PUT/PATCH
-rules apply. However, PATCH and PUT requests MUST include the "Meta" attribute and all
-fields in it MUST be specified and match the values in the URL, otherwise a "400 Bad request"
-error is returned and no data is modified. Like instruments, the [/dde] component is optional
-and used to differentiate single data entry and double data entry flags.
-
+This URL is used to GET flags for an instrument. The standard GET rules apply.
 The "Validity" flag may be missing, if the ValidityEnabled flag is not true for this instrument.
 
 The format of the JSON object for these URLS is:
@@ -493,7 +420,6 @@ The format of the JSON object for these URLS is:
         "Candidate"  : CandID,
         "Visit"      : VisitLabel,
         "Instrument" : InstrumentName,
-        "DDE"        : boolean
     },
     "Flags" : {
         "Data_entry" : "In Progress|Complete",
@@ -585,7 +511,6 @@ Returns file level QC information. It will return a JSON object of the form:
 }
 ```
 
-`PUT` requests to the same URL will update the QC information.
 
 ### 4.4 Alternate formats
 
@@ -799,14 +724,5 @@ object of the form:
 
 The `Modality` header in the SeriesInfo is either `MR` or `PT` for MRI or PET 
 scans, respectively.
-
-### 5.2 Tar Level Data
-```
-GET /candidates/$CandID/$VisitLabel/dicoms/$Tarname
-```
-
-Returns/Downloads a `tar` file which contains a `.meta` and a `.log` text 
-files, and a `.tar.gz` of the raw DICOM data as acquired during the candidate
-scanning session, and as retrieved from `/candidates/$CandID/$Visit/dicoms`.
 
 Only `GET` is currently supported.

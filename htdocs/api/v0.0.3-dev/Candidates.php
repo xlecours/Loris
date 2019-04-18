@@ -73,7 +73,7 @@ class Candidates extends APIBase
     {
         $candidates = $this->DB->pselect(
             "SELECT CandID, ProjectID, PSCID, s.Alias as Site,
-                    EDC, DoB, Gender
+                    DoB, Gender, test_language AS Language
                 FROM candidate c JOIN psc s on (s.CenterID=c.CenterID)
              WHERE Active='Y'
                 ",

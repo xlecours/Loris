@@ -54,7 +54,6 @@ if ($userSingleton->hasPermission('document_repository_delete')) {
         $fileType = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
 
         $uploadPath = "$base/modules/document_repository/user_uploads/$name/";
-        $fullPath   = $uploadPath . $fileName;
 
         // $category is a string representation of an ID, and so should be at
         // least equal to zero.
@@ -64,22 +63,22 @@ if ($userSingleton->hasPermission('document_repository_delete')) {
             );
         }
 
-        // Check to see if $fullPath is writable. If not, throw an error. If it
+        // Check to see if $uploadPath is writable. If not, throw an error. If it
         // doesn't exist, create an uploads folder for the logged-in user.
-        if (!is_writable($fullPath)) {
-            if (file_exists($fullPath)) {
+        if (!is_writable($uploadPath)) {
+            if (file_exists($uploadPath)) {
                 throw new LorisException(
                     "User uploads path in Document Repository is not writable."
                 );
             }
-            mkdir($fullPath, 0770);
+            mkdir($uploadPath, 0770);
         }
 
         // Copy the uploaded file to the user's upload folder if possible.
         // Insert a record of the file into the document_repository table
         if (!move_uploaded_file(
             $_FILES['file']['tmp_name'],
-            $fullPath . $fileName
+            $uploadPath . $fileName
         )) {
             throw new LorisException(
                 'ERROR: Could not upload file. Contact your administrator.'

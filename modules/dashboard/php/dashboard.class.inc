@@ -82,6 +82,13 @@ class Dashboard extends \NDB_Form
             $this->getTotalRecruitment()
         );
 
+        $this->createProjectProgressBarLanguage(
+            'overallLanguage',
+            "Language distribution",
+            $this->getTotalLanguage('French') +
+            $this->getTotalLanguage('English')
+        );
+
         $useProjects = $config->getSetting('useProjects');
         $this->tpl_data['useProjects'] = $useProjects;
         if ($useProjects == "true") {
@@ -542,6 +549,32 @@ class Dashboard extends \NDB_Form
                     = round($totalMales / $totalRecruitment * 100);
             }
         }
+    }
+
+    /**
+     * Creates the template data for a progress bar
+     *
+     * @param mixed  $ID                ID for the progress bar
+     * @param string $title             Title for the progress bar
+     * @param int    $totalRecruitment  Total number of candidates
+     *
+     * @return void
+     */
+    function createProjectProgressBarLanguage(
+        $ID, $title, $totalRecruitment
+    ) {
+        $total = $this->getTotalLanguage('French') + $this->getTotalLanguage('English');
+        $this->tpl_data['recruitment'][$ID]['french_total']   = $this->getTotalLanguage('French');
+        $this->tpl_data['recruitment'][$ID]['french_percent']
+            = round($this->getTotalLanguage('French') / $total * 100);
+
+        $this->tpl_data['recruitment'][$ID]['english_total']   = $this->getTotalLanguage('English');
+        $this->tpl_data['recruitment'][$ID]['english_percent']
+            = round($this->getTotalLanguage('English') / $total * 100);
+
+        $this->tpl_data['recruitment'][$ID]['total_recruitment'] = $totalRecruitment;
+        $this->tpl_data['recruitment'][$ID]['title'] = $title;
+        $this->tpl_data['recruitment'][$ID]['title'] = $title;
     }
 
     /**

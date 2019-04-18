@@ -84,7 +84,6 @@ class Candidate extends \Loris\API\APIBase
                                     'Project'  => $this->Candidate->getProjectTitle(),
                                     'PSCID'    => $this->Candidate->getPSCID(),
                                     'Site'     => $Site,
-                                    'EDC'      => $this->Candidate->getCandidateEDC(),
                                     'DoB'      => $this->Candidate->getCandidateDoB(),
                                     'Gender'   => $Gender,
                                     'Language' => $Language,

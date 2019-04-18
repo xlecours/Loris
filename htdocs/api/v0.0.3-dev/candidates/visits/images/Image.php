@@ -43,7 +43,6 @@ class Image extends \Loris\API\Candidates\Candidate\Visit
         if (empty($this->AllowedMethods)) {
             $this->AllowedMethods = [
                                      'GET',
-                                     'PUT',
                                     ];
         }
         $this->CandID     = $CandID;

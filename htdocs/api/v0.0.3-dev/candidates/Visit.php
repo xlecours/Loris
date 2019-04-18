@@ -36,12 +36,12 @@ class Visit extends \Loris\API\Candidates\Candidate
     /**
      * Construct a visit class object to serialize candidate visits
      *
-     * @param string $method     The method of the HTTP request
-     * @param string $CandID     The CandID to be serialized
+     * @param string $method The method of the HTTP request
+     * @param string $CandID The CandID to be serialized
      * @param string $VisitLabel The visit label to be serialized
-     * @param string $InputData  The data posted to this URL
+     * @param string $InputData The data posted to this URL
      */
-    public function __construct($method, $CandID, $VisitLabel, $InputData=null)
+    public function __construct($method, $CandID, $VisitLabel, $InputData = null)
     {
         $requestDelegationCascade = $this->AutoHandleRequestDelegation;
 
@@ -49,11 +49,10 @@ class Visit extends \Loris\API\Candidates\Candidate
 
         if (empty($this->AllowedMethods)) {
             $this->AllowedMethods = [
-                                     'GET',
-                                     'PUT',
-                                    ];
+                'GET',
+            ];
         }
-        $this->CandID     = $CandID;
+        $this->CandID = $CandID;
         $this->VisitLabel = $VisitLabel;
 
         //   $this->Timepoint = \Timepoint::singleton($timepointID);
@@ -64,7 +63,7 @@ class Visit extends \Loris\API\Candidates\Candidate
             $this->ReceivedJSON = $InputData;
         } else {
             $timepoints = $this->Candidate->getListOfVisitLabels();
-            $Visits     = array_values($timepoints);
+            $Visits = array_values($timepoints);
 
             $session = array_keys($timepoints, $VisitLabel);
             if (isset($session[0])) {
@@ -98,7 +97,7 @@ class Visit extends \Loris\API\Candidates\Candidate
             "SELECT Name FROM psc WHERE CenterID =:cid",
             array('cid' => $centerID)
         );
-        $centerName   = $center['Name'];
+        $centerName = $center['Name'];
 
         $this->JSON = [
                        "Meta" => [
@@ -112,31 +111,31 @@ class Visit extends \Loris\API\Candidates\Candidate
         if ($this->Timepoint) {
             $stages = [];
             if ($this->Timepoint->getDateOfScreening() !== null) {
-                $Date   = $this->Timepoint->getDateOfScreening();
+                $Date = $this->Timepoint->getDateOfScreening();
                 $Status = $this->Timepoint->getScreeningStatus();
 
                 $stages['Screening'] = [
-                                        'Date'   => $Date,
-                                        'Status' => $Status,
-                                       ];
+                    'Date' => $Date,
+                    'Status' => $Status,
+                ];
             }
             if ($this->Timepoint->getDateOfVisit() !== null) {
-                $Date   = $this->Timepoint->getDateOfVisit();
+                $Date = $this->Timepoint->getDateOfVisit();
                 $Status = $this->Timepoint->getVisitStatus();
 
                 $stages['Visit'] = [
-                                    'Date'   => $Date,
-                                    'Status' => $Status,
-                                   ];
+                    'Date' => $Date,
+                    'Status' => $Status,
+                ];
             }
             if ($this->Timepoint->getDateOfApproval() !== null) {
-                $Date   = $this->Timepoint->getDateOfApproval();
+                $Date = $this->Timepoint->getDateOfApproval();
                 $Status = $this->Timepoint->getApprovalStatus();
 
                 $stages['Approval'] = [
-                                       'Date'   => $Date,
-                                       'Status' => $Status,
-                                      ];
+                    'Date' => $Date,
+                    'Status' => $Status,
+                ];
             }
             $this->JSON['Stages'] = $stages;
         }
@@ -149,119 +148,13 @@ class Visit extends \Loris\API\Candidates\Candidate
      */
     public function handlePUT()
     {
-        if (!isset($this->ReceivedJSON['Meta']['CandID'])
-            || $this->ReceivedJSON['Meta']['CandID'] != $this->CandID
-        ) {
-                $this->header("HTTP/1.1 400 Bad Request");
-                $this->error("Candidate from URL does not match metadata");
-                $this->safeExit(0);
-        }
-        if (!isset($this->ReceivedJSON['Meta']['Visit'])
-            || $this->ReceivedJSON['Meta']['Visit'] != $this->VisitLabel
-        ) {
-                $this->header("HTTP/1.1 400 Bad Request");
-                $this->error("Visit from URL does not match metadata");
-                $this->safeExit(0);
-        }
+        $this->header("HTTP/1.1 403 Forbidden");
+        $this->error("Permission denied");
+        $this->safeExit(0);
 
-        $subprojects  = \Utility::getSubprojectList();
-        $subprojectID = null;
-        foreach ($subprojects as $subproject => $title) {
-            if ($title === $this->ReceivedJSON['Meta']['Battery']) {
-                $subprojectID = $subproject;
-                break;
-            }
-        }
-        if ($subprojectID === null) {
-            $this->header("HTTP/1.1 400 Bad Request");
-            $this->error("Test battery specified does not exist");
-            $this->safeExit(0);
-
-        }
-        // The API requires siteName as an input to timepoint creation
-        $user      = \User::singleton();
-        $centerIDs = $user->getCenterIDs();
-        $num_sites = count($centerIDs);
-        if ($num_sites == 0) {
-            $this->header("HTTP/1.1 401 Unauthorized");
-            $this->error("You are not affiliated with any site");
-            $this->safeExit(0);
-        } else {
-            if (!isset($this->ReceivedJSON['Meta']['Site'])) {
-                $this->header("HTTP/1.1 400 Bad Request");
-                $this->error(
-                    "Users need to specify the name of the site at " .
-                    "which the visit took place."
-                );
-                $this->safeExit(0);
-            } else {
-                $siteName         = $this->ReceivedJSON['Meta']['Site'];
-                $allSiteNames     = $this->DB->pselectColWithIndexKey(
-                    "SELECT CenterID, Name FROM psc ",
-                    array(),
-                    "CenterID"
-                );
-                $allUserSiteNames = $this->DB->pselectColWithIndexKey(
-                    "SELECT CenterID, Name FROM psc ".
-                    "WHERE FIND_IN_SET(CenterID, :cid)",
-                    array('cid' => implode(',', $centerIDs)),
-                    "CenterID"
-                );
-                if (!in_array($siteName, $allSiteNames)) {
-                    $this->header("HTTP/1.1 400 Bad Request");
-                    $this->error(
-                        "Users need to specify a valid name for the site " .
-                        "at which the visit took place."
-                    );
-                    $this->safeExit(0);
-                }
-                //Get the CenterID from the provided SiteName
-                $centerID = array_search($siteName, $allUserSiteNames);
-                if ($centerID === false) {
-                    $this->header("HTTP/1.1 403 Forbidden");
-                    $this->error(
-                        "You are creating a visit at a site you " .
-                        "are not affiliated with."
-                    );
-                    $this->safeExit(0);
-                }
-                $this->createNew(
-                    $this->CandID,
-                    $subprojectID,
-                    $this->VisitLabel,
-                    $centerID
-                );
-                $this->header("HTTP/1.1 201 Created");
-            }
-        }
+        return;
     }
 
-    /**
-     * Create a new timepoint
-     *
-     * This is a wrapper around the Timepoint::createNew function
-     * that can be stubbed out for testing.
-     *
-     * @param integer $CandID       The candidate with the visit
-     * @param integer $subprojectID The subproject for the new visit
-     * @param string  $VL           The visit label of the visit to
-     *                              be created
-     * @param integer $CID          The ID of the center of the visit
-     *
-     * @return void
-     */
-    function createNew($CandID, $subprojectID, $VL, $CID)
-    {
-        try {
-            \TimePoint::isValidVisitLabel($CandID, $subprojectID, $VL);
-        } catch (\LorisException $e) {
-            $this->header("HTTP/1.1 400 Bad Request");
-            $this->error($e->getMessage());
-            $this->safeExit(0);
-        }
-
-        \TimePoint::createNew($CandID, $subprojectID, $VL, $CID);
-    }
 }
 
 if (isset($_REQUEST['PrintVisit'])) {

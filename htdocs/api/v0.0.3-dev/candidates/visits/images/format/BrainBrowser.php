@@ -42,8 +42,6 @@ class BrainBrowser extends \Loris\API\Candidates\Candidate\Visit\Imaging\Image
         if (empty($this->AllowedMethods)) {
             $this->AllowedMethods = [
                                      'GET',
-                                     'PUT',
-                                     'PATCH',
                                     ];
         }
 

@@ -37,7 +37,6 @@ class Candidates extends APIBase
     {
         $this->AllowedMethods = [
                                  'GET',
-                                 'POST',
                                 ];
         $this->RequestData    = $data;
 
@@ -115,78 +114,12 @@ class Candidates extends APIBase
             $this->error("There is no Candidate object in the POST data");
             $this->safeExit(0);
         }
-        // The API requires siteName as an input to candidate creation
-        $user         = \User::singleton();
-        $centerIDs    = $user->getCenterIDs();
-        $allSiteNames = array();
-        $allUserSiteNames = array();
-        $num_sites        = count($centerIDs);
-        if ($num_sites == 0) {
-            $this->header("HTTP/1.1 401 Unauthorized");
-            $this->error("You are not affiliated with any site");
-            $this->safeExit(0);
-        } else {
-            $allSiteNames     = $this->DB->pselectColWithIndexKey(
-                "SELECT CenterID, Name FROM psc ",
-                array(),
-                "CenterID"
-            );
-            $allUserSiteNames = $this->DB->pselectColWithIndexKey(
-                "SELECT CenterID, Name FROM psc WHERE FIND_IN_SET(CenterID, :cid)",
-                array('cid' => implode(',', $centerIDs)),
-                "CenterID"
-            );
 
-            $siteName = $data['Candidate']['Site'];
-            // This will check that the SiteName provided is a valid one
-            $this->verifyField($data, 'Site', $allSiteNames);
-            $this->verifyField($data, 'Gender', ['Male', 'Female']);
-            $this->verifyField($data, 'EDC', 'YYYY-MM-DD');
-            $this->verifyField($data, 'DoB', 'YYYY-MM-DD');
-            // Get the CenterID from the provided SiteName, and check if the
-            // user has permission to create a candidate at this site
-            $centerID = array_search($siteName, $allUserSiteNames);
+        $this->header("HTTP/1.1 403 Forbidden");
+        $this->error("Create candidate: permission denied");
+        $this->safeExit(0);
 
-            if ($centerID === false) {
-                $this->header("HTTP/1.1 403 Forbidden");
-                $this->error("You are not affiliated with the candidate's site");
-                $this->safeExit(0);
-            }
-
-            //Candidate::createNew
-            try {
-                $candid = $this->createNew(
-                    $centerID,
-                    $data['Candidate']['DoB'],
-                    $data['Candidate']['EDC'],
-                    $data['Candidate']['Gender'],
-                    $data['Candidate']['PSCID']
-                );
-                $this->header("HTTP/1.1 201 Created");
-                $this->JSON = [
-                               'Meta' => ["CandID" => $candid],
-                              ];
-            } catch(\LorisException $e) {
-                $this->header("HTTP/1.1 400 Bad Request");
-                $this->safeExit(0);
-            }
-
-        }
-
-        if (isset($data['Candidate']['Project'])) {
-            $projectName = $data['Candidate']['Project'];
-            $project     = \Project::singleton($projectName);
-            if (!empty($project)) {
-                \Candidate::singleton($candid)->setData(
-                    array('ProjectID' => $project->getId())
-                );
-            }
-        }
-
-        $this->header("HTTP/1.1 201 Created");
-        $this->JSON = [
-                       'Meta' => ["CandID" => $candid],
-                      ];
+        return;
     }
 
     /**
@@ -221,27 +154,6 @@ class Candidates extends APIBase
         }
     }
 
-    /**
-     * Testable wrapper for Candidate::createNew
-     *
-     * @param string $centerID The center id of the candidate
-     * @param string $DoB      Date of birth of the candidate
-     * @param string $edc      EDC of the candidate
-     * @param string $gender   Gender of the candidate to be created
-     * @param string $PSCID    PSCID of the candidate to be created
-     *
-     * @return none
-     */
-    public function createNew($centerID, $DoB, $edc, $gender, $PSCID)
-    {
-        return \Candidate::createNew(
-            $centerID,
-            $DoB,
-            $edc,
-            $gender,
-            $PSCID
-        );
-    }
 }
 
 if (isset($_REQUEST['PrintCandidates'])) {

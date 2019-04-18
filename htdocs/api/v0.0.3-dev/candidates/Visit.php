@@ -93,6 +93,7 @@ class Visit extends \Loris\API\Candidates\Candidate
     {
         $SubProjTitle = $this->Timepoint->getData("SubprojectTitle");
         $centerID     = $this->Timepoint->getData("CenterID");
+        $ageAtMRI     = $this->Timepoint->getData('Age_At_MRI');
         $center       = $this->DB->pselectRow(
             "SELECT Name FROM psc WHERE CenterID =:cid",
             array('cid' => $centerID)
@@ -105,6 +106,7 @@ class Visit extends \Loris\API\Candidates\Candidate
                                   'Visit'   => $this->VisitLabel,
                                   'Site'    => $centerName,
                                   'Battery' => $SubProjTitle,
+                                  'Age_at_MRI' => $ageAtMRI,
                                  ],
                       ];
         if ($this->Timepoint) {

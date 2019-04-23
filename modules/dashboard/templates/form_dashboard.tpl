@@ -41,33 +41,26 @@
                 </div>
             </div>
             <div class="panel-body">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="row">
-                        <div class="recruitment-panel col-xs-6 col-sm-6 col-md-6" id="overall-recruitment">
-                            <div class="container-fluid">
-                                <div class="row">
-                                    <div>
-                                        {include file='progress_bar.tpl' project=$recruitment["overall"]}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class=''>
-                                        {include file='progress_bar_language.tpl' project=$recruitment["overallLanguage"]}
-                                    </div>
-                                </div>
-                            </div>
+                        <div>
+                            {include file='progress_bar.tpl' project=$recruitment["overall"]}
                         </div>
-                        <div class="recruitment-panel col-xs-6 col-sm-6 col-md-6">
-                            <div class="container-fluid">
-                                <div class="row">
-                                    <div style="display: inline-block; width: 200px;">
-                                        Pie Chart 1
-                                    </div>
-                                    <div style="display: inline-block; width: 200px;">
-                                        Pie Chart 2
-                                    </div>
-                                </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4" style="display: inline-block; margin: auto">
+                            <h5>Handedness distribution:</h5>
+                            <div id="handednessPieChart"></div>
+                        </div>
+                        <div class="col-xs-4" style="display: inline-block; margin: auto">
+                            <div style="width: 350px;">
+                                <h5>Age distribution at BL:</h5>
                             </div>
+                            <div id="ageBarChart"></div>
+                        </div>
+                        <div class="col-xs-4" style="display: inline-block; margin: auto">
+                            <h5>Language distribution:</h5>
+                            <div id="languagePieChart"></div>
                         </div>
                     </div>
                 </div>
@@ -99,20 +92,7 @@
             </div>
             <div class="panel-body">
                 <div id="scans-line-chart-panel">
-                    <h5 class="chart-title">Scan sessions per site</h5>
-                    {if $total_scans neq 0}
-                        <div id="scanChart"></div>
-                    {else}
-                        <p>There have been no scans yet.</p>
-                    {/if}
-                </div>
-                <div id="recruitment-line-chart-panel" class="hidden">
-                    <h5 class="chart-title">Recruitment per site</h5>
-                    {if $recruitment['overall']['total_recruitment'] neq 0}
-                        <div id="recruitmentChart"></div>
-                    {else}
-                        <p>There have been no candidates registered yet.</p>
-                    {/if}
+                    <div id="cohortProgressionBarChart"></div>
                 </div>
             </div>
         </div>

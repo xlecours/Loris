@@ -17,8 +17,9 @@ ini_set('default_charset', 'utf-8');
 
 $DB            = Database::singleton();
 
+// todo use $SubprojectsWithMRI
 $SubprojectsWithMRI = $DB->pselect(
-    "SELECT DISTINCT(title) 
+    "SELECT DISTINCT(title), SubprojectID 
              FROM subproject 
                JOIN session USING (SubprojectID) 
                JOIN candidate c USING (CandID)
@@ -26,6 +27,7 @@ $SubprojectsWithMRI = $DB->pselect(
                AND c.CenterID <> 1",
     array()
 );
+// todo use $VisitLabelsWithMRI
 $VisitLabelsWithMRI = array(
     "EN00", "BL00", "FU03", "FU12", "FU24", "FU36", "FU48"
 );
@@ -33,25 +35,46 @@ $VisitLabelsWithMRI = array(
 $genderData    = array();
 $list_of_sites = Utility::getAssociativeSiteList(true, false);
 
-foreach ($list_of_sites as $siteID => $siteName) {
-    $genderData['labels'][] = $siteName;
-    $genderData['datasets']['female'][] = $DB->pselectOne(
-        "SELECT COUNT(c.CandID)
-         FROM candidate c
-         WHERE c.CenterID=:Site AND c.Gender='female' AND c.Active='Y'
-         AND c.Entity_type='Human'",
-        array('Site' => $siteID)
-    );
-    $genderData['datasets']['male'][]   = $DB->pselectOne(
-        "SELECT COUNT(c.CandID)
-         FROM candidate c
-         WHERE c.CenterID=:Site AND c.Gender='male' AND c.Active='Y'
-         AND c.Entity_type='Human'",
-        array('Site' => $siteID)
-    );
+$list_of_mri = array();
+for ($i=0; $i<count($VisitLabelsWithMRI); $i++) {
+
+    $temp = [];
+    for ($j=0; $j<count($SubprojectsWithMRI); $j++) {
+        $visit = $VisitLabelsWithMRI[$i];
+        $subproject = $SubprojectsWithMRI[$j]['title'];
+        $temp[$SubprojectsWithMRI[$j]['title']] = getTotalMRISessions(
+            $visit,
+            $subproject
+        );
+    }
+    $list_of_mri[] = $temp;
+
+    $label = $VisitLabelsWithMRI[$i];
+    $totalRecruitment['labels'][] = $label;
+
+    $totalRecruitment['datasets'][$label] = $temp;
+
 }
 
-print json_encode($genderData);
+//foreach ($list_of_sites as $siteID => $siteName) {
+//    $genderData['labels'][] = $siteName;
+//    $genderData['datasets']['female'][] = $DB->pselectOne(
+//        "SELECT COUNT(c.CandID)
+//         FROM candidate c
+//         WHERE c.CenterID=:Site AND c.Gender='female' AND c.Active='Y'
+//         AND c.Entity_type='Human'",
+//        array('Site' => $siteID)
+//    );
+//    $genderData['datasets']['male'][]   = $DB->pselectOne(
+//        "SELECT COUNT(c.CandID)
+//         FROM candidate c
+//         WHERE c.CenterID=:Site AND c.Gender='male' AND c.Active='Y'
+//         AND c.Entity_type='Human'",
+//        array('Site' => $siteID)
+//    );
+//}
+
+print json_encode($totalRecruitment);
 
 return 0;
 

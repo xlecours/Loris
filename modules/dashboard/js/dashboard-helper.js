@@ -113,6 +113,13 @@ function formatBarData(data) {
     processedData.push(males.concat(data.datasets.male));
     return processedData;
 }
+function formatBarDataSecond(data) {
+  "use strict";
+  var processedData = new Array();
+  var females = ['Female'];
+  processedData.push('55 to 60', '60 to 65', '65 to 70', '70 to 75', '75 to 80', '80 to 90');
+  return processedData;
+}
 function formatLineData(data) {
     "use strict";
     var processedData = new Array();
@@ -171,13 +178,13 @@ $.ajax({
 
 // AJAX to get pie chart data
 $.ajax({
-    url: loris.BaseURL + '/dashboard/ajax/get_recruitment_pie_data.php',
+    url: loris.BaseURL + '/dashboard/ajax/get_handedness_pie_data.php',
     type: 'post',
         success: function(data) {
         var jsonData = $.parseJSON(data);
         var recruitmentPieData = formatPieData(jsonData);
         recruitmentPieChart = c3.generate({
-            bindto: '#recruitmentPieChart',
+            bindto: '#handednessPieChart',
             data: {
                 columns: recruitmentPieData,
                 type : 'pie'
@@ -193,26 +200,105 @@ $.ajax({
     }
 });
 
-// AJAX to get bar chart data
-$.ajax({
-    url: loris.BaseURL + '/dashboard/ajax/get_recruitment_bar_data.php',
+// AJAX to get pie chart data
+  $.ajax({
+    url: loris.BaseURL + '/dashboard/ajax/get_language_pie_data.php',
     type: 'post',
     success: function(data) {
+      var jsonData = $.parseJSON(data);
+      var recruitmentPieData = formatPieData(jsonData);
+      recruitmentPieChart = c3.generate({
+        bindto: '#languagePieChart',
+        data: {
+          columns: recruitmentPieData,
+          type : 'pie'
+        },
+        color: {
+          pattern: siteColours
+        }
+      });
+    },
+    error: function(xhr, desc, err) {
+      console.log(xhr);
+      console.log("Details: " + desc + "\nError:" + err);
+    }
+  });
+
+// AJAX to get pie chart data
+  $.ajax({
+    url: loris.BaseURL + '/dashboard/ajax/get_age_pie_data.php',
+    type: 'post',
+    success: function(data) {
+      var jsonData = $.parseJSON(data);
+      var recruitmentPieData = formatPieData(jsonData);
+      recruitmentPieChart = c3.generate({
+        bindto: '#agePieChart',
+        data: {
+          columns: recruitmentPieData,
+          type : 'pie'
+        },
+        color: {
+          pattern: siteColours
+        }
+      });
+    },
+    error: function(xhr, desc, err) {
+      console.log(xhr);
+      console.log("Details: " + desc + "\nError:" + err);
+    }
+  });
+
+// AJAX to get bar chart data
+$.ajax({
+    url: loris.BaseURL + '/dashboard/ajax/get_cohort_progression_bar_data.php',
+    type: 'post',
+    success: function(data) {
+      console.log(data);
+      let scans = [];
+      let total = [];
+      let keys = Object.keys(data.datasets);
+      let subkeys = Object.keys(data.datasets[keys[0]]);
+      console.log(keys);
+      console.log(subkeys);
+      let tmpvalues = {};
+      for (var i=0; i<subkeys.length; i++) {
+
+        tmpvalues[subkeys[i]] = [subkeys[i]];
+        console.log('check:');
+        console.log(tmpvalues);
+        for (var j=0; j<Object.keys(data.datasets).length; j++) {
+
+          let tmp = data.datasets[keys[j]];
+          tmpvalues[subkeys[i]].push(tmp[subkeys[i]]);
+        }
+        console.log(tmpvalues);
+      }
+      console.log('final:');
+      let yay = [];
+      let yayyay = [];
+      for (var i=0; i<Object.keys(tmpvalues).length; i++) {
+        yay.push(
+          tmpvalues[subkeys[i]]
+        );
+        yayyay.push(subkeys[i]);
+      }
+      console.log(yay);
+      console.log(yayyay);
         var recruitmentBarData = formatBarData(data);
-        var recruitmentBarLabels = data.labels;
         recruitmentBarChart = c3.generate({
-            bindto: '#recruitmentBarChart',
+            bindto: '#cohortProgressionBarChart',
             data: {
-                columns: recruitmentBarData,
-                type: 'bar'
+                columns: yay,
+                type: 'bar',
+              groups: [yayyay]
             },
             axis: {
                 x: {
                     type : 'categorized',
-                    categories: recruitmentBarLabels
+                    categories: data.labels,
                 },
                 y: {
-                    label: 'Candidates registered'
+                    label: 'Number of MRI session per cohort'
                 }
             },
             color: {
@@ -224,6 +310,50 @@ $.ajax({
         console.log(xhr);
         console.log("Details: " + desc + "\nError:" + err);
     }
+});
+
+// AJAX to get bar chart data
+$.ajax({
+  url: loris.BaseURL + '/dashboard/ajax/get_age_bar_data.php',
+  type: 'post',
+  success: function(data) {
+    var recruitmentBarLabels = data.labels;
+    recruitmentBarChart = c3.generate({
+      bindto: '#ageBarChart',
+      data: {
+        columns: [
+          ['Age', '55-60', '60-65', '65-70', '70-75', '75-80', '80-90'],
+          ['Total', data.datasets['55-60'], data.datasets['60-65'], data.datasets['65-70'], data.datasets['70-75'], data.datasets['75-80'], data.datasets['80-90']]
+        ],
+        type: 'bar'
+      },
+      axis: {
+        x: {
+          type : 'categorized',
+          categories: recruitmentBarLabels
+        },
+        y: {
+          label: 'Candidates registered'
+        }
+      },
+      bar: {
+        width: {
+          ratio: 1 // this makes bar width 50% of length between ticks
+        }
+      },
+      color: {
+        pattern: ['#2FA4E7']
+      },
+      legend: {
+        show: false,
+        item: { onclick: function () {} }
+      }
+    });
+  },
+  error: function(xhr, desc, err) {
+    console.log(xhr);
+    console.log("Details: " + desc + "\nError:" + err);
+  }
 });
 
 // AJAX to get recruitment line chart data

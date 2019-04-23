@@ -2,6 +2,12 @@
  * Dashboard CSS
  */
 
+.c3-legend-item {
+  cursor:default !important;
+}
+.c3-legend-item-event {
+  cursor:default !important;
+}
 .alert-chevron {
     margin-top: 15px;
 }

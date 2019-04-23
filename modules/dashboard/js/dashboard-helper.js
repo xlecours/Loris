@@ -253,27 +253,16 @@ $.ajax({
     url: loris.BaseURL + '/dashboard/ajax/get_cohort_progression_bar_data.php',
     type: 'post',
     success: function(data) {
-      console.log(data);
-      let scans = [];
-      let total = [];
       let keys = Object.keys(data.datasets);
       let subkeys = Object.keys(data.datasets[keys[0]]);
-      console.log(keys);
-      console.log(subkeys);
       let tmpvalues = {};
       for (var i=0; i<subkeys.length; i++) {
-
         tmpvalues[subkeys[i]] = [subkeys[i]];
-        console.log('check:');
-        console.log(tmpvalues);
         for (var j=0; j<Object.keys(data.datasets).length; j++) {
-
           let tmp = data.datasets[keys[j]];
           tmpvalues[subkeys[i]].push(tmp[subkeys[i]]);
         }
-        console.log(tmpvalues);
       }
-      console.log('final:');
       let yay = [];
       let yayyay = [];
       for (var i=0; i<Object.keys(tmpvalues).length; i++) {
@@ -282,9 +271,6 @@ $.ajax({
         );
         yayyay.push(subkeys[i]);
       }
-      console.log(yay);
-      console.log(yayyay);
-        var recruitmentBarData = formatBarData(data);
         recruitmentBarChart = c3.generate({
             bindto: '#cohortProgressionBarChart',
             data: {

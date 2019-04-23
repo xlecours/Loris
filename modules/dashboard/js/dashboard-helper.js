@@ -187,11 +187,15 @@ $.ajax({
             bindto: '#handednessPieChart',
             data: {
                 columns: recruitmentPieData,
-                type : 'pie'
+                type : 'pie',
+              labels: true,
             },
             color: {
                 pattern: siteColours
-            }
+            },
+          oninit: function () {
+            this.meetsArcLabelThreshold = function () { return true; };
+          }
         });
     },
     error: function(xhr, desc, err) {
@@ -215,7 +219,8 @@ $.ajax({
         },
         color: {
           pattern: siteColours
-        }
+        },
+        labels: true,
       });
     },
     error: function(xhr, desc, err) {
@@ -276,6 +281,7 @@ $.ajax({
             data: {
                 columns: yay,
                 type: 'bar',
+              labels: true,
               groups: [yayyay]
             },
             axis: {
@@ -289,7 +295,8 @@ $.ajax({
             },
             color: {
                 pattern: genderColours
-            }
+            },
+
         });
     },
     error: function(xhr, desc, err) {

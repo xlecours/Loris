@@ -106,6 +106,26 @@
 
     <div class="col-lg-4">
 
+        <div class="col-lg-12 col-md-6 col-sm-6 col-xs-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">PREVENT-AD timeline</h3>
+                    <span class="pull-right clickable glyphicon glyphicon-chevron-up"></span>
+                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body">
+                    <img src="images/PREVENT-AD_timeline.png" class = "img-responsive" width = "100%" />
+                    <p class="project-description">
+                    <p>CAPTION: EL: Eligibility; EN: enrolment; BL:  baseline; FU: follow-up; 00, 03, 12, 24, 36, 48: number of months after BL. Note, safety visits are not displayed in this figure.
+                        * Additional time point, for the INTREPAD trial only. This time point represents the 'run-in' period of the trial. Reaching that time point, on study drug, was required to be part of INTREPAD trial.</p>
+
+                    <p>For a more detailed explanation of PREVENT-AD's visit labels, please see the document called "PREVENT-AD visit label description" in the document repository.</p>
+                    </p>
+                </div>
+                <!-- /.panel-body -->
+            </div>
+        </div>
+
         <!-- Document Repository -->
         {if $document_repository_notifications neq ""}
             <div class="col-lg-12 col-md-6 col-sm-6 col-xs-12">
@@ -137,26 +157,6 @@
                 </div>
             </div>
         {/if}
-
-        <div class="col-lg-12 col-md-6 col-sm-6 col-xs-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">PREVENT-AD timeline</h3>
-                    <span class="pull-right clickable glyphicon glyphicon-chevron-up"></span>
-                </div>
-                <!-- /.panel-heading -->
-                <div class="panel-body">
-                    <img src="images/PREVENT-AD_timeline.png" class = "img-responsive" width = "100%" />
-                    <p class="project-description">
-                        <p>CAPTION: EL: Eligibility; EN: enrolment; BL:  baseline; FU: follow-up; 00, 03, 12, 24, 36, 48: number of months after BL. Note, safety visits are not displayed in this figure.
-                        * Additional time point, for the INTREPAD trial only. This time point represents the 'run-in' period of the trial. Reaching that time point, on study drug, was required to be part of INTREPAD trial.</p>
-
-                    <p>For a more detailed explanation of PREVENT-AD's visit labels, please see the document called "PREVENT-AD visit label description" in the document repository.</p>
-                    </p>
-                </div>
-                <!-- /.panel-body -->
-            </div>
-        </div>
 
     </div>
 </div>

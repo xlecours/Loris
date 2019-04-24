@@ -26,12 +26,6 @@ $DB = \Database::singleton();
 // user is logged in, let's continue with the show...
 $user = \User::singleton($_SESSION['State']->getUsername());
 
-// check permissions
-if (!$user->hasPermission('imaging_browser_qc')) {
-    http_response_code(403);
-    return;
-}
-
 $tpl_data['has_permission'] = true;
 // instantiate feedback mri object
 $comments = new FeedbackMRI($_REQUEST['fileID'], $_REQUEST['sessionID']);
@@ -40,6 +34,11 @@ $comments = new FeedbackMRI($_REQUEST['fileID'], $_REQUEST['sessionID']);
  * UPDATE SECTION
  */
 if ($_POST['fire_away']) {
+
+    header('HTTP/1.1 403 Forbidden');
+    print('Updates not permitted on this instance');
+    return;
+
     // clear all predefined comments
     $comments->clearAllComments();
 

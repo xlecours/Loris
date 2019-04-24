@@ -48,13 +48,6 @@ class Dicom extends \Loris\API\Candidates\Candidate\Visit
 
         parent::__construct($method, $CandID, $VisitLabel);
 
-        $results =  $this->getFullPath();
-        if (empty($results)) {
-            $this->header("HTTP/1.1 404 Not Found");
-            $this->error("File not found");
-            $this->safeExit(0);
-        }
-
         if ($requestDelegationCascade) {
             $this->handleRequest();
         }
@@ -67,22 +60,11 @@ class Dicom extends \Loris\API\Candidates\Candidate\Visit
      */
     public function handleGET()
     {
-        $fullDir = $this->getFullPath();
-        $fp      = fopen($fullDir, "r");
-        if ($fp !== false) {
-            $this->Header("Content-Type: application/x-tar");
-            $this->Header('Content-Length: '.filesize($fullDir));
-            $this->Header(
-                'Content-Disposition: attachment; filename='.$this->Tarname
-            );
-            fpassthru($fp);
-            fclose($fp);
-            $this->safeExit(0);
-        } else {
-            $this->header("HTTP/1.1 500 Internal Server Error");
-            $this->error("Could not load Tarfile");
-            $this->safeExit(1);
-        }
+        $this->header("HTTP/1.1 403 Forbidden");
+        $this->error("Permission denied");
+        $this->safeExit(0);
+
+        return;
     }
 
     /**

@@ -115,7 +115,9 @@ abstract class APIBase
         case 'PATCH':
             $this->handlePATCH();
             break;
-
+        case 'HEAD':
+            $this->handleHEAD();
+            break;
         }
     }
 
@@ -146,6 +148,19 @@ abstract class APIBase
      * @return string an ETag for this resource
      */
     abstract function calculateETag();
+
+    /**
+     * Handle a HEAD request
+     *
+     * @return void
+     */
+    function handleHEAD()
+    {
+        $ETag = $this->calculateETag();
+        $this->header("ETag: $ETag");
+        $this->handleGET();
+        $this->JSON = null;
+    }
 
     /**
      * Handle a GET request

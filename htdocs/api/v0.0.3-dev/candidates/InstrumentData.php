@@ -51,8 +51,6 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
         if (empty($this->AllowedMethods)) {
             $this->AllowedMethods = [
                                      'GET',
-                                     'PUT',
-                                     'PATCH',
                                      'OPTIONS',
                                     ];
         }
@@ -167,31 +165,11 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
      */
     function handlePUT()
     {
-        $fp   = fopen("php://input", "r");
-        $data = '';
-        while (!feof($fp)) {
-            $data .= fread($fp, 1024);
-        }
-        fclose($fp);
+        $this->header("HTTP/1.1 403 Forbidden");
+        $this->error("Permission denied");
+        $this->safeExit(0);
 
-        $data            = json_decode($data);
-        $instrument_name = $this->Instrument->testName;
-
-        if ($this->Instrument->validate($data)) {
-            $this->Instrument->clearInstrument();
-            $this->Instrument->_save($data->${instrument_name});
-            $this->JSON = array("success" => "Updated");
-        } else {
-            $this->Header("HTTP/1.1 403 Forbidden");
-            if (!$this->Instrument->determineDataEntryAllowed()) {
-                $msg = "Can not update instruments that"
-                       . " are flagged as complete";
-
-                $this->JSON = array('error' => $msg);
-            } else {
-                $this->JSON = array("error" => "Could not update.");
-            }
-        }
+        return;
     }
 
     /**
@@ -201,30 +179,11 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
      */
     function handlePATCH()
     {
-        $fp   = fopen("php://input", "r");
-        $data = '';
-        while (!feof($fp)) {
-            $data .= fread($fp, 1024);
-        }
-        fclose($fp);
+        $this->header("HTTP/1.1 403 Forbidden");
+        $this->error("Permission denied");
+        $this->safeExit(0);
 
-        $data            = json_decode($data);
-        $instrument_name = $this->Instrument->testName;
-
-        if ($this->Instrument->validate($data)) {
-            $this->Instrument->_save($data->${instrument_name});
-            $this->JSON = array("success" => "Updated");
-        } else {
-            $this->Header("HTTP/1.1 403 Forbidden");
-            if (!$this->Instrument->determineDataEntryAllowed()) {
-                $msg = "Can not update instruments that"
-                       . " are flagged as complete";
-
-                $this->JSON = array('error' => $msg);
-            } else {
-                $this->JSON = array("error" => "Could not update.");
-            }
-        }
+        return;
     }
 
 }

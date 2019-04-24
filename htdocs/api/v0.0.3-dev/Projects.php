@@ -48,20 +48,12 @@ class Projects extends APIBase
         $config = $this->Factory->config();
 
         $useProjects = $config->getSetting("useProjects");
-        $useEDC      = $config->getSetting("useEDC");
 
-        if ($useEDC === '1' || $useEDC === 'true') {
-            $useEDC = true;
-        } else {
-            $useEDC = false;
-        }
-        $PSCID       = $config->getSetting("PSCID");
         $PSCIDFormat = \Utility::structureToPCRE($PSCID['structure'], "SITE");
 
         $type = $PSCID['generation'] == 'sequential' ? 'auto' : 'prompt';
 
         $settings = [
-                     "useEDC" => $useEDC,
                      "PSCID"  => [
                                   "Type"  => $type,
                                   "Regex" => $PSCIDFormat,

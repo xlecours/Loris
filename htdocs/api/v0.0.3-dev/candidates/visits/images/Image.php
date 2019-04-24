@@ -43,7 +43,7 @@ class Image extends \Loris\API\Candidates\Candidate\Visit
         if (empty($this->AllowedMethods)) {
             $this->AllowedMethods = [
                                      'GET',
-                                     'PUT',
+                                     'HEAD',
                                     ];
         }
         $this->CandID     = $CandID;
@@ -144,7 +144,8 @@ class Image extends \Loris\API\Candidates\Candidate\Visit
      */
     public function calculateETag()
     {
-        return null;
+        $filename = $this->getFullPath();
+        return hash_file('md5', $filename);
     }
 
     /**

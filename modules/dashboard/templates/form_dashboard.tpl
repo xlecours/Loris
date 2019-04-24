@@ -10,9 +10,9 @@
                 <p class="pull-right small login-time">Last login: {$last_login}</p>
                 {if !is_null($project_description)}
                     <p class="project-description">
-                        <p>PREVENT-AD open data are accessible via the LORIS web browser, and also available for mass download using the LORIS API (see instructions for download in the document repository under the Tools menu).</p>
+                        <p>PREVENT-AD open data are accessible via this LORIS web browser, and also available for mass download using the LORIS API (see the link below for data download instructions).</p>
 
-                        <p>The first release includes longitudinal data from 232 participants either in the observational cohort or from INTREPAD, the main clinical trial. INTREPAD (Investigation of Naproxen as a TREatment for Prevention of Alzheimer’s Disease) is a double-blind, placebo controlled, randomized trial of naproxen sodium 220 mg or placebo twice daily.</p>
+                        <p>The first release includes longitudinal data from 232 participants either in the observational cohort or from INTREPAD, the main clinical trial. INTREPAD (<b>I</b>nvestigation of <b>N</b>aproxen as a <b>TRE</b>atment for <b>P</b>revention of <b>A</b>lzheimer’s <b>D</b>isease) is a double-blind, placebo controlled, randomized trial of naproxen sodium 220 mg or placebo twice daily.</p>
 
                         <p>Available data includes structural and functional Magnetic Resonance Imaging (MRI), and basic demographics (age at MRI, Gender, Study language, Handedness).</p>
                     </p>
@@ -116,10 +116,9 @@
                 <div class="panel-body">
                     <img src="images/PREVENT-AD_timeline.png" class = "img-responsive" width = "100%" />
                     <p class="project-description">
-                    <p>CAPTION: EL: Eligibility; EN: enrolment; BL:  baseline; FU: follow-up; 00, 03, 12, 24, 36, 48: number of months after BL. Note, safety visits are not displayed in this figure.
-                        * Additional time point, for the INTREPAD trial only. This time point represents the 'run-in' period of the trial. Reaching that time point, on study drug, was required to be part of INTREPAD trial.</p>
-
-                    <p>For a more detailed explanation of PREVENT-AD's visit labels, please see the document called "PREVENT-AD visit label description" in the document repository.</p>
+                    <p><b>EL</b>: Eligibility; <b>EN</b>: enrolment; <b>BL</b>: baseline; <b>FU</b>: follow-up; <b>00, 03, 12, 24, 36, 48</b>: number of months after BL.</p> 
+                    <p><b>*</b> Additional time point, for the INTREPAD trial only. This time point represents the 'run-in' period of the trial. Reaching that time point, on study drug, was required to be part of INTREPAD trial.</p>
+                    <p>For a more detailed explanation of PREVENT-AD's visit labels, please see the document called "PREVENT-AD visit label description" in the LORIS "Document Repository" under the "Tools" menu.</p>
                     </p>
                 </div>
                 <!-- /.panel-body -->

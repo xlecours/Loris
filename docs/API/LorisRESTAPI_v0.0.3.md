@@ -1,8 +1,8 @@
-# Loris API - v0.0.3-dev
+# LORIS API - v0.0.3-dev
 
 ## 1.0 Overview
 
-This document specifies the LORIS REST API.
+This document specifies the LORIS REST API and current recommendations on its use.
 
 Any request sent to `$LorisRoot/api/$APIVERSION/$API_CALL` will return either a JSON object
 or no data. The LORIS API uses standard HTTP error codes and the body of any response will
@@ -14,7 +14,7 @@ MUST be included before the request in all requests.
 
 HTTP GET requests NEVER modify data. PUT, POST or PATCH requested are not supported
 in this instance of LORIS except for login. Any methods not supported
-will respond with a 405 Method Not Allowed response and an appropriate Allow header set (as
+will receive a 405 Method Not Allowed response and an appropriate Allow header set (as
 per HTTP documentation.)
 
 All GET requests include an ETag header.
@@ -24,8 +24,7 @@ DELETE is not supported on any resource defined in this API.
 ### 1.1 Authentication
 
 If a user is logged in to LORIS and can be authenticated using the standard session mechanism,
-no further authentication is required. Requests will be evaluated as requests from that user,
-so that standard LORIS modules can simply use the API.
+no further authentication is required.
 
 If a user is not logged in to LORIS (for instance, in a third party app or a CORS application),
 they can be authenticated using [JSON Web Tokens](https://jwt.io).
@@ -51,7 +50,7 @@ of the form:
 Otherwise, it will return a 401 Unauthorized response.
 
 If the token is returned, it should be included in an "Authorization: Bearer token" header
-for any future requests to authenciate the request.
+for any future requests to authenticate the request.
 
 ## 2.0 Project API
 
@@ -83,26 +82,7 @@ If the LORIS instance does not use projects, the API will return a single projec
 with the appropriate settings for the LORIS instance.
 
 PSCID represents a JSON object with the configuration settings for PSCIDs in this
-project.
-
-It has the form:
-
-```js
-{
-    "Type" : "prompt|auto",
-    "Regex" : "/regex/"
-}
-```
-
-Where regex is a regular expression that can be used to validate a PSCID for this project.
-
-If the type is "prompt", the user should be prompted to enter the PSCID for new candidates.
-If the type is "auto", the server will automatically generate the PSCID.
-
-Note that sometimes in LORIS configurations "Site" is a part of the PSCID. This will be
-denoted by the string "SITE{1,1}" inside of the regex returned. This string should be replaced
-by the 3 letter site alias before attempting to pass this regex to a regular expression parser
-or it will result in false negatives.
+project (those settings are not relevant for users wanting to download and access data).
 
 
 ### 2.1 Single project
@@ -121,9 +101,9 @@ The body of the request to /projects/$ProjectName will be an entity of the form:
     "Meta" : {
         "Project" : "ProjectName"
     },
-    "Visits" : ["V1", "V2", ... ],
+    "Visits" : ["PREEN00", "PREBL00", ... ],
     "Instruments" : ["InstrumentName", "InstrumentName2", ...],
-    "Candidates" : ["123543", "523234", ...]
+    "Candidates" : ["1235413", "5231234", ...]
 }
 ```
 
@@ -138,15 +118,15 @@ Will return a JSON object of the form:
 {
   "Images" : [
     {
-      "Candidate": "123456",
-      "PSCID": "MTL001",
-      "Visit": "V1",
-      "Visit_date": "2016-08-09", /* The date of the session. This will be null for phantoms and session that are not yet started */
-      "Site": "Montreal Neurological Institute",
-      "ScanType": "t2", /* Acquisition protocol */
+      "Candidate": "1234567",
+      "PSCID": "CONP0000001",
+      "Visit": "PREBL00",
+      "Visit_date": "2016-08-09", /* The date of the session. */
+      "Site": "Montreal",
+      "ScanType": "t2w", /* Acquisition protocol */
       "QC_status": "Pass|Fail|null",
       "Selected": "true|false|null",
-      "Link": "\/candidates\/300022\/V1\/images\/loris-MRI_123456_V1_t2_001.mnc", /* URL relative to this API */
+      "Link": "\/candidates\/1234567\/PREBL00\/images\/loris-MRI_1234567_PREBL00_t2w_001.mnc", /* URL relative to this API */
       "InsertTime": "2016-08-09T14:15:30-05:00" /* The inserted date ISO 8601 */
     },
     ...
@@ -201,11 +181,11 @@ Will return a JSON object of the form:
     "Meta" : {
         "Project" : "ProjectName"
     },
-    "Visits" : ["V1", "V2", ... ],
+    "Visits" : ["PREEN00", "PREBL00", ... ],
 }
 ```
 
-Where V1, V2, ... are the visits that may exist for this project
+Where PREEN00, PREBL00, ... are the visits that may exist for this project
 
 #### 2.1.4 Single project candidates  
 ```
@@ -219,7 +199,7 @@ will return a JSON object of the form:
     "Meta" : {
         "Project" : "ProjectName"
     },
-    "Candidates" : ["123456", "342332", ... ],
+    "Candidates" : ["1234567", "3423323", ... ],
 }
 ```
 
@@ -294,13 +274,13 @@ The JSON object is of the form:
 ```js
 {
     "Meta" : CandidateObject,
-    "Visits" : ["V1", "V2", ...]
+    "Visits" : ["PREEN00", "PREBL00", ...]
 }
 ```
 
 where V1, V2, etc are the visit labels that are registered for this candidate.
 
-PUT / PATCH are not supported for candidates.
+PUT / PATCH / POST are not supported for candidates.
 
 It will return a 200 OK on success, a 404 if the candidate does not exist, and
 a 400 Bad Request if the CandID is invalid (not a 6 digit integer). The same is
@@ -345,10 +325,10 @@ The JSON object is of the form:
 ```
 
 
-POST / PUT / PATCH is not supported for Visit Labels.
-
 It will return a 404 Not Found if the visit label does not exist for this candidate
 (as well as anything under the /candidates/$CandID/$VisitLabel hierarchy)
+
+POST / PUT / PATCH are not supported for Visit Labels.
 
 
 ### 3.3 Candidate Instruments
@@ -400,7 +380,7 @@ The format returned by a GET request is a JSON document of the form:
 
 Including the values of ALL fields for this instrument, including score field values.
 
-PUT / PATCH / POST are not supported for this.
+PUT / PATCH / POST are not supported for instrument data.
 
 A 200 OK will be returned on success, and a 404 Not Found if $InstrumentName is not a valid instrument installed in this LORIS instance.
 
@@ -410,7 +390,6 @@ GET /candidates/$CandID/$VisitLabel/instruments/$InstrumentName/flags
 ```
 
 This URL is used to GET flags for an instrument. The standard GET rules apply.
-The "Validity" flag may be missing, if the ValidityEnabled flag is not true for this instrument.
 
 The format of the JSON object for these URLS is:
 
@@ -424,7 +403,6 @@ The format of the JSON object for these URLS is:
     "Flags" : {
         "Data_entry" : "In Progress|Complete",
         "Administration" : "None|Partial|All",
-        "Validity" : "Questionable|Invalid|Valid"
     }
 }
 ```
@@ -478,7 +456,7 @@ of the form:
 }
 ```
 
-A PUT to the same location will update the QC information. 
+PUT is not supported for the session level imaging QC.
 
 ### 4.3 Image Level Data
 ```
@@ -511,6 +489,7 @@ Returns file level QC information. It will return a JSON object of the form:
 }
 ```
 
+PUT is not supported for image QC.
 
 ### 4.4 Alternate formats
 

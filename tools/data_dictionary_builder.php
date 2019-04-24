@@ -124,6 +124,28 @@ if (!empty($instrumentParameterTypeIDString)) {
 
 print "Cleared data from BVL instruments\n";
 
+//Instruments with excessively wordy names.  Entries are OPTIONAL
+//It would be really nice to have a table_names.Abbreviation field, but messy to change the names *everywhere*.
+$abbreviations=array(
+'childs_health_questions_12'=>'chq12',
+'childs_health_questions_18_36'=>'chq18_36',
+'childs_health_questions_6'=>'chq6',
+'child_bearing_attitudes'=>'cba',
+'ecbq_temperament'=>'ecbq',
+'edinburgh_postnatal_depression_scale'=>'epds',
+'health_well_being'=>'hwb',
+'home_environment_evaluation'=>'hee',
+'ibq_temperament'=>'ibq',
+'montreal_prenatal'=>'montreal_prenatal',
+'parental_bonding_inventory'=>'pbi',
+'state_trait_anxiety_inventory'=>'stai',
+'med_records_24' => 'med_rec_24',
+'med_records_recruit' => 'med_rec_recr',
+'general_medical_history' => 'gmh'
+);
+
+
+
 print "Reading instruments\n";
 //Read the ip_output.txt staging file.
 $fp   =fopen("ip_output.txt", "r");

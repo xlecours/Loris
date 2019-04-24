@@ -32,6 +32,7 @@
 
 {if $has_permission}
 <form method="post">
+<fieldset disabled="disabled">
 {/if}
 
 {foreach from=$comment item=curr_comment}
@@ -73,7 +74,7 @@
 {/foreach}
 
 {if $has_permission}
-<input type="submit" name="fire_away" value="Save">
+</fieldset>
 </form>
 {/if}
 

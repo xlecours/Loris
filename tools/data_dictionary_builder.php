@@ -124,8 +124,6 @@ if (!empty($instrumentParameterTypeIDString)) {
 
 print "Cleared data from BVL instruments\n";
 
-
-
 print "Reading instruments\n";
 //Read the ip_output.txt staging file.
 $fp   =fopen("ip_output.txt", "r");

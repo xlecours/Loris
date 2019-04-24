@@ -77,9 +77,16 @@ class Dashboard extends \NDB_Form
         $recruitmentTarget = $config->getSetting('recruitmentTarget');
         $this->createProjectProgressBar(
             'overall',
-            "Overall Recruitment",
+            "Gender distribution",
             $recruitmentTarget,
             $this->getTotalRecruitment()
+        );
+
+        $this->createProjectProgressBarLanguage(
+            'overallLanguage',
+            "Language distribution",
+            $this->getTotalLanguage('French') +
+            $this->getTotalLanguage('English')
         );
 
         $useProjects = $config->getSetting('useProjects');
@@ -98,6 +105,20 @@ class Dashboard extends \NDB_Form
         }
 
         // Charts
+        $this->tpl_data['SubprojectsWithMRI'] = $DB->pselect(
+            "SELECT DISTINCT(title) 
+             FROM subproject 
+               JOIN session USING (SubprojectID) 
+               JOIN candidate c USING (CandID)
+             WHERE Scan_done='Y' AND c.Active='Y' AND c.Entity_type='Human' 
+               AND c.CenterID <> 1",
+            array()
+        );
+        $this->tpl_data['VisitLabelsWithMRI'] = array(
+            "EN00", "BL00", "FU03", "FU12", "FU24", "FU36", "FU48"
+        );
+
+
         $this->tpl_data['total_scans'] = $DB->pselectOne(
             "SELECT COUNT(*) FROM files f
 		LEFT JOIN session s ON (s.ID=f.SessionID)
@@ -354,6 +375,105 @@ class Dashboard extends \NDB_Form
     }
 
     /**
+     * Gets the total count of candidates of with a specific study language
+     *
+     * @param string $language study language (French or English)
+     *
+     * @return int
+     */
+    function getTotalLanguage($language)
+    {
+        $DB    = \Database::singleton();
+        $total = $DB->pselectOne(
+            "SELECT COUNT(c.CandID)
+             FROM candidate c
+             WHERE c.test_language=:Language 
+               AND c.Active='Y' 
+               AND c.Entity_type='Human'
+               AND c.CenterID <> 1",
+            array('Language' => $language)
+        );
+        return $total;
+    }
+
+    /**
+     * Gets the total count of candidates of a specific handedness
+     *
+     * @param string $handedness handedness interpretation (Right-handed, Left-handed or Ambidextrous)
+     *
+     * @return int
+     */
+    function getTotalHandedness($handedness)
+    {
+        $DB    = \Database::singleton();
+        $total = $DB->pselectOne(
+            "SELECT COUNT(c.CandID)
+             FROM candidate c
+               JOIN session s USING (CandID) 
+               JOIN flag f ON (f.SessionID=s.ID)
+               JOIN handedness h USING (CommentID) 
+             WHERE h.interpretation=:Handedness 
+               AND c.Active='Y' 
+               AND c.Entity_type='Human'
+               AND c.CenterID <> 1",
+            array('Language' => $handedness)
+        );
+        return $total;
+    }
+
+    /**
+     * Gets the total count of MRI sessions per visit label and subproject
+     *
+     * @param string $visit_label visit label without the subproject prefix ("%EN00", "%BL00", "%FU03", "%FU12", "%FU24", "%FU36" or "%FU48")
+     *
+     * @return int
+     */
+    function getTotalMRISessions($visit_label, $subproject)
+    {
+        $DB    = \Database::singleton();
+        $total = $DB->pselectOne(
+            "SELECT COUNT(c.CandID)
+             FROM candidate c
+               JOIN session s USING (CandID) 
+               JOIN subproject sub USING (SubprojectID)
+             WHERE s.Visit_label LIKE :VisitLabel 
+               AND sub.title=:Subproject
+               AND Scan_done = 'Y' 
+               AND c.Active='Y' 
+               AND c.Entity_type='Human'
+               AND c.CenterID <> 1",
+            array('VisitLabel' => "%$visit_label", 'Subproject' => $subproject)
+        );
+        return $total;
+    }
+
+    /**
+     * Gets the total count of candidates of a specific age range at the baseline
+     * visit.
+     *
+     * @param int $age_min minimum age
+     * @param int $age_max maximum age
+     */
+    function getTotalByAgeAtBL($age_min, $age_max)
+    {
+        $DB    = \Database::singleton();
+        $total = $DB->pselectOne(
+            "SELECT COUNT(c.CandID)
+             FROM candidate c
+               JOIN session s USING (CandID)
+             WHERE s.Age_At_MRI >=:Age_min*12 
+               AND s.Age_At_MRI <:Age_max*12
+               AND c.Active='Y' 
+               AND s.Visit_label LIKE '%BL00'
+               AND c.Entity_type='Human' 
+               AND c.CenterID <> 1",
+            array('Age_min' => $age_min, 'Age_max' => $age_max)
+        );
+        return $total;
+    }
+
+
+    /**
      * Gets the total count of candidates of a specific gender,
      * associated with a specific project
      *
@@ -368,7 +488,8 @@ class Dashboard extends \NDB_Form
         $total = $DB->pselectOne(
             "SELECT COUNT(c.CandID)
              FROM candidate c
-             WHERE c.Gender=:Gender AND c.Active='Y' AND c.ProjectID=:PID
+               JOIN session s USING (CandID)
+             WHERE s.Age_at=:Gender AND c.Active='Y' AND c.ProjectID=:PID
              AND c.Entity_type='Human' AND c.CenterID <> 1",
             array(
              'Gender' => $gender,
@@ -428,6 +549,32 @@ class Dashboard extends \NDB_Form
                     = round($totalMales / $totalRecruitment * 100);
             }
         }
+    }
+
+    /**
+     * Creates the template data for a progress bar
+     *
+     * @param mixed  $ID                ID for the progress bar
+     * @param string $title             Title for the progress bar
+     * @param int    $totalRecruitment  Total number of candidates
+     *
+     * @return void
+     */
+    function createProjectProgressBarLanguage(
+        $ID, $title, $totalRecruitment
+    ) {
+        $total = $this->getTotalLanguage('French') + $this->getTotalLanguage('English');
+        $this->tpl_data['recruitment'][$ID]['french_total']   = $this->getTotalLanguage('French');
+        $this->tpl_data['recruitment'][$ID]['french_percent']
+            = round($this->getTotalLanguage('French') / $total * 100);
+
+        $this->tpl_data['recruitment'][$ID]['english_total']   = $this->getTotalLanguage('English');
+        $this->tpl_data['recruitment'][$ID]['english_percent']
+            = round($this->getTotalLanguage('English') / $total * 100);
+
+        $this->tpl_data['recruitment'][$ID]['total_recruitment'] = $totalRecruitment;
+        $this->tpl_data['recruitment'][$ID]['title'] = $title;
+        $this->tpl_data['recruitment'][$ID]['title'] = $title;
     }
 
     /**

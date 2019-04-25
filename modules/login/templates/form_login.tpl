@@ -24,7 +24,7 @@
               {/if}
             </div>
             <div class="form-group">
-                <input type="checkbox" name="tcpaccept" value="accepted"> I accept the <a href="#" data-toggle="modal" data-target="#tcModal">terms</a> and <a href="#" data-toggle="modal" data-target="#ppModal">publication policy</a>.
+                <input type="checkbox" name="tpaccept" value="accepted"> I accept the <a href="#" data-toggle="modal" data-target="#tModal">terms</a> and <a href="#" data-toggle="modal" data-target="#pModal">publication policy</a>.
             </div>
             <div class="form-group">
               <input type="submit" name="login" class="btn btn-primary btn-block" value="Login" />
@@ -56,7 +56,7 @@
 </div>
 
 
-<div class="modal fade" id="tcModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="tModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content" style="border-radius: 7px">
             <div class="modal-header">
@@ -74,7 +74,7 @@ terms
     </div>
 </div>
 
-<div class="modal fade" id="ppModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="pModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content" style="border-radius: 7px">
             <div class="modal-header">

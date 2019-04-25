@@ -25,6 +25,12 @@
                     |
                     <a href="https://prevent-alzheimer.net/" target="">PREVENT-AD</a>
                     |
+                    <a href="https://openpreventad.loris.ca/document_repository/ajax/GetFile.php?File=admin%2FHow%20to%20get%20the%20data.pdf">How to download data</a>
+                    |
+                    <a href="https://openpreventad.loris.ca/document_repository/ajax/GetFile.php?File=admin%2FPREVENT-AD%20short%20description.pdf">Short study description</a>
+                    |
+                    <a href="https://openpreventad.loris.ca/document_repository/ajax/GetFile.php?File=admin%2FMRI%20protocol%20for%20open%20science.pdf">MRI protocols</a>
+                    |
                 </div>
             {/if}
         </div>

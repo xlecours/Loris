@@ -117,7 +117,7 @@
                     <img src="images/PREVENT-AD_timeline.png" class = "img-responsive" width = "100%" />
                     <p class="project-description">
                     <p><b>EL</b>: Eligibility; <b>EN</b>: enrolment; <b>BL</b>: baseline; <b>FU</b>: follow-up; <b>00, 03, 12, 24, 36, 48</b>: number of months after BL.</p> 
-                    <p><b>*</b> Additional time point, for the INTREPAD trial only. This time point represents the 'run-in' period of the trial. Reaching that time point, on study drug, was required to be part of INTREPAD trial.</p>
+                    <p><b>*</b> Additional time point, for the INTREPAD trial only.</p>
                     <p>For a more detailed explanation of PREVENT-AD's visit labels, please see the document called "PREVENT-AD visit label description" in the LORIS "Document Repository" under the "Tools" menu.</p>
                     </p>
                 </div>

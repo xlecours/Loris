@@ -24,7 +24,7 @@
               {/if}
             </div>
             <div class="form-group">
-                <input type="checkbox" name="tcpaccept" value="accepted"> I accept the <a href="#" data-toggle="modal" data-target="#tcModal">terms</a> and <a href="#" data-toggle="modal" data-target="#ppModal">Publication Policy</a>.
+                <input type="checkbox" name="tcpaccept" value="accepted"> I accept the <a href="#" data-toggle="modal" data-target="#tcModal">terms</a> and <a href="#" data-toggle="modal" data-target="#ppModal">publication policy</a>.
             </div>
             <div class="form-group">
               <input type="submit" name="login" class="btn btn-primary btn-block" value="Login" />

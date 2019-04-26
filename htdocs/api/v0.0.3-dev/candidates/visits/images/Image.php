@@ -145,7 +145,8 @@ class Image extends \Loris\API\Candidates\Candidate\Visit
     public function calculateETag()
     {
         $filename = $this->getFullPath();
-        return hash_file('md5', $filename);
+        $stats    = stat($filename);
+        return md5($stats['mtime'] . $stats['size'] . $filename);
     }
 
     /**

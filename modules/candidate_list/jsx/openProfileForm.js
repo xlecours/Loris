@@ -57,28 +57,20 @@ class OpenProfileForm extends Component {
     };
     this.setState(state);
 
-    $.get(loris.BaseURL + '/candidate_list/validateIDs',
-      {
-        CandID: state.CandID,
-        PSCID: state.PSCID,
-      },
-        function(data) {
-          // ids are valid, submit accessProfileForm form
-          if (data === '1') {
-            state.error = {
-              message: 'Opening profile...',
-              className: 'alert alert-info text-center',
-            };
-            window.location.href = loris.BaseURL + '/' + state.CandID;
-          } else {
-            // display error message
-            state.error = {
-              message: 'DCCID or PSCID is not valid',
-              className: 'alert alert-danger text-center',
-            };
-          }
-          this.setState(state);
-        }.bind(this));
+    fetch(loris.BaseURL + '/api/v0.0.2/candidates/' + state.CandID)
+      .then((resp) => resp.json())
+      .then((data) => {
+        if (data.Meta.PSCID !== state.PSCID) {
+          throw new Error();
+        }
+        window.location.href = loris.BaseURL + '/' + state.CandID;
+      })
+      .catch((error) => {
+        this.setState({error: {
+          message: 'DCCID or PSCID is not valid',
+          className: 'alert alert-danger text-center',
+        }});
+      });
   }
 
   render() {
@@ -92,9 +84,7 @@ class OpenProfileForm extends Component {
       );
     }
     return (
-      <FormElement
-        name='openprofile'
-        onSubmit={this.validateAndSubmit}>
+      <FormElement name='openprofile' onSubmit={this.validateAndSubmit}>
         <TextboxElement
           name='CandID'
           label='DCCID'
@@ -111,7 +101,7 @@ class OpenProfileForm extends Component {
         <ButtonElement
           name='Open Profile'
           label='Open Profile'
-          onUserInput={this.validateAndSubmit}
+          type='submit'
         />
         </FormElement>
     );

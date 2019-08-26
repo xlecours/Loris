@@ -405,15 +405,22 @@ class DataTable extends Component {
       let keywordMatch = 0;
       let filterLength = 0;
 
+      // create mapping between rowHeaders and rowData in a row Object
+      let row = this.props.data[index[i].RowIdx];
+      if (Array.isArray(this.props.data[index[i].RowIdx])) {
+        this.props.fields.forEach((field, k) => {
+          row[field.label] = this.props.data[index[i].RowIdx][k];
+        });
+      }
+
       // Iterates through headers to populate row columns
       // with corresponding data
       for (let j = 0; j < this.props.fields.length; j += 1) {
         let data = 'Unknown';
+        let column = this.props.fields[j].label;
 
         // Set column data
-        if (this.props.data[index[i].RowIdx]) {
-          data = this.props.data[index[i].RowIdx][j];
-        }
+        data = row[column];
 
         if (this.props.fields[j].filter) {
           if (this.hasFilterKeyword(this.props.fields[j].filter.name, data)) {
@@ -438,11 +445,6 @@ class DataTable extends Component {
           if (this.props.fields[j].show === false) {
             data = null;
           } else {
-            // create mapping between rowHeaders and rowData in a row Object
-            const row = {};
-            this.props.fields.forEach((field, k) => {
-              row[field.label] = this.props.data[index[i].RowIdx][k];
-            });
             data = this.props.getFormattedCell(
               this.props.fields[j].label,
               data,

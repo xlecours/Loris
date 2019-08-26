@@ -67,7 +67,7 @@ class Conflict_Resolver extends \NDB_Page
         return array_merge(
             $deps,
             array(
-             $baseURL . '/conflict_resolver/js/conflictResolverIndex.js',
+             $baseURL . '/conflict_resolver/js/conflict_resolver.js',
             )
         );
     }

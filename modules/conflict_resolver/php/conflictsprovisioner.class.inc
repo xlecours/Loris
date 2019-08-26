@@ -34,28 +34,17 @@ class ConflictsProvisioner extends \LORIS\Data\Provisioners\DBObjectProvisioner
         parent::__construct(
             '
              SELECT
+              conflicts_unresolved.ConflictID as id,
               conflicts_unresolved.TableName as instrument,
-              session.CandID as candID,
+              session.CandID as candid,
               candidate.PSCID as pscid,
-              session.Visit_label as visit_label,
-              Project.Name as Project,
+              session.Visit_label as visitlabel,
+              Project.Name as project,
               conflicts_unresolved.FieldName as question,
-              "" as Correct_Answer,
-              conflicts_unresolved.Value1 as Value1,
-              conflicts_unresolved.Value2 as Value2,
-              MD5(
-                 CONCAT_WS(
-                     ":",
-                     conflicts_unresolved.TableName,
-                     conflicts_unresolved.ExtraKeyColumn,
-                     conflicts_unresolved.ExtraKey1,
-                     conflicts_unresolved.ExtraKey2,
-                     conflicts_unresolved.FieldName,
-                     conflicts_unresolved.CommentId1,
-                     conflicts_unresolved.CommentId2
-                 )
-             )
-             as Hash,
+              conflicts_unresolved.Value1 as value1,
+              conflicts_unresolved.Value2 as value2,
+              "" as correctanswer,
+              NULL as resolutiontimestamp,
               psc.name as site,
               session.CenterID as centerid
              FROM
@@ -64,6 +53,29 @@ class ConflictsProvisioner extends \LORIS\Data\Provisioners\DBObjectProvisioner
              LEFT JOIN session ON (flag.SessionID=session.ID)
              LEFT JOIN candidate ON (candidate.CandID=session.CandID)
              LEFT JOIN Project ON (candidate.ProjectID=Project.ProjectID)
+             LEFT JOIN psc ON (session.CenterID = psc.CenterID)
+             WHERE session.Active="Y" AND candidate.Active ="Y"
+             UNION
+             SELECT
+              conflicts_resolved.ResolvedID as id,
+              conflicts_resolved.TableName as instrument,
+              session.CandID as candid,
+              candidate.PSCID as pscid,
+              session.Visit_label as visitlabel,
+              Project.Name as project,
+              conflicts_resolved.FieldName as question,
+              conflicts_resolved.OldValue1 as value1,
+              conflicts_resolved.OldValue2 as value2,
+              conflicts_resolved.NewValue  as correctanswer,
+              conflicts_resolved.ResolutionTimestamp as resolutiontimestamp,
+              psc.name as site,
+              session.CenterID as centerid
+             FROM
+              conflicts_resolved
+             LEFT JOIN flag ON (conflicts_resolved.CommentId1=flag.CommentID)
+             LEFT JOIN session ON (flag.SessionID=session.ID)
+             LEFT JOIN candidate ON (candidate.CandID=session.CandID)
+             LEFT JOIN Project ON (candidate.ProjectID=Project.ProjectID )
              LEFT JOIN psc ON (session.CenterID = psc.CenterID)
              WHERE session.Active="Y" AND candidate.Active ="Y"
             ',

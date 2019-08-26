@@ -34,4 +34,17 @@ class AnonymousUser extends \User
     {
         return array();
     }
+
+    /**
+     * Determines if the user has the permission to access a specific module
+     * or page.
+     *
+     * @param string $code The permission code
+     *
+     * @return bool If the user has a permission.
+     */
+    public function hasPermission(string $code): bool
+    {
+        return false;
+    }
 }

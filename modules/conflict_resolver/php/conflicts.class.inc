@@ -105,7 +105,7 @@ class Conflicts implements RequestHandlerInterface
 
         return new \LORIS\Http\Response\JsonResponse(
             array(
-             'Data'         => $conflicts,
+             'data'         => $conflicts,
              'fieldOptions' => $this->_getFieldOptions(),
             )
         );

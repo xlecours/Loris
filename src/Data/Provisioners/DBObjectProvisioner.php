@@ -31,9 +31,9 @@ use \LORIS\Data\DataInstance;
  */
 abstract class DBObjectProvisioner extends \LORIS\Data\ProvisionerInstance
 {
-    protected $query;
-    protected $params;
-    protected $classname;
+    private $_query;
+    private $_params;
+    private $_classname;
 
     /**
      * Constructor
@@ -42,16 +42,16 @@ abstract class DBObjectProvisioner extends \LORIS\Data\ProvisionerInstance
      * @param array  $params    The prepared statement bind parameters
      * @param string $classname The class name of the returned objects
      */
-    function __construct(string $query, array $params, string $classname)
+    public function __construct(string $query, array $params, string $classname)
     {
-        $this->query  = $query;
-        $this->params = $params;
+        $this->_query  = $query;
+        $this->_params = $params;
 
         if (!class_exists($classname)) {
             throw new \NotFound($classname . ' not found.');
         }
 
-        $this->classname = $classname;
+        $this->_classname = $classname;
     }
 
     /**
@@ -61,14 +61,14 @@ abstract class DBObjectProvisioner extends \LORIS\Data\ProvisionerInstance
      *
      * @return \Traversable
      */
-    function getAllInstances() : \Traversable
+    public function getAllInstances() : \Traversable
     {
         $DB = (\NDB_Factory::singleton())->database();
 
-        $stmt = $DB->prepare($this->query);
-        $stmt->setFetchMode(\PDO::FETCH_CLASS, $this->classname);
+        $stmt = $DB->prepare($this->_query);
+        $stmt->setFetchMode(\PDO::FETCH_CLASS, $this->_classname);
 
-        $stmt->execute($this->params);
+        $stmt->execute($this->_params);
 
         return $stmt;
     }

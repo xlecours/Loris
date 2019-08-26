@@ -1,48 +1,41 @@
 <?php
- /**
-  * Automated integration tests for conflict resolver module
-  *
-  * PHP Version 7
-  *
-  * @category Test
-  * @package  Loris
-  * @author   Wang Shen <wangshen.mcin@gmail.com>
-  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
-  * @link     https://github.com/aces/Loris
-  */
-use Facebook\WebDriver\WebDriverSelect;
-use Facebook\WebDriver\WebDriverBy;
- require_once __DIR__
-    . "/../../../test/integrationtests/LorisIntegrationTest.class.inc";
- /**
-  * Implements tests for conflict resolver
-  *
-  * @category Test
-  * @package  Loris
-  * @author   Wang Shen <wangshen.mcin@gmail.com>
-  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
-  * @link     https://github.com/aces/Loris
-  */
-class ConflictResolverTestIntegrationTest extends LorisIntegrationTest
+/**
+ * PHP Version 7
+ *
+ * @category Test
+ * @package  Loris
+ * @author   Wang Shen <wangshen.mcin@gmail.com>
+ * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
+ * @link     https://github.com/aces/Loris
+ */
+namespace LORIS\conflict_resolver;
+
+/**
+ * Automated integration tests for conflict resolver module
+ *
+ * @category Test
+ * @package  Loris
+ * @author   Wang Shen <wangshen.mcin@gmail.com>
+ * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
+ * @link     https://github.com/aces/Loris
+ */
+class ConflictResolverTestIntegrationTest extends \LorisIntegrationTest
 {
     //filter location on conflict_resolver page
-    static $ForSite    = ".col-xs-12:nth-child(1) .form-control, [select]";
-    static $Instrument = ".col-xs-12:nth-child(2) .form-control, [select]";
-    static $VisitLabel = ".col-xs-12:nth-child(3) .form-control, [select]";
-    static $CandID     = ".col-xs-12:nth-child(4) .form-control";
-    static $PSCID      = ".col-xs-12:nth-child(5) .form-control";
-    static $Question   = ".col-xs-12:nth-child(6) .form-control";
-    static $Project    = ".col-xs-12:nth-child(7) .form-control, [select]";
+    static $ForSite    = 'select[name="Site"]';
+    static $Instrument = 'select[name="instrument"]';
+    static $VisitLabel = 'select[name="VisitLabel"]';
+    static $CandID     = 'input[name="CandID"]';
+    static $PSCID      = 'input[name="PSCID"]';
+    static $Question   = 'input[name="Question"]';
+    static $Project    = 'select[name="Project"]';
 
     //filter location on resolved_conflicts page
-    static $Timestamp  = ".col-xs-12:nth-child(7) .form-control";
-    static $Project_RC = ".col-xs-12:nth-child(8) .form-control, [select]";
+    static $Timestamp = 'input[name="ResolutionTimestamp"]';
 
     //public location for both pages
-    static $clearFilter = ".col-sm-9 > .btn";
-    static $display     = ".table-header .col-xs-12";
-    static $saveBtn     = ".btn-sm:nth-child(1)";
-    static $resetBtn    = ".btn-sm:nth-child(2)";
+    static $clearFilter = 'button[type="reset"]';
+    static $display     = '.table-header';
     /**
      * Insert testing data into the database
      * author: Wang Shen
@@ -96,20 +89,30 @@ class ConflictResolverTestIntegrationTest extends LorisIntegrationTest
       */
     function testConflictResolverPermission()
     {
-        $this->checkPagePermissions(
-            '/conflict_resolver/',
-            [
-                'conflict_resolver'
-            ],
-            "Conflict Resolver"
+        $this->setupPermissions(array("conflict_resolver"));
+        $this->safeGet($this->url . "/conflict_resolver");
+        $this->webDriver->wait()->until(
+            \WebDriverExpectedCondition::presenceOfElementLocated(
+                \WebDriverBy::id('tab-unresolved')
+            )
         );
-        $this->checkPagePermissions(
-            '/conflict_resolver/resolved_conflicts/',
-            [
-                'conflict_resolver'
-            ],
-            "Resolved Conflicts"
-        );
+
+        $this->resetPermissions();
+    }
+    /**
+     * Tests that conflict resolver does not load with the permission
+     *
+     * @return void
+     */
+    function testConflictResolverWithoutPermission()
+    {
+        $this->setupPermissions(array());
+        $this->safeGet($this->url . "/conflict_resolver");
+        $bodyText = $this->webDriver->findElement(
+            \WebDriverBy::id('lorisworkspace')
+        )->getText();
+        $this->assertContains("You do not have access to this page.", $bodyText);
+        $this->resetPermissions();
     }
     /**
      * Tests clear button in the form
@@ -120,49 +123,66 @@ class ConflictResolverTestIntegrationTest extends LorisIntegrationTest
     function testFiltersForUnresolvedConflicts()
     {
         $this->safeGet($this->url . "/conflict_resolver/");
-        //testing data
-        $this->_filterTest(
-            self::$ForSite,
-            self::$display,
-            self::$clearFilter,
-            'Montreal',
-            "20 rows displayed of 311"
+
+        $this->webDriver->wait()->until(
+            \WebDriverExpectedCondition::presenceOfElementLocated(
+                \WebDriverBy::id('tab-unresolved')
+            )
         );
-        $this->_filterTest(
-            self::$VisitLabel,
-            self::$display,
-            self::$clearFilter,
-            'V1',
-            "displayed of 576"
+
+        $this->_testFilter(self::$ForSite, "20 rows displayed of 311", '2');
+        $this->_testFilter(self::$VisitLabel, "displayed of 573", '1');
+        $this->_testFilter(self::$CandID, "2 rows displayed of 2", '300004');
+        $this->_testFilter(self::$PSCID, "2 rows displayed of 2", 'MTL004');
+        $this->_testFilter(self::$Question, "displayed of 181", 'height_inches');
+        $this->_testFilter(self::$Project, "3 rows displayed of 3", '1');
+    }
+    /**
+     * Testing filter funtion and clear button
+     *
+     * @param string $element The input element location
+     * @param string $records The records number in the table
+     * @param string $value   The test value
+     *
+     * @return void
+     */
+    function _testFilter($element,$records,$value)
+    {
+        // get element from the page
+        if (strpos($element, "select") === false) {
+            $this->webDriver->executescript(
+                "input = document.querySelector('$element');
+                 lastValue = input.value;
+                 input.value = '$value';
+                 event = new Event('input', { bubbles: true });
+                 input._valueTracker.setValue(lastValue);
+                 input.dispatchEvent(event);
+                "
+            );
+        } else {
+            $this->webDriver->executescript(
+                "input = document.querySelector('$element');
+                 input.selectedIndex = '$value';
+                 event = new Event('change', { bubbles: true });
+                 input.dispatchEvent(event);
+                "
+            );
+        }
+
+        $row      = self::$display;
+        $bodyText = $this->webDriver->executescript(
+            "return document.querySelector('$row').textContent"
         );
-        $this->_filterTest(
-            self::$CandID,
-            self::$display,
-            self::$clearFilter,
-            '300004',
-            "2 rows displayed of 2"
+        $this->assertContains($records, $bodyText);
+        //test clear filter
+        $btn = self::$clearFilter;
+        $this->webDriver->executescript(
+            "document.querySelector('$btn').click();"
         );
-        $this->_filterTest(
-            self::$PSCID,
-            self::$display,
-            self::$clearFilter,
-            'MTL004',
-            "2 rows displayed of 2"
+        $inputText = $this->webDriver->executescript(
+            "return document.querySelector('$element').value"
         );
-        $this->_filterTest(
-            self::$Question,
-            self::$display,
-            self::$clearFilter,
-            'height_inches',
-            "displayed of 181"
-        );
-        $this->_filterTest(
-            self::$Project,
-            self::$display,
-            self::$clearFilter,
-            'Pumpernickel',
-            "573"
-        );
+        $this->assertEquals("", $inputText);
     }
      /**
       * Tests filter in resolved conflicts
@@ -172,49 +192,31 @@ class ConflictResolverTestIntegrationTest extends LorisIntegrationTest
       */
     function testFiltersForResolvedConflicts()
     {
-        $this->safeGet($this->url."/conflict_resolver/resolved_conflicts/");
-        $this->_filterTest(
-            self::$ForSite,
-            self::$display,
-            self::$clearFilter,
-            "Montreal",
-            "displayed of 14"
+        $this->safeGet($this->url . "/conflict_resolver");
+
+        $this->webDriver->wait()->until(
+            \WebDriverExpectedCondition::presenceOfElementLocated(
+                \WebDriverBy::id('tab-resolved')
+            )
         );
-        $this->_filterTest(
-            self::$VisitLabel,
-            self::$display,
-            self::$clearFilter,
-            "V1",
-            "displayed of 33"
+
+        $this->webDriver->executescript(
+            "document.querySelector('#tab-resolved').click();"
         );
-        $this->_filterTest(
-            self::$CandID,
-            self::$display,
-            self::$clearFilter,
-            '400167',
-            "1 row"
+
+        // Clicking on the tab renders a new tab content.
+        $this->webDriver->wait()->until(
+            \WebDriverExpectedCondition::presenceOfElementLocated(
+                \WebDriverBy::id('resolved')
+            )
         );
-        $this->_filterTest(
-            self::$PSCID,
-            self::$display,
-            self::$clearFilter,
-            'ROM167',
-            "1 row"
-        );
-        $this->_filterTest(
-            self::$Question,
-            self::$display,
-            self::$clearFilter,
-            'date_taken',
-            "9 rows"
-        );
-        $this->_filterTest(
-            self::$Timestamp,
-            self::$display,
-            self::$clearFilter,
-            '2016-08-16 18:35:51',
-            "1 row"
-        );
+
+        $this->_testFilter(self::$ForSite, "displayed of 14", '2');
+        $this->_testFilter(self::$VisitLabel, "displayed of 32", '1');
+        $this->_testFilter(self::$CandID, "1 row", '400167');
+        $this->_testFilter(self::$PSCID, "1 row", 'ROM167');
+        $this->_testFilter(self::$Question, "9 rows", 'date_taken');
+        $this->_testFilter(self::$Timestamp, "1 row", '2016-08-16 18:35:51');
 
     }
      /**
@@ -230,19 +232,5 @@ class ConflictResolverTestIntegrationTest extends LorisIntegrationTest
             $this->url .
             "/conflict_resolver/?candidateID=475906&instrument=radiology_review"
         );
-         $element    = "tr:nth-child(1) .form-control";
-         $btn        = self::$saveBtn;
-         $row        = self::$display;
-        $el_dropdown = new WebDriverSelect(
-            $this->safeFindElement(WebDriverBy::cssSelector("$element"))
-        );
-        $el_dropdown->selectByVisibleText("yes");
-        $this->safeClick(WebDriverBy::cssSelector($btn));
-         //todo find this
-        $bodyText = $this->safeFindElement(
-            WebDriverBy::cssSelector($row)
-        )->getText();
-         // 4 means there are 4 records under this site.
-        $this->assertContains("of 575", $bodyText);
     }
 }

@@ -2,8 +2,10 @@
 <phpunit
         bootstrap="bootstrap.php"
         verbose="true"
-        colors="true">
+        colors="true"
+        testdox="true">
     <testsuites>
+
         <testsuite name='LorisUnitTests'>
             <directory>./unittests/</directory>
         </testsuite>
@@ -13,7 +15,6 @@
         </testsuite>
 
         <testsuite name='LorisModuleIntegrationTests'>
-            <directory>../modules/api/test/</directory>
             <directory>../modules/acknowledgements/test/</directory>
             <directory>../modules/brainbrowser/test/</directory>
             <directory>../modules/bvl_feedback/test/</directory>
@@ -51,6 +52,8 @@
             <directory>../modules/training/test/</directory>
             <directory>../modules/user_accounts/test/</directory>
             <directory>../test/test_instrument/</directory>
+            <directory>../modules/bvl_feedback/test/</directory>
+            <directory>../modules/quality_control/test/</directory>
         </testsuite>
 
     </testsuites>

@@ -14,7 +14,7 @@ namespace LORIS\api\Endpoints;
 
 use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
-use \LORIS\api\Endpoint;
+use \LORIS\Endpoint as CoreEndpoint;
 /**
  * A class for handling the api/v????/projects endpoint.
  *
@@ -24,7 +24,7 @@ use \LORIS\api\Endpoint;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris
  */
-class Projects extends Endpoint implements \LORIS\Middleware\ETagCalculator
+class Projects extends CoreEndpoint implements \LORIS\Middleware\ETagCalculator
 {
     /**
      * A cache of the results of the projects/ endpoint, so that it doesn't

@@ -12,7 +12,7 @@ info:
 servers:
   - url: /api/v0.0.3-dev
 paths:
-  
+
   '/configuration/configs':
     get:
       tags:
@@ -32,8 +32,6 @@ paths:
                       $ref: '#/components/schemas/ConfigDescriptor'
         '403':
           description: The `config` permission is required
-            
-                      
   '/configuration/configs/{config}':
     get:
       tags:
@@ -52,12 +50,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Meta:
-                    $ref: '#/components/schemas/ConfigDescriptor'
-                  Value:
-                    $ref: '#/components/schemas/ConfigValue'
+                $ref: '#/components/schemas/ConfigDescriptor'
     put:
       tags:
         - Administration
@@ -82,29 +75,45 @@ paths:
       responses:
         '204':
           description: Config value saved
-          
+
 components:
   schemas:
     ConfigDescriptor:
       type: object
       properties:
+        Meta:
+          $ref: '#/components/schemas/ConfigMeta'
+        Value:
+          $ref: '#/components/schemas/ConfigValue'
+
+    ConfigMeta:
+      type: object
+      properties:
         name:
           type: string
-        multiple:
-          type: boolean
-  
+        description:
+          type: string
+        allowmultiple:
+          type: string
+        datatype:
+          type: string
+        parent:
+          type: string
+        label:
+          type: string
+
     ConfigValue:
       type: object
       oneOf:
-        - $ref: '#/components/schemas/ConfigSingleValue'
-        - $ref: '#/components/schemas/ConfigMultipleValue'
-       
+      - $ref: '#/components/schemas/ConfigSingleValue'
+      - $ref: '#/components/schemas/ConfigMultipleValue'
+
     ConfigSingleValue:
       type: object
       properties:
         value:
           type: string
-    
+
     ConfigMultipleValue:
       type: object
       properties:
@@ -112,7 +121,7 @@ components:
           type: array
           items:
             type: string
-      
+
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -120,3 +129,4 @@ components:
       in: header
 security:
   - ApiKeyAuth: []
+

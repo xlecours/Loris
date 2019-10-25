@@ -91,14 +91,6 @@ class Config extends Endpoint implements ETagCalculator
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
-        $config = $request->getAttribute('pathparts');
-
-           error_log(__FILE__ . ' :: config missing.');
-        if (empty($config)) {
-            error_log(__FILE__ . ' :: config missing.');
-            return \LORIS\Http\Response\NotFound();
-        }
-
         switch ($request->getMethod()) {
         case 'GET':
             return $this->_handleGET($request);
@@ -125,14 +117,26 @@ class Config extends Endpoint implements ETagCalculator
             return $this->_cache;
         }
 
-        $user        = $request->getAttribute('user');
-        $provisioner = new ConfigsProvisioner();
+        $pathparts  = $request->getAttribute('pathparts');
+        $configname = array_shift($pathparts);
 
-        $configs = (new \LORIS\Data\Table())
+        if (empty($configname)) {
+            error_log('Config not specified in the url');
+            return \LORIS\Http\Response\NotFound();
+        }
+
+        $user        = $request->getAttribute('user');
+        $provisioner = new ConfigsProvisioner($configname);
+
+        $config = (new \LORIS\Data\Table())
             ->withDataFrom($provisioner)
             ->toArray($user);
 
-        $body         = array('Configs' => $configs);
+        if (empty($config)) {
+            return  new \LORIS\Http\Response\NotFound('Config not found');
+        }
+
+        $body         = array_shift($config);
         $this->_cache = new \LORIS\Http\Response\JsonResponse($body);
         return $this->_cache;
     }

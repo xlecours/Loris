@@ -25,22 +25,15 @@ use LORIS\configuration\Models\ConfigRow;
  */
 class ConfigsProvisioner extends \LORIS\Data\Provisioners\DBObjectProvisioner
 {
-    private $_config;
-
     /**
      * Create a RowProvisioner
+     *
+     * @param string $configname An optional configuration name
      */
     public function __construct(string $configname = null)
     {
-        switch ($configname) {
-        case null:
-            $this->_config   = '%%';
-            $this->_pdoclass = '\LORIS\configuration\Models\Configs';
-            break;
-        default:
-            $this->_config   = $configname;
-            $this->_pdoclass = '\LORIS\configuration\Models\Config';
-        }
+        $pdoclass = '\LORIS\configuration\Models\Config';
+        $config   = $configname ?? '%%';
 
         parent::__construct(
             '
@@ -61,8 +54,8 @@ class ConfigsProvisioner extends \LORIS\Data\Provisioners\DBObjectProvisioner
                cs.Name LIKE :v_config
              GROUP BY cs.Name
             ',
-            array('v_config' => $this->_config),
-            $this->_pdoclass
+            array('v_config' => $config),
+            $pdoclass
         );
     }
 }

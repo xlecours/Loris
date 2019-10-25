@@ -95,7 +95,7 @@ class Configs extends Endpoint implements ETagCalculator
 
         if (!empty($config)) {
             // This is a request for a single congfig
-            $endpoint = new Config/Config();
+            $endpoint = new Config\Config();
             return $endpoint->process($request, $endpoint);
         }
 

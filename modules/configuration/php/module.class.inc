@@ -46,15 +46,16 @@ class Module extends \Module
     {
         $pathparts   = explode('/', trim($request->getURI()->getPath(), "/"));
         $subendpoint = array_shift($pathparts);
-
         switch ($subendpoint) {
         case 'configs':
             $request = $request->withAttribute('pathparts', $pathparts);
             $handler = new Endpoints\Configs();
             break;
         default:
+            // This is not a call to this module api endpoints. Default to NDB_Page.
             return parent::handle($request);
         }
+
         $user = $request->getAttribute('user');
         if (!$handler->hasAccess($user)) {
             return new \LORIS\Http\Response\Forbidden();

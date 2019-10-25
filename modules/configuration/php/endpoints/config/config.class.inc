@@ -15,10 +15,12 @@ use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
 use \LORIS\Endpoint;
 use \LORIS\Middleware\ETagCalculator;
-use \LORIS\configuration\Provisioners\ConfigsProvisioner;
 
 /**
  * Request handler to provide all configurations stored in the database.
+ *
+ * This intentionaly retrain the configs to the ones in the database. Those
+ * in the config.xml must be viewed/edited via the backend.
  *
  * @category Administration
  * @package  Main
@@ -67,7 +69,7 @@ class Config extends Endpoint implements ETagCalculator
      */
     protected function allowedMethods() : array
     {
-        return ['GET'];
+        return ['GET', 'PATCH', 'PUT'];
     }
         /**
      * Versions of the LORIS API which are supported by this
@@ -94,9 +96,19 @@ class Config extends Endpoint implements ETagCalculator
         switch ($request->getMethod()) {
         case 'GET':
             return $this->_handleGET($request);
+
+        case 'PATCH':
+            return $this->_handlePATCH($request);
+
+        case 'PUT':
+            return new \LORIS\Http\Response\NotImplemented(
+                'Only config value updates are currently supported'
+            );
+
         case 'OPTIONS':
             return (new \LORIS\Http\Response())
                     ->withHeader('Allow', $this->allowedMethods());
+
         default:
             return new \LORIS\Http\Response\MethodNotAllowed(
                 $this->allowedMethods()
@@ -120,24 +132,78 @@ class Config extends Endpoint implements ETagCalculator
         $pathparts  = $request->getAttribute('pathparts');
         $configname = array_shift($pathparts);
 
-        if (empty($configname)) {
-            error_log('Config not specified in the url');
-            return \LORIS\Http\Response\NotFound();
+        $db   = \NDB_factory::singleton()->database();
+        $user = $request->getAttribute('user');
+
+        $configsettings = new \LORIS\ConfigSettings($db, $user);
+        
+        try {
+            $config = $configsettings->getConfigSetting($configname);
+        } catch(\NotFound $e) {
+            return  new \LORIS\Http\Response\NotFound(
+                $e->getMessage()
+            );
         }
 
-        $user        = $request->getAttribute('user');
-        $provisioner = new ConfigsProvisioner($configname);
+        $body = $config->toJSON();
+        $this->_cache = new \LORIS\Http\Response\JsonResponse(json_decode($body));
+        return $this->_cache;
+    }
 
-        $config = (new \LORIS\Data\Table())
-            ->withDataFrom($provisioner)
-            ->toArray($user);
+    /**
+     * Handle a request to update an existing config value.
+     *
+     * @param ServerRequestInterface $request The incoming PSR7 request
+     *
+     * @return ResponseInterface The outgoing PSR7 response
+     */
+    private function _handlePATCH(ServerRequestInterface $request): ResponseInterface
+    {
+        $pathparts   = $request->getAttribute('pathparts');
+        $configname  = array_shift($pathparts);
 
-        if (empty($config)) {
+        $requestdata = json_decode((string) $request->getBody(), true);
+ 
+        // Request validations
+        if (!array_key_exists('Meta', $requestdata)) {
+            return new \LORIS\Http\Response\BadRequest('Missing field');
+        }
+
+        if (!array_key_exists('Value', $requestdata)) {
+            return new \LORIS\Http\Response\BadRequest(
+                'Missing `Value` field. To DELETE a value, set it to null.'
+            );
+        }
+
+        $requestconfigname = $requestdata['Meta']['name'] ?? null;
+        if ($configname !== $requestconfigname) {
+            return new \LORIS\Http\Response\BadRequest(
+                'Config name in URL do not match the name in the Meta field'
+            );
+        }
+
+        // Update
+        $db   = \NDB_factory::singleton()->database();
+        $user = $request->getAttribute('user');
+        
+        $configsettings = new \LORIS\ConfigSettings($db, $user);
+
+        try {
+            $config = $configsettings->getConfigSetting($configname);
+        } catch (\NotFound $e) {
             return  new \LORIS\Http\Response\NotFound('Config not found');
         }
-
-        $body         = array_shift($config);
-        $this->_cache = new \LORIS\Http\Response\JsonResponse($body);
-        return $this->_cache;
+        
+        $config = $config->withValue($requestdata['Value']);
+        try {
+            $configsettings->update($config);
+        } catch (\Throwable $e) {
+            error_log($e->getMessage());
+            return new \LORIS\Http\Response\InternalServerError(
+                'Config update failed'
+            );
+        }
+ 
+        return  (new \LORIS\Http\Response())->withStatus(204);
     }
 }

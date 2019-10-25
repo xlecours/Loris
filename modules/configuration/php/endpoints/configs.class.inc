@@ -125,15 +125,18 @@ class Configs extends Endpoint implements ETagCalculator
             return $this->_cache;
         }
 
-        $user        = $request->getAttribute('user');
-        $provisioner = new ConfigsProvisioner();
+        $db   = \NDB_Factory::singleton()->database();
+        $user = $request->getAttribute('user');
+        $configsettings = (new \LORIS\ConfigSettings($db, $user))
+            ->getAllConfigSetting();
 
-        $configs = (new \LORIS\Data\Table())
-            ->withDataFrom($provisioner)
-            ->toArray($user);
+        $configarray = array_map(function($cs) {
+            return $cs->toArray();
+        }, $configsettings); 
 
-        $body         = array('Configs' => $configs);
+        $body         = array('Configs' => $configarray);
         $this->_cache = new \LORIS\Http\Response\JsonResponse($body);
+
         return $this->_cache;
     }
 }

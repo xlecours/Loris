@@ -13,6 +13,8 @@
  */
 namespace LORIS\api;
 
+use \Psr\Http\Server\RequestHandlerInterface;
+
 /**
  * An abstract class for common concerns of different API endpoints.
  *

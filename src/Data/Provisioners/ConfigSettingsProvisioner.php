@@ -9,8 +9,7 @@
  * @link     https://github.com/aces/Loris-Trunk
  */
 
-namespace LORIS\configuration\Provisioners;
-use LORIS\configuration\Models\ConfigRow;
+namespace LORIS\Data\Provisioners;
 
 /**
  * Configuration object provisioner
@@ -23,7 +22,7 @@ use LORIS\configuration\Models\ConfigRow;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris-Trunk
  */
-class ConfigsProvisioner extends \LORIS\Data\Provisioners\DBObjectProvisioner
+class ConfigSettingsProvisioner extends DBObjectProvisioner
 {
     /**
      * Create a RowProvisioner
@@ -32,7 +31,7 @@ class ConfigsProvisioner extends \LORIS\Data\Provisioners\DBObjectProvisioner
      */
     public function __construct(string $configname = null)
     {
-        $pdoclass = '\LORIS\configuration\Models\Config';
+        $pdoclass = '\LORIS\Data\Models\ConfigSettingDTO';
         $config   = $configname ?? '%%';
 
         parent::__construct(
@@ -44,10 +43,10 @@ class ConfigsProvisioner extends \LORIS\Data\Provisioners\DBObjectProvisioner
                cs.DataType as datatype,
                cs.Parent as parent,
                cs.Label as label,
-               GROUP_CONCAT(c.Value SEPARATOR \'|\') as vals
+               JSON_ARRAYAGG(c.Value) as vals
              FROM
-               Config c 
-             LEFT JOIN ConfigSettings cs
+               ConfigSettings cs 
+             LEFT JOIN Config c
                ON (cs.ID = c.ConfigID)
              WHERE
                cs.Visible = 1 AND

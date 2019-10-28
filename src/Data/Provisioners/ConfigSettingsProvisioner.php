@@ -41,15 +41,18 @@ class ConfigSettingsProvisioner extends DBObjectProvisioner
                cs.Description as description,
                cs.AllowMultiple as allowmultiple,
                cs.DataType as datatype,
-               cs.Parent as parent,
+               parent.Name as parent,
                cs.Label as label,
                JSON_ARRAYAGG(c.Value) as vals
              FROM
                ConfigSettings cs 
              LEFT JOIN Config c
                ON (cs.ID = c.ConfigID)
+             LEFT JOIN ConfigSettings parent
+               ON (parent.ID = cs.Parent)
              WHERE
                cs.Visible = 1 AND
+               cs.Parent IS NOT NULL AND
                cs.Name LIKE :v_config
              GROUP BY cs.Name
             ',

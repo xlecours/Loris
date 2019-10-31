@@ -62,9 +62,9 @@ class Visit extends Endpoint implements \LORIS\Middleware\ETagCalculator
     protected function allowedMethods() : array
     {
         return array(
-            'GET',
-            'PUT',
-        );
+                'GET',
+                'PUT',
+               );
     }
 
     /**
@@ -76,9 +76,7 @@ class Visit extends Endpoint implements \LORIS\Middleware\ETagCalculator
     protected function supportedVersions() : array
     {
         // Removed 0.0.2 since session requires a project.
-        return array(
-            'v0.0.3-dev',
-        );
+        return array('v0.0.3-dev');
     }
 
     /**
@@ -182,12 +180,12 @@ class Visit extends Endpoint implements \LORIS\Middleware\ETagCalculator
         $visitinfo = $data ?? array();
 
         $requiredfields = array(
-            'CandID',
-            'Visit',
-            'Site',
-            'Battery',
-            'Project',
-        );
+                           'CandID',
+                           'Visit',
+                           'Site',
+                           'Battery',
+                           'Project',
+                          );
         $diff           = array_diff($requiredfields, array_keys($visitinfo));
         if (!empty($diff)) {
             return new \LORIS\Http\Response\JSON\BadRequest(
@@ -241,16 +239,16 @@ class Visit extends Endpoint implements \LORIS\Middleware\ETagCalculator
 
             $timepoint->setData(
                 array(
-                    'CenterID'        => $centerid,
-                    'Visit_label'     => $visitinfo['Visit'],
-                    'SubprojectID'    => $subprojectid,
-                    'Active'          => 'Y',
-                    'Date_active'     => $today,
-                    'RegisteredBy'    => $username,
-                    'UserID'          => $username,
-                    'Date_registered' => $today,
-                    'Testdate'        => $today,
-                    'ProjectID'       => $project->getId(),
+                 'CenterID'        => $centerid,
+                 'Visit_label'     => $visitinfo['Visit'],
+                 'SubprojectID'    => $subprojectid,
+                 'Active'          => 'Y',
+                 'Date_active'     => $today,
+                 'RegisteredBy'    => $username,
+                 'UserID'          => $username,
+                 'Date_registered' => $today,
+                 'Testdate'        => $today,
+                 'ProjectID'       => $project->getId(),
                 )
             );
 

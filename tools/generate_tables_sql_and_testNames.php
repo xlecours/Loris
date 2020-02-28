@@ -77,7 +77,9 @@ foreach($instruments AS $instrument){
                 } else if($bits[0]=="checkbox") {
                     $bits[0]="varchar(255)";
                 } else if ($bits[0]=="static") {
-                    $bits[0]="varchar(255)";
+                    $bits[0]="text";
+                } else if ($bits[0]=="file") {
+                    $bits[0]="text";
                 }
 
                 $bits[2]=htmlspecialchars($bits[2]);

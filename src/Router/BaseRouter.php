@@ -89,14 +89,18 @@ class BaseRouter extends PrefixRouter implements RequestHandlerInterface
         ) {
             $uri    = $request->getURI();
             $suburi = $this->stripPrefix($modulename, $uri);
-            $module = \Module::factory($modulename);
 
             // Calculate the base path by stripping off the module from the original.
             $path    = $uri->getPath();
             $baseurl = substr($path, 0, strpos($path, $modulename));
             $baseurl = $uri->withPath($baseurl)->withQuery("");
             $request = $request->withAttribute("baseurl", $baseurl->__toString());
-            $mr      = new ModuleRouter($module, $this->moduledir);
+
+            $factory = \NDB_Factory::singleton();
+            $factory->setBaseURL($baseurl);
+
+            $module  = \Module::factory($modulename);
+            $mr      = new ModuleRouter($module);
             $request = $request->withURI($suburi);
             return $mr->handle($request);
         }
@@ -107,13 +111,16 @@ class BaseRouter extends PrefixRouter implements RequestHandlerInterface
             // FIXME: This assumes the baseURL is under /
             $path    = $uri->getPath();
             $baseurl = $uri->withPath("/")->withQuery("");
+
+            $factory = \NDB_Factory::singleton();
+            $factory->setBaseURL($baseurl);
             switch (count($components)) {
                 case 1:
                     $request = $request
                     ->withAttribute("baseurl", rtrim($baseurl->__toString(), '/'))
                     ->withAttribute("CandID", $components[0]);
                     $module  = \Module::factory("timepoint_list");
-                    $mr      = new ModuleRouter($module, $this->moduledir);
+                    $mr      = new ModuleRouter($module);
                     return $mr->handle($request);
                 case 2:
                     // CandID/SessionID, inherited from htaccess
@@ -127,7 +134,7 @@ class BaseRouter extends PrefixRouter implements RequestHandlerInterface
                         \TimePoint::singleton($components[1])
                     );
                         $module = \Module::factory("instrument_list");
-                        $mr     = new ModuleRouter($module, $this->moduledir);
+                        $mr     = new ModuleRouter($module);
                     return $mr->handle($request);
                 default:
                     // Fall through to 404. We don't have any routes that go farther

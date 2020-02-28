@@ -830,6 +830,7 @@ class Database
     {
         $rows = $this->pselect($query . " LIMIT 2", $params);
         if (count($rows) > 1) {
+            return $rows[0];
             throw new \DomainException(
                 "Attempt to use pselectRow on a query that returns multiple rows"
             );

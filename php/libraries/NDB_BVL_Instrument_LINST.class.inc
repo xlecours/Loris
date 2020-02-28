@@ -680,6 +680,7 @@ class NDB_BVL_Instrument_LINST extends \NDB_BVL_Instrument
                     }
                     break;
                 case 'static':
+                case 'file':
                     $this->_doubleDataEntryDiffIgnoreColumns[] = $pieces[1];
                     if ($addElements) {
                         if ($Group['Name'] != null) {
@@ -847,6 +848,7 @@ class NDB_BVL_Instrument_LINST extends \NDB_BVL_Instrument
                     );
                     break;
                 case 'textarea':
+                case 'file':
                     $specialCase     = true;
                     $element['Type'] = 'text';
                 case 'text':

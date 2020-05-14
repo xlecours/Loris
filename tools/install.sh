@@ -36,11 +36,6 @@ exec 1>$LOGPIPE 2>&1
 CWD=`pwd`
 RootDir=`dirname $CWD`
 
-if [ $UID == "0" ]; then
-    echo "install.sh must not be run as root (but should be run as a user with sudo access.)"
-    exit 1
-fi
-
 echo "LORIS Installation Script starting at $START"
 
 if [ ! -w $LOGDIR ] ; then

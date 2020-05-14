@@ -12,7 +12,8 @@
         "psr/http-server-middleware" : "*",
         "zendframework/zend-diactoros": "~1.8.4",
         "ext-json": "*",
-        "bjeavons/zxcvbn-php": "^0.4"
+        "bjeavons/zxcvbn-php": "^0.4",
+        "phpmailer/phpmailer": "5.2.18"
     },
     "require-dev" : {
         "squizlabs/php_codesniffer" : "3.5.1",

@@ -109,7 +109,7 @@ h1, h2, h3, h4 {
 }
 
 .main-content .login-panel form {
-    max-width: 300px;
+    max-width: 80%;
     margin: 0 auto;
 }
 
@@ -149,7 +149,7 @@ h1, h2, h3, h4 {
 }
 
 .panel-center {
-    max-width: 450px;
+    max-width: 80%;
     margin: 0 auto;
 }
 

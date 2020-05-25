@@ -38,7 +38,7 @@ use GuzzleHttp\Client;
  */
 
 
-class projectsTest extends TestCase
+class ProjectsTest extends TestCase
 {
 
     private $_client;

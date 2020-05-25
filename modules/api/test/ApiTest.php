@@ -17,6 +17,8 @@ namespace LORIS\api\Test;
 ini_set('memory_limit', '1024M');
 
 require './vendor/autoload.php';
+require_once __DIR__ .
+    "/../../../test/integrationtests/LorisIntegrationTest.class.inc";
 
 use phpDocumentor\Reflection\Types\AbstractList;
 use phpDocumentor\Reflection\Types\Array_;

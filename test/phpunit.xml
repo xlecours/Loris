@@ -11,6 +11,10 @@
         <testsuite name='LorisCoreIntegrationTests'>
             <directory>./integrationtests/</directory>
         </testsuite>
+        
+        <testsuite name='LorisApiIntegrationTests'>
+            <directory>../modules/api/test/</directory>
+        </testsuite>
 
         <testsuite name='LorisModuleIntegrationTests'>
             <directory>../modules/api/test/</directory>

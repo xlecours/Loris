@@ -25,20 +25,27 @@ namespace LORIS\Data\Provisioners;
  */
 class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
 {
-
-    private $_config;
-    private $_view;
-    private $_params;
-
     /**
      * Constructor
      *
      */
-    public function __construct(string $view, array $params)
+    public function __construct(string $designdoc, string $view, array $params)
     {
-        $this->_config = \NDB_Factory::singleton()->config()->getSetting('CouchDB');
-        $this->_view   = $view;
-        $this->_params = $params;
+        $factory = \NDB_Factory::singleton();
+        $config  = $factory->config()->getSetting('CouchDB');
+
+        $this->_couchdb   = $factory->couchdb(
+            $config['dbName'],
+            $config['hostname'],
+            intval($config['port']),
+            $config['admin'],
+            $config['adminpass']
+        );
+        $this->_designdoc = $designdoc;
+        $this->_view      = $view;
+        $this->_params    = $params;
+        $this->_limit     = $params['limit'] ?? 3;
+        $this->_startkey  = $params['startkey'] ?? null;
     }
 
     /**
@@ -50,46 +57,29 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
      */
     public function getAllInstances() : \Traversable
     {
-        $handler = new \SocketWrapper();
-        $handler->setHost($this->_config['hostname']);
-        $handler->setPort(intval($this->_config['port']));
-        $handler->open();
+        do {
+            $page = $this->_queryView();
+            if (empty($page)) {
+                return;
+            }
+            yield from $page;
+            $this->_startkey = json_encode(end($page)['key']);
+        } while (true);
+    }
 
-        $url = 'GET /' . $this->_config['dbName'] . '/_design/DQG-2.0/_view/sessions?' . http_build_query(["reduce" => "true", "group"  => "true"]);
-
-        $handler->write($url . " HTTP/1.0\r\n");
-        $handler->write(
-            "Authorization: Basic "
-            . base64_encode(
-                $this->_config['admin'] . ":" . $this->_config['adminpass']
+    private function _queryView(): array
+    {
+        return $this->_couchdb->queryView(
+            $this->_designdoc,
+            $this->_view,
+            array_merge(
+                $this->_params,
+                [
+                    'limit' => $this->_limit,
+                    'skip'  => is_null($this->_startkey) ? 0 : 1,
+                    'startkey' => $this->_startkey
+                ]
             )
-            . "\r\n"
         );
-        $handler->write("\r\n");
-
-        $headers = '';
-        do {
-            $curLine = $handler->gets();
-            $headers .= $curLine;
-        } while($curLine !== "\r\n");
-
-        if (!preg_match("/^HTTP\/1.0 200 OK/", $headers)) {
-            error_log($headers);
-            $content = '';
-            do {
-                $content .= $handler->gets();
-            } while(!$handler->eof());
-            throw new \RuntimeException($content);
-        }
-        
-        do {
-            $curLine = $handler->gets();
-            print(rtrim(trim($curLine), ','));
-            $obj = json_decode(rtrim(trim($curLine), ','));
-            var_dump($obj);
-        } while(!$handler->eof());
-
-        $handler->close();
-        return new \ArrayIterator([]);
     }
 }

@@ -25,26 +25,20 @@ namespace LORIS\Data\Provisioners;
  */
 class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
 {
+
+    private $_config;
+    private $_view;
+    private $_params;
+
     /**
      * Constructor
      *
      */
-    public function __construct(string $designdoc, string $view, array $params)
+    public function __construct(string $view, array $params)
     {
-        $factory = \NDB_Factory::singleton();
-        $config  = $factory->config()->getSetting('CouchDB');
-        $this->_config = $config;
-
-        $this->_couchdb   = $factory->couchdb(
-            $config['dbName'],
-            $config['hostname'],
-            intval($config['port']),
-            $config['admin'],
-            $config['adminpass']
-        );
-        $this->_designdoc = $designdoc;
-        $this->_view      = $view;
-        $this->_params    = $params;
+        $this->_config = \NDB_Factory::singleton()->config()->getSetting('CouchDB');
+        $this->_view   = $view;
+        $this->_params = $params;
     }
 
     /**
@@ -56,28 +50,14 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
      */
     public function getAllInstances() : \Traversable
     {
-         
-        $handler = $this->_queryView();
-        while(!$handler->eof()) {
-            $line = trim($handler->gets());
-            if (preg_match('/^(\{.*}),/', $line, $matches)) {
-                yield json_decode($matches[1]);
-            }
-        }
-    }
-
-    private function _queryView(): \SocketWrapper
-    {
-        $http_method = 'GET';
-        $url   = "_design/" . $this->_designdoc . "/_view/" . $this->_view
-                     . "?" . http_build_query($this->_params);
-
-        $handler = $this->_couchdb->SocketHandler;
+        $handler = new \SocketWrapper();
         $handler->setHost($this->_config['hostname']);
         $handler->setPort(intval($this->_config['port']));
-
         $handler->open();
-        $handler->write($this->_couchdb->_constructURL($http_method, $url) . " HTTP/1.0\r\n");
+
+        $url = 'GET /' . $this->_config['dbName'] . '/_design/DQG-2.0/_view/sessions?' . http_build_query(["reduce" => "true", "group"  => "true"]);
+
+        $handler->write($url . " HTTP/1.0\r\n");
         $handler->write(
             "Authorization: Basic "
             . base64_encode(
@@ -85,8 +65,31 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
             )
             . "\r\n"
         );
-
         $handler->write("\r\n");
-        return $handler;
+
+        $headers = '';
+        do {
+            $curLine = $handler->gets();
+            $headers .= $curLine;
+        } while($curLine !== "\r\n");
+
+        if (!preg_match("/^HTTP\/1.0 200 OK/", $headers)) {
+            error_log($headers);
+            $content = '';
+            do {
+                $content .= $handler->gets();
+            } while(!$handler->eof());
+            throw new \RuntimeException($content);
+        }
+        
+        do {
+            $curLine = $handler->gets();
+            print(rtrim(trim($curLine), ','));
+            $obj = json_decode(rtrim(trim($curLine), ','));
+            var_dump($obj);
+        } while(!$handler->eof());
+
+        $handler->close();
+        return new \ArrayIterator([]);
     }
 }

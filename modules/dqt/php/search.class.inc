@@ -59,7 +59,8 @@ class Search extends \NDB_Page
     }   
 
     /**
-     * Create an array representation of this endpoint's response body
+     * Execute a query and same the results on the file system. The url of the result
+     * will be return in the reaponse's Location header.
      *
      * @param ServerRequestInterface $request The incoming PSR7 request
      *
@@ -69,8 +70,12 @@ class Search extends \NDB_Page
     {
         $user = $request->getAttribute('user');
         $data = json_decode((string) $request->getBody(), true);
-
-        $data = [
+        $fields = [
+            ["category" => "demographics", "field" => "DoB"],
+            ["category" => "demographics", "field" => "Sex"],
+            ["category" => "ukbb_baseline_characteristics", "field" => "administration"]
+        ];
+        $filters = [
             "type" => "group",
             "operator" => "AND",
             "items" => [ 
@@ -81,30 +86,74 @@ class Search extends \NDB_Page
                     "items" => [
                         ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-09-15"],
                         ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-10-15"],
-                        ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-11-15"]
+                        ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-11-15"],
+                        ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1942-01-15"]
                     ]
                 ]
             ]
         ];
 
-/**
-        $data = [
-            "type" => "group",
-            "operator" => "OR",
-            "items" => [
-                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-09-15"],
-                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-10-15"]
-            ]
-        ];
-*/
-        return new \LORIS\Http\Response\JsonResponse(iterator_to_array($this->_query($data)));
+        return new \LORIS\Http\Response\JsonResponse(
+            iterator_to_array($this->_queryFields(
+                $fields,
+                $this->_queryFilters($filters)
+            ))
+        );
+        return new \LORIS\Http\Response\JsonResponse(iterator_to_array($this->_queryFilters($filters)));
     }
 
-    private function _query(array $query): \Traversable
+    private function _queryFields(array $fields, \Traversable $filtered): \Traversable
     {
-        switch($query['type'] ?? null) {
+        // There should be a way to use the SocketWrapper to write keys...
+        // Instead/Meanwhile :
+        $instruments = array_unique(
+            array_map(function ($f) {return $f['category'] ?? null;}, $fields),
+            SORT_STRING
+        );
+
+        $keys = [];
+        $count = 0;
+        $super = new \AppendIterator();
+        foreach ($filtered as $desired) {
+            foreach ($instruments as $instrument){
+                $keys[] = [$instrument,$desired->value[0],$desired->value[1]];
+                if (++$count % 1000 === 0) {
+                    $super->append(new \NoRewindIterator(
+                        (new CouchDBViewProvisioner(
+                            'DQG-2.0',
+                            'instruments',
+                            [
+                                "reduce" => "false",
+                                "keys" => $keys,
+                                "include_docs" => "true"
+                            ]
+                        ))->getAllInstances()
+                    ));
+                    $keys = [];
+                }
+            }
+        }
+        if (!empty($keys)) {
+            $super->append(new \NoRewindIterator(
+                (new CouchDBViewProvisioner(
+                    'DQG-2.0',
+                    'instruments',
+                    [
+                        "reduce" => "false",
+                        "keys" => $keys,
+                        "include_docs" => "true"
+                    ]
+                ))->getAllInstances()
+            ));
+        }
+        return $super;
+    }
+
+    private function _queryFilters(array $filters): \Traversable
+    {
+        switch($filters['type'] ?? null) {
         case 'group':
-            switch ($query['operator']) {
+            switch ($filters['operator']) {
             case 'AND': 
                 $operation = '_intersect';
                 break;
@@ -115,18 +164,18 @@ class Search extends \NDB_Page
                 throw new \DomainException('invalid group operator');
             }
             $parent = clone($this);
-            return array_reduce($query['items'], function ($carry, $item) use ($parent, $operation) {
+            return array_reduce($filters['items'], function ($carry, $item) use ($parent, $operation) {
                 if (is_null($carry)) {
-                    return $parent->_query($item);
+                    return $parent->_queryFilters($item);
                 }
-                $carry = $parent->$operation($carry, $parent->_query($item));
+                $carry = $parent->$operation($carry, $parent->_queryFilters($item));
                 return $carry;
             }, null);
             break;
         case 'query':
-            $category = $query['category'] ?? null;
-            $field    = $query['field'] ?? null;
-            $value    = $query['value'] ?? null;
+            $category = $filters['category'] ?? null;
+            $field    = $filters['field'] ?? null;
+            $value    = $filters['value'] ?? null;
             return (new CouchDBViewProvisioner(
                 'DQG-2.0',
                 'search',
@@ -141,20 +190,12 @@ class Search extends \NDB_Page
 
     private function _intersect(\Traversable $iter1, \Traversable $iter2): \Traversable {
         foreach($iter1 as $value1) {
-            if (!isset($value1->value)) {
-                error_log('intersect iter1');
-                error_log(print_r($value1,true));
-            }
             switch($value1->value <=> $iter2->current()->value) {
                 case 0:
                     yield $value1;
                     break;
                 case 1:
                     while ($iter2->current()->value < $value1->value) {
-                        if (!isset($iter2->current()->value)) {
-                            error_log('intersect iter2');
-                            error_log(print_r($iter2->current(),true));
-                        }
                         $iter2->next();
                         if (!$iter2->valid()) {
                             return;

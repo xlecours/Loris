@@ -56,10 +56,9 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
      */
     public function getAllInstances() : \Traversable
     {
-         
         $handler = $this->_queryView();
         while(!$handler->eof()) {
-            $line = trim($handler->gets());
+            $line = $handler->gets();
             if (preg_match('/^(\{.*}),/', $line, $matches)) {
                 yield json_decode($matches[1]);
             }
@@ -69,6 +68,14 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
     private function _queryView(): \SocketWrapper
     {
         $http_method = 'GET';
+        $body = null;
+        if (isset($this->_params['keys'])) {
+            $http_method = 'POST';
+            $body = json_encode([
+                "keys" => $this->_params['keys']
+            ]);
+            $this->_params['keys'] = null;
+        }
         $url   = "_design/" . $this->_designdoc . "/_view/" . $this->_view
                      . "?" . http_build_query($this->_params);
 
@@ -86,7 +93,13 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
             . "\r\n"
         );
 
-        $handler->write("\r\n");
+        if ($http_method == 'POST') {
+            $handler->write("Content-Length: " . strlen($body) . "\r\n");
+            $handler->write("Content-type: application/json\r\n");
+        }
+
+        $handler->write("\r\n$body");
+
         return $handler;
     }
 }

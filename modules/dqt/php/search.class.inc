@@ -93,6 +93,17 @@ class Search extends \NDB_Page
             ]
         ];
 
+        $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1936-09-15"];
+        $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"];
+        $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"];
+        $filters = [
+            "type" => "group",
+            "operator" => "AND",
+            "items" => [
+                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1920-01-15"],
+                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"],
+            ]
+        ];
         return new \LORIS\Http\Response\JsonResponse(
             iterator_to_array($this->_queryFields(
                 $fields,
@@ -165,6 +176,7 @@ class Search extends \NDB_Page
             }
             $parent = clone($this);
             return array_reduce($filters['items'], function ($carry, $item) use ($parent, $operation) {
+                // TODO :: Use private static methods for intersect and union
                 if (is_null($carry)) {
                     return $parent->_queryFilters($item);
                 }
@@ -176,26 +188,102 @@ class Search extends \NDB_Page
             $category = $filters['category'] ?? null;
             $field    = $filters['field'] ?? null;
             $value    = $filters['value'] ?? null;
-            return (new CouchDBViewProvisioner(
+
+            // Surround non-numeric string values with double quotes.
+            // FIXME:: What about numeric strings that should remain strings? Should they?
+            $value    = is_numeric($value) ? $value : "\"$value\"";
+
+            $provisioner = new CouchDBViewProvisioner(
                 'DQG-2.0',
                 'search',
-                [
-                    "reduce" => "false",
-                    "key" => '["'.$category.'","'.$field.'","'.$value.'"]',
-                ]
-            ))->getAllInstances();
-            break;
+                []
+            );
+            $params = ["reduce" => "false"];
+            switch($filters['operator'] ?? null) {
+            case 'contains':
+                $params["startkey"] = '["'.$category.'","'.$field.'"]';
+                $params["endkey"]   = '["'.$category.'","'.$field.'",{}]'; 
+
+                $provisioner = $provisioner
+                    ->withParams($params)
+                    ->withFilter(new ContainsFilter($value));
+                break;
+            case 'isNull':
+                $value = null;
+            case 'equals':
+                $params["key"] = '["'.$category.'","'.$field.'",'.$value.']';
+
+                $provisioner = $provisioner
+                    ->withParams($params);
+                break;
+            case 'isNotNull':
+                $value = null;
+            case 'notEqual':
+                $params["startkey"] = '["'.$category.'","'.$field.'"]';
+                $params["endkey"]   = '["'.$category.'","'.$field.'",{}]';
+
+                $provisioner = $provisioner
+                    ->withParams($params)
+                    ->withFilter(new NotEqualFilter($value));
+                break;
+            case 'lessThanEqual':
+                // Strict lessThan could be implementing using the 'inclusive_end' param.
+                var_dump($value);
+                $params["startkey"] = '["'.$category.'","'.$field.'"]';
+                $params["endkey"]   = '["'.$category.'","'.$field.'",'.$value.']';
+                $params["inclusive_end"] = "true";
+
+                $provisioner = $provisioner
+                    ->withParams($params);
+                break;
+            case 'greaterThanEqual':
+                // Strict greaterThan could be implementing using the 'inclusive_end'
+                // And descending order params.
+                $params["startkey"] = '["'.$category.'","'.$field.'",'.$value.']';
+                $params["endkey"]   = '["'.$category.'","'.$field.'",{}]';
+                $params["inclusive_end"] = "true";
+
+                $provisioner = $provisioner
+                    ->withParams($params);
+                break;
+            case 'starstWith':
+                // PHP doesn't have any /u9999 unicode escaping, so
+                // we use mb_convert_encoding to embed a high
+                // unicode character
+                $nextvalue = $value . mb_convert_encoding(
+                    '&#x9999;',
+                    'UTF-8',
+                    'HTML-ENTITIES'
+                );
+
+                $params["startkey"] = '["'.$category.'","'.$field.'",'.$value.']';
+                $params["endkey"]   = '["'.$category.'","'.$field.'",'.$nextvalue.']';
+
+                $provisioner = $provisioner
+                    ->withParams($params);
+                break;
+            default:
+                throw new \Error('operator not supported: ' . $filters['operator']);
+            }
+
+            error_log(print_r(get_object_vars($provisioner),true));
+            return $provisioner->getAllInstances();
         }
     }
 
     private function _intersect(\Traversable $iter1, \Traversable $iter2): \Traversable {
         foreach($iter1 as $value1) {
             switch($value1->value <=> $iter2->current()->value) {
+                case -1:
+                    error_log(implode(',',$value1->value) . " < " . implode(',',$iter2->current()->value));
+                    break;
                 case 0:
+                    error_log(implode(',',$value1->value) . " == " . implode(',',$iter2->current()->value));
                     yield $value1;
                     break;
                 case 1:
                     while ($iter2->current()->value < $value1->value) {
+                        error_log(implode(',',$value1->value) . " > " . implode(',',$iter2->current()->value));
                         $iter2->next();
                         if (!$iter2->valid()) {
                             return;

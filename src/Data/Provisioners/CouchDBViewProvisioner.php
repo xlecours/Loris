@@ -47,6 +47,13 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
         $this->_params    = $params;
     }
 
+    public function withParams(array $params): CouchDBViewProvisioner
+    {
+        $new = clone($this);
+        $new->_params = $params;
+        return $new;
+    }
+
     /**
      * GetAllInstances implements the abstract method from
      * ProvisionerInstance by executing the query with PDO Fetch class
@@ -58,8 +65,17 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
     {
         $handler = $this->_queryView();
         while(!$handler->eof()) {
-            $line = $handler->gets();
-            if (preg_match('/^(\{.*}),/', $line, $matches)) {
+            $line = $handler->gets() ?: '';
+            if (preg_match('/^HTTP\/1.0 [45]/', $line, $matches)) {    
+                while(!$handler->eof()) {
+                    error_log($line);
+                    $line = $handler->gets();
+                }
+                error_log(print_r(get_object_vars($this),true));
+                throw new \Error($line);
+            }
+            
+            if (preg_match('/^(\{.*}),*/', $line, $matches)) {
                 yield json_decode($matches[1]);
             }
         }

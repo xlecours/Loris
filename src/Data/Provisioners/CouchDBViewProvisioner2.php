@@ -23,7 +23,7 @@ namespace LORIS\Data\Provisioners;
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link       https://www.github.com/aces/Loris/
  */
-class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
+class CouchDBViewProvisioner2 extends \LORIS\Data\ProvisionerInstance
 {
     /**
      * Constructor
@@ -75,15 +75,11 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
                 throw new \Error($line);
             }
             
-            if (preg_match('/value":(.*])/', $line, $matches)) {
-                $values[] = $matches[1];
+            if (preg_match('/^(\{.*}),*/', $line, $matches)) {
+                yield json_decode($matches[1]);
             }
         }
         // CouchDB results are sorted by key, not values
-        // It is a necessary evil to load everything in memory.
-        // TODO:: lucene https://docs.couchdb.org/en/master/ddocs/search.html
-        sort($values);
-        yield from $values;
     }
 
     private function _queryView(): \SocketWrapper

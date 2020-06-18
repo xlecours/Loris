@@ -4,6 +4,7 @@ namespace LORIS\dqt;
 use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
 use \LORIS\Data\Provisioners\CouchDBViewProvisioner;
+use \LORIS\Data\Provisioners\CouchDBViewProvisioner2;
 
 class Search extends \NDB_Page
 {
@@ -93,6 +94,7 @@ class Search extends \NDB_Page
             ]
         ];
 
+/**
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1936-09-15"];
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"];
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"];
@@ -104,13 +106,13 @@ class Search extends \NDB_Page
                 ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"],
             ]
         ];
+*/
         return new \LORIS\Http\Response\JsonResponse(
             iterator_to_array($this->_queryFields(
                 $fields,
                 $this->_queryFilters($filters)
             ))
         );
-        return new \LORIS\Http\Response\JsonResponse(iterator_to_array($this->_queryFilters($filters)));
     }
 
     private function _queryFields(array $fields, \Traversable $filtered): \Traversable
@@ -126,11 +128,12 @@ class Search extends \NDB_Page
         $count = 0;
         $super = new \AppendIterator();
         foreach ($filtered as $desired) {
+            $value = json_decode($desired, true);
             foreach ($instruments as $instrument){
-                $keys[] = [$instrument,$desired->value[0],$desired->value[1]];
+                $keys[] = [$instrument,$value[0],$value[1]];
                 if (++$count % 1000 === 0) {
                     $super->append(new \NoRewindIterator(
-                        (new CouchDBViewProvisioner(
+                        (new CouchDBViewProvisioner2(
                             'DQG-2.0',
                             'instruments',
                             [
@@ -146,7 +149,7 @@ class Search extends \NDB_Page
         }
         if (!empty($keys)) {
             $super->append(new \NoRewindIterator(
-                (new CouchDBViewProvisioner(
+                (new CouchDBViewProvisioner2(
                     'DQG-2.0',
                     'instruments',
                     [
@@ -228,7 +231,6 @@ class Search extends \NDB_Page
                 break;
             case 'lessThanEqual':
                 // Strict lessThan could be implementing using the 'inclusive_end' param.
-                var_dump($value);
                 $params["startkey"] = '["'.$category.'","'.$field.'"]';
                 $params["endkey"]   = '["'.$category.'","'.$field.'",'.$value.']';
                 $params["inclusive_end"] = "true";
@@ -266,24 +268,20 @@ class Search extends \NDB_Page
                 throw new \Error('operator not supported: ' . $filters['operator']);
             }
 
-            error_log(print_r(get_object_vars($provisioner),true));
             return $provisioner->getAllInstances();
         }
     }
 
     private function _intersect(\Traversable $iter1, \Traversable $iter2): \Traversable {
         foreach($iter1 as $value1) {
-            switch($value1->value <=> $iter2->current()->value) {
+            switch($value1 <=> $iter2->current()) {
                 case -1:
-                    error_log(implode(',',$value1->value) . " < " . implode(',',$iter2->current()->value));
                     break;
                 case 0:
-                    error_log(implode(',',$value1->value) . " == " . implode(',',$iter2->current()->value));
                     yield $value1;
                     break;
                 case 1:
-                    while ($iter2->current()->value < $value1->value) {
-                        error_log(implode(',',$value1->value) . " > " . implode(',',$iter2->current()->value));
+                    while ($iter2->current() < $value1) {
                         $iter2->next();
                         if (!$iter2->valid()) {
                             return;
@@ -291,18 +289,17 @@ class Search extends \NDB_Page
                     }
             }
         }
-        return;
     }
 
     private function _union(\Traversable $iter1, \Traversable $iter2): \Traversable {
         foreach($iter1 as $value1) {
-            switch($value1->value <=> $iter2->current()->value) {
+            switch($value1 <=> $iter2->current()) {
                 case -1:
                 case 0:
                     yield $value1;
                     break;
                 case 1:
-                    while ($iter2->current()->value <= $value1->value) {
+                    while ($iter2->current() <= $value1) {
                         yield $iter2->current();
                         $iter2->next();
                         if (!$iter2->valid()) {
@@ -311,7 +308,5 @@ class Search extends \NDB_Page
                     }
             }
         }
-        return;
     }
 }
-

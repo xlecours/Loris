@@ -3,8 +3,6 @@ namespace LORIS\dqt;
 
 use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
-use \LORIS\Data\Provisioners\CouchDBViewProvisioner;
-use \LORIS\Data\Provisioners\CouchDBViewProvisioner2;
 
 class Search extends \NDB_Page
 {
@@ -133,7 +131,7 @@ class Search extends \NDB_Page
                 $keys[] = [$instrument,$value[0],$value[1]];
                 if (++$count % 1000 === 0) {
                     $super->append(new \NoRewindIterator(
-                        (new CouchDBViewProvisioner2(
+                        (new CouchDBViewDocsProvisioner(
                             'DQG-2.0',
                             'instruments',
                             [
@@ -149,7 +147,7 @@ class Search extends \NDB_Page
         }
         if (!empty($keys)) {
             $super->append(new \NoRewindIterator(
-                (new CouchDBViewProvisioner2(
+                (new CouchDBViewDocsProvisioner(
                     'DQG-2.0',
                     'instruments',
                     [
@@ -196,7 +194,7 @@ class Search extends \NDB_Page
             // FIXME:: What about numeric strings that should remain strings? Should they?
             $value    = is_numeric($value) ? $value : "\"$value\"";
 
-            $provisioner = new CouchDBViewProvisioner(
+            $provisioner = new CouchDBViewValuesProvisioner(
                 'DQG-2.0',
                 'search',
                 []

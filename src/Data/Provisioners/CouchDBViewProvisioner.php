@@ -23,7 +23,7 @@ namespace LORIS\Data\Provisioners;
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link       https://www.github.com/aces/Loris/
  */
-class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
+abstract class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
 {
     /**
      * Constructor
@@ -47,6 +47,11 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
         $this->_params    = $params;
     }
 
+    /**
+     * This creates a new instance of the provisioner but with the new params.
+     *
+     * @return CouchDBViewProvisioner
+     */
     public function withParams(array $params): CouchDBViewProvisioner
     {
         $new = clone($this);
@@ -55,57 +60,51 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
     }
 
     /**
-     * GetAllInstances implements the abstract method from
+     * GetAllInstances must be implemented by the extending class.
      * ProvisionerInstance by executing the query with PDO Fetch class
      * option.
      *
      * @return \Traversable
      */
-    public function getAllInstances() : \Traversable
-    {
-        $handler = $this->_queryView();
-        while(!$handler->eof()) {
-            $line = $handler->gets() ?: '';
-            if (preg_match('/^HTTP\/1.0 [45]/', $line, $matches)) {    
-                while(!$handler->eof()) {
-                    error_log($line);
-                    $line = $handler->gets();
-                }
-                error_log(print_r(get_object_vars($this),true));
-                throw new \Error($line);
-            }
-            
-            if (preg_match('/value":(.*])/', $line, $matches)) {
-                $values[] = $matches[1];
-            }
-        }
-        // CouchDB results are sorted by key, not values
-        // It is a necessary evil to load everything in memory.
-        // TODO:: lucene https://docs.couchdb.org/en/master/ddocs/search.html
-        sort($values);
-        yield from $values;
-    }
+    abstract public function getAllInstances() : \Traversable;
 
-    private function _queryView(): \SocketWrapper
+    /**
+     * Send the http request and return the SocketWrapper from which
+     * the response can be read.
+     *
+     * When keys are provided in the params, a POST request will
+     * be sent instead of a GET. This allow to send more data because the
+     * keys will be sent in the request body.
+     *
+     * see: https://docs.couchdb.org/en/stable/api/ddoc/views.html
+     *
+     * @return \SocketWrapper
+     */
+    protected function sendQuery(): \SocketWrapper
     {
-        $http_method = 'GET';
-        $body = null;
-        if (isset($this->_params['keys'])) {
-            $http_method = 'POST';
-            $body = json_encode([
-                "keys" => $this->_params['keys']
-            ]);
-            $this->_params['keys'] = null;
-        }
-        $url   = "_design/" . $this->_designdoc . "/_view/" . $this->_view
-                     . "?" . http_build_query($this->_params);
+        $method  = 'GET';
+        $payload = '';
 
         $handler = $this->_couchdb->SocketHandler;
         $handler->setHost($this->_config['hostname']);
         $handler->setPort(intval($this->_config['port']));
-
         $handler->open();
-        $handler->write($this->_couchdb->_constructURL($http_method, $url) . " HTTP/1.0\r\n");
+
+        if (isset($this->_params['keys'])) {
+            $payload = json_encode(
+                ["keys" => $this->_params['keys']]
+            );
+            $method = 'POST';
+
+            $this->_params['keys'] = null;
+        }
+
+        $url   = "_design/" . $this->_designdoc . "/_view/" . $this->_view
+                     . "?" . http_build_query($this->_params);
+
+        $handler->write(
+            $this->_couchdb->_constructURL($method, $url) . " HTTP/1.0\r\n"
+        );
         $handler->write(
             "Authorization: Basic "
             . base64_encode(
@@ -114,12 +113,9 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
             . "\r\n"
         );
 
-        if ($http_method == 'POST') {
-            $handler->write("Content-Length: " . strlen($body) . "\r\n");
-            $handler->write("Content-type: application/json\r\n");
-        }
-
-        $handler->write("\r\n$body");
+        $handler->write("Content-Length: " . strlen($payload) . "\r\n");
+        $handler->write("Content-type: application/json\r\n");
+        $handler->write("\r\n$payload");
 
         return $handler;
     }

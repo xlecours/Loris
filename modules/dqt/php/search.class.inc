@@ -3,6 +3,8 @@ namespace LORIS\dqt;
 
 use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
+use \LORIS\dqt\CouchDBViewProvisioner;
+use \LORIS\dqt\CouchDBSortedViewProvisioner;
 
 class Search extends \NDB_Page
 {
@@ -69,10 +71,14 @@ class Search extends \NDB_Page
     {
         $user = $request->getAttribute('user');
         $data = json_decode((string) $request->getBody(), true);
+
+        $fields = $data['fields'] ?? [];
+        $filters = $data['filters'] ?? [];
+
         $fields = [
             ["category" => "demographics", "field" => "DoB"],
-            ["category" => "demographics", "field" => "Sex"],
-            ["category" => "ukbb_baseline_characteristics", "field" => "administration"]
+            //["category" => "demographics", "field" => "Sex"],
+            //["category" => "ukbb_baseline_characteristics", "field" => "34_year_of_birth"]
         ];
         $filters = [
             "type" => "group",
@@ -96,24 +102,65 @@ class Search extends \NDB_Page
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1936-09-15"];
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"];
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"];
+        $filters = ["type" => "query", "category" => "demographics", "field" => "Sex", "operator" => "notEqual", "value" => "Female"];
+*/
         $filters = [
             "type" => "group",
-            "operator" => "AND",
+            "operator" => "OR",
             "items" => [
-                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1920-01-15"],
-                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"],
+                //["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "notEqual", "value" => null],
+                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"],
+                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1968-02-15"],
             ]
         ];
-*/
-        return new \LORIS\Http\Response\JsonResponse(
-            iterator_to_array($this->_queryFields(
+
+        try {
+            $this->_writeOutputs(
+                $this->_queryFields(
+                    $user,
+                    $fields,
+                    $this->_queryFilters(
+                        $user,
+                        $filters
+                    )
+                )
+            );
+
+            $this->_saveQuery(
+                $user,
                 $fields,
-                $this->_queryFilters($filters)
-            ))
-        );
+                $filters
+            );
+
+        } catch (\LorisException $e) {
+            return new \LORIS\Http\Response\JSON\InternalServerError(
+                $e->getMessage()
+            );
+        }
+
+        return new \LORIS\Http\Response\JSON\OK();
     }
 
-    private function _queryFields(array $fields, \Traversable $filtered): \Traversable
+    private function _writeOutputs($outputs): void
+    {
+        $outputfile    = new \SplFileObject("/data/not_backed_up/tmp.txt", "w");
+        $outputfile->fwrite('{"data":[');
+
+        // TODO :: There must be a better way to avoid the last comma...
+        $comma = '';
+        foreach ($outputs as $index => $row) {
+            $outputfile->fwrite($comma . PHP_EOL . $row);
+            $comma = ',';
+        }
+        $outputfile->fwrite(PHP_EOL . ']}');
+    }
+
+    private function _saveQuery($fields, $filters): void
+    {
+        error_log('Search:: _saveQuery not implemented');
+    }
+
+    private function _queryFields(\User $user, array $fields, \Traversable $filtered): \Traversable
     {
         // There should be a way to use the SocketWrapper to write keys...
         // Instead/Meanwhile :
@@ -124,47 +171,54 @@ class Search extends \NDB_Page
 
         $keys = [];
         $count = 0;
-        $super = new \AppendIterator();
         foreach ($filtered as $desired) {
             $value = json_decode($desired, true);
             foreach ($instruments as $instrument){
                 $keys[] = [$instrument,$value[0],$value[1]];
-                if (++$count % 1000 === 0) {
-                    $super->append(new \NoRewindIterator(
-                        (new CouchDBViewDocsProvisioner(
-                            'DQG-2.0',
-                            'instruments',
-                            [
-                                "reduce" => "false",
-                                "keys" => $keys,
-                                "include_docs" => "true"
-                            ]
-                        ))->getAllInstances()
-                    ));
-                    $keys = [];
+                if (++$count % 50000 === 0) {
+                    $prov = new CouchDBViewProvisioner(
+                        'DQG-2.0',
+                        'instruments',
+                        [
+                            "reduce" => "false",
+                            "keys" => $keys,
+                            "include_docs" => "true"
+                        ]
+                    );
+                    $keys = null;
+                    $prov = $prov->withMapper(new SelectedFieldsResults($fields));
+                    yield from $prov->execute($user);
                 }
             }
         }
-        if (!empty($keys)) {
-            $super->append(new \NoRewindIterator(
-                (new CouchDBViewDocsProvisioner(
-                    'DQG-2.0',
-                    'instruments',
-                    [
-                        "reduce" => "false",
-                        "keys" => $keys,
-                        "include_docs" => "true"
-                    ]
-                ))->getAllInstances()
-            ));
+
+        if ($keys !== null) {
+            $prov = new CouchDBViewProvisioner(
+                'DQG-2.0',
+                'instruments',
+                [
+                    "reduce" => "false",
+                    "keys" => $keys,
+                    "include_docs" => "true"
+                ]
+            );
+            $keys = null;
+            $prov = $prov->withMapper(new SelectedFieldsResults($fields));
+            yield from $prov->execute($user);
         }
-        return $super;
     }
 
-    private function _queryFilters(array $filters): \Traversable
+    /**
+     *
+     */
+    private function _queryFilters(\User $user, array $filters): \Traversable
     {
         switch($filters['type'] ?? null) {
         case 'group':
+
+            // If the group operator is AND, the output is the intersection of all
+            // it's items results. Otherwise, OR is the union of allit's items
+            // results.
             switch ($filters['operator']) {
             case 'AND': 
                 $operation = '_intersect';
@@ -173,79 +227,76 @@ class Search extends \NDB_Page
                 $operation = '_union';
                 break;
             default:
-                throw new \DomainException('invalid group operator');
+                throw new \LorisException('Search::_queryFilters: Invalid group operator');
             }
-            $parent = clone($this);
-            return array_reduce($filters['items'], function ($carry, $item) use ($parent, $operation) {
-                // TODO :: Use private static methods for intersect and union
+
+            // Reduce the group's filters to a single Traversable of ordered values.
+            return array_reduce($filters['items'], function ($carry, $item) use ($user, $operation) {
                 if (is_null($carry)) {
-                    return $parent->_queryFilters($item);
+                    return $this->_queryFilters($user, $item);
                 }
-                $carry = $parent->$operation($carry, $parent->_queryFilters($item));
+                $carry = self::$operation($carry, $this->_queryFilters($user, $item));
                 return $carry;
             }, null);
-            break;
+
         case 'query':
             $category = $filters['category'] ?? null;
             $field    = $filters['field'] ?? null;
             $value    = $filters['value'] ?? null;
 
-            // Surround non-numeric string values with double quotes.
-            // FIXME:: What about numeric strings that should remain strings? Should they?
-            $value    = is_numeric($value) ? $value : "\"$value\"";
-
-            $provisioner = new CouchDBViewValuesProvisioner(
+            // Produce a \Traversable or ordered value from the query results.
+            // The query parameter will differ according to the operator
+            // Some operators also add filters to the provisioner.
+            $provisioner = new CouchDBSortedViewProvisioner(
                 'DQG-2.0',
                 'search',
                 []
             );
+
+            //TODO :: remove hardcoded limit in param after dev...
+            //$params = ["reduce" => "false", "limit" => "10"];
             $params = ["reduce" => "false"];
+
             switch($filters['operator'] ?? null) {
             case 'contains':
+                $provisioner = $provisioner
+                    ->withAddedFilter(new ContainFilter($value));
+
                 $params["startkey"] = '["'.$category.'","'.$field.'"]';
                 $params["endkey"]   = '["'.$category.'","'.$field.'",{}]'; 
-
-                $provisioner = $provisioner
-                    ->withParams($params)
-                    ->withFilter(new ContainsFilter($value));
                 break;
+
             case 'isNull':
                 $value = null;
             case 'equals':
-                $params["key"] = '["'.$category.'","'.$field.'",'.$value.']';
-
-                $provisioner = $provisioner
-                    ->withParams($params);
+                $params["key"] = '["'.$category.'","'.$field.'","'.$value.'"]';
                 break;
+
             case 'isNotNull':
                 $value = null;
             case 'notEqual':
+                $provisioner = $provisioner
+                    ->withAddedFilter(new NotEqualFilter($value));
+
                 $params["startkey"] = '["'.$category.'","'.$field.'"]';
                 $params["endkey"]   = '["'.$category.'","'.$field.'",{}]';
 
-                $provisioner = $provisioner
-                    ->withParams($params)
-                    ->withFilter(new NotEqualFilter($value));
                 break;
+
             case 'lessThanEqual':
                 // Strict lessThan could be implementing using the 'inclusive_end' param.
                 $params["startkey"] = '["'.$category.'","'.$field.'"]';
-                $params["endkey"]   = '["'.$category.'","'.$field.'",'.$value.']';
+                $params["endkey"]   = '["'.$category.'","'.$field.'","'.$value.'"]';
                 $params["inclusive_end"] = "true";
-
-                $provisioner = $provisioner
-                    ->withParams($params);
                 break;
+
             case 'greaterThanEqual':
                 // Strict greaterThan could be implementing using the 'inclusive_end'
                 // And descending order params.
-                $params["startkey"] = '["'.$category.'","'.$field.'",'.$value.']';
+                $params["startkey"] = '["'.$category.'","'.$field.'","'.$value.'"]';
                 $params["endkey"]   = '["'.$category.'","'.$field.'",{}]';
-                $params["inclusive_end"] = "true";
-
-                $provisioner = $provisioner
-                    ->withParams($params);
                 break;
+
             case 'starstWith':
                 // PHP doesn't have any /u9999 unicode escaping, so
                 // we use mb_convert_encoding to embed a high
@@ -256,55 +307,99 @@ class Search extends \NDB_Page
                     'HTML-ENTITIES'
                 );
 
-                $params["startkey"] = '["'.$category.'","'.$field.'",'.$value.']';
-                $params["endkey"]   = '["'.$category.'","'.$field.'",'.$nextvalue.']';
-
-                $provisioner = $provisioner
-                    ->withParams($params);
+                $params["startkey"] = '["'.$category.'","'.$field.'","'.$value.'"]';
+                $params["endkey"]   = '["'.$category.'","'.$field.'","'.$nextvalue.'"]';
                 break;
+
             default:
-                throw new \Error('operator not supported: ' . $filters['operator']);
+                throw new \LorisException('Search::_queryFilters: Operator not supported');
             }
 
-            return $provisioner->getAllInstances();
+            $provisioner = $provisioner
+                ->withParams($params);
+
+            return $provisioner->execute($user);
+
+        default:
+            throw new \LorisException('Search::_queryFilters: Invalid or missing filter');
         }
     }
 
-    private function _intersect(\Traversable $iter1, \Traversable $iter2): \Traversable {
+    /**
+     * Produce a single ordered Traversable which values are the ones the were present in both 
+     * provided Traversables.
+     *
+     * Both parameters MUST be pre ordered. 
+     *
+     * @param \Traversable $iter1 
+     * @param \Traversable $iter2 
+     *
+     * @return \Traversable
+     */
+    private static function _intersect(\Traversable $iter1, \Traversable $iter2): \Traversable {
         foreach($iter1 as $value1) {
             switch($value1 <=> $iter2->current()) {
                 case -1:
+                    // iter1 is smaller than iter2.
+                    // Move to next foreach.
                     break;
                 case 0:
+                    // Both iter1 and iter2 are equal.
+                    // Move iter2 and yield $value before moving to next foreach.
+                    $iter2->next();
                     yield $value1;
                     break;
                 case 1:
+                    // iter1 is greater than iter2.
+                    // Advance iter2 until it is greater or equal to iter1.
                     while ($iter2->current() < $value1) {
                         $iter2->next();
                         if (!$iter2->valid()) {
                             return;
                         }
                     }
+                    if ($value1 == $iter2->current()) {
+                        // Both iter1 and iter2 are equal.
+                        // Yield $value before moving to next foreach.
+                        yield $value1;
+                    }
+                    break;
             }
         }
     }
 
-    private function _union(\Traversable $iter1, \Traversable $iter2): \Traversable {
+    /**
+     * Produce a single ordered Traversable which every elements of the provided 
+     * Traversables without duplicates. 
+     *
+     * Both parameters MUST be pre ordered. 
+     *
+     * @param \Traversable $iter1 
+     * @param \Traversable $iter2 
+     *
+     * @return \Traversable
+     */
+    private static function _union(\Traversable $iter1, \Traversable $iter2): \Traversable {
         foreach($iter1 as $value1) {
-            switch($value1 <=> $iter2->current()) {
-                case -1:
-                case 0:
-                    yield $value1;
-                    break;
-                case 1:
-                    while ($iter2->current() <= $value1) {
-                        yield $iter2->current();
-                        $iter2->next();
-                        if (!$iter2->valid()) {
-                            break; 
-                        }
+            // Yield each value of iter1.
+            // If iter2 is smaller, yield each value of iter2 until it is greater, equal or empty.
+            // If it is equal, iter1 has already been yield do there is no need to yield iter2.
+            yield $value1;
+            if ($iter2->valid()) {
+                while ($iter2->current() < $value1) {
+                    yield $iter2->current();
+                    $iter2->next();
+                    if (!$iter2->valid()) {
+                        break;
                     }
+                }
             }
+        }
+
+        while ($iter2->valid()) {
+            // yield each remaining values of iter2.
+            yield $iter2->current();
+            $iter2->next();
         }
     }
 }

@@ -12,6 +12,10 @@
 
 namespace LORIS\Data\Provisioners;
 
+use \LORIS\Data\Models\CouchDBViewRow;
+use \LORIS\Data\Filters\DefaultFilter;
+use \LORIS\Data\Mappers\DefaultMapper;
+
 /**
  * A CouchDBViewProvisioner is an instance of ProvisionerInstance which
  * queries a couchdb view and returns the result as a Traversable.
@@ -25,6 +29,14 @@ namespace LORIS\Data\Provisioners;
  */
 abstract class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
 {
+    private $_couchdb;
+    private $_config;
+    private $_designdoc;
+    private $_view;
+    private $_params;
+    private $_filter;
+    private $_mapper;
+
     /**
      * Constructor
      *
@@ -45,13 +57,10 @@ abstract class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
         $this->_designdoc = $designdoc;
         $this->_view      = $view;
         $this->_params    = $params;
+        $this->_filter    = new DefaultFilter();
+        $this->_mapper    = new DefaultMapper();
     }
 
-    /**
-     * This creates a new instance of the provisioner but with the new params.
-     *
-     * @return CouchDBViewProvisioner
-     */
     public function withParams(array $params): CouchDBViewProvisioner
     {
         $new = clone($this);
@@ -59,14 +68,59 @@ abstract class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
         return $new;
     }
 
+    public function withAddedFilter($filter): CouchDBViewProvisioner
+    {
+        // TODO :: rework this to use the filter interface.
+        $new = clone($this);
+        $new->_filter = $filter;
+        return $new;
+    }
+
+    public function withMapper($mapper): CouchDBViewProvisioner
+    {
+        // TODO :: rework this to use the mapper interface.
+        $new = clone($this);
+        $new->_mapper = $mapper;
+        return $new;
+    }
+
     /**
-     * GetAllInstances must be implemented by the extending class.
-     * ProvisionerInstance by executing the query with PDO Fetch class
-     * option.
+     * Returns all the items in the rows property of the results.
      *
      * @return \Traversable
      */
-    abstract public function getAllInstances() : \Traversable;
+    public function getAllInstances() : \Traversable
+    {
+        $handler = $this->sendQuery();
+        while(!$handler->eof()) {
+            $line = $handler->gets() ?: '';
+
+            // HTTP error handling
+            if (preg_match('/^HTTP\/1.0 [45]/', $line, $matches)) {
+                while(!$handler->eof()) {
+                    error_log($line);
+                    $line = $handler->gets();
+                }
+                error_log(print_r(get_object_vars($this),true));
+                throw new \Error($line);
+            }
+
+            if (preg_match('/^(\{.*}),*/', $line, $matches)) {
+                // This is a data line
+                if ($this->_filter($matches[1])) {
+                    yield $this->_map($matches[1]);
+                }
+            }
+        }
+    }
+
+    private function _filter($value): bool {
+        return $this->_filter->filter($value);
+    }
+
+    private function _map($value): string {
+        return $this->_mapper->map($value);
+    }
 
     /**
      * Send the http request and return the SocketWrapper from which

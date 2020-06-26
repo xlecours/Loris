@@ -5,6 +5,7 @@ use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
 use \LORIS\dqt\CouchDBViewProvisioner;
 use \LORIS\dqt\CouchDBSortedViewProvisioner;
+use \LORIS\dqt\QueryFilterFactory;
 
 class Search extends \NDB_Page
 {
@@ -60,7 +61,7 @@ class Search extends \NDB_Page
     }   
 
     /**
-     * Execute a query and same the results on the file system. The url of the result
+     * Execute a query and save the results on the file system. The url of the result
      * will be return in the reaponse's Location header.
      *
      * @param ServerRequestInterface $request The incoming PSR7 request
@@ -77,22 +78,22 @@ class Search extends \NDB_Page
 
         $fields = [
             ["category" => "demographics", "field" => "DoB"],
-            //["category" => "demographics", "field" => "Sex"],
-            //["category" => "ukbb_baseline_characteristics", "field" => "34_year_of_birth"]
+            ["category" => "demographics", "field" => "Sex"],
+            ["category" => "ukbb_baseline_characteristics", "field" => "34_year_of_birth"]
         ];
         $filters = [
             "type" => "group",
             "operator" => "AND",
             "items" => [ 
-                ["type" => "query", "category" => "demographics", "field" => "Sex", "operator" => "equals", "value" => "Female"],
+                ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "equals", "value" => "Female"],
                 [
                     "type" => "group",
                     "operator" => "OR",
                     "items" => [
-                        ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-09-15"],
-                        ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-10-15"],
-                        ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-11-15"],
-                        ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1942-01-15"]
+                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-09-15"],
+                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-10-15"],
+                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-11-15"],
+                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1942-01-15"]
                     ]
                 ]
             ]
@@ -102,34 +103,46 @@ class Search extends \NDB_Page
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1936-09-15"];
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"];
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"];
-        $filters = ["type" => "query", "category" => "demographics", "field" => "Sex", "operator" => "notEqual", "value" => "Female"];
 */
+        $filters = ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "notEqual", "value" => "Female"];
+/**
         $filters = [
             "type" => "group",
             "operator" => "OR",
             "items" => [
                 //["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "notEqual", "value" => null],
-                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"],
-                ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1968-02-15"],
+                ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"],
+                ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1968-02-15"],
             ]
         ];
+*/
+
 
         try {
-            $this->_writeOutputs(
-                $this->_queryFields(
-                    $user,
-                    $fields,
-                    $this->_queryFilters(
-                        $user,
-                        $filters
-                    )
-                )
+            $filter = QueryFilterFactory::create($filters);
+            $fields  = new QueryFields($fields);
+        } catch (\LorisException $e) {
+            return new \LORIS\Http\Response\JSON\BadRequest(
+                $e->getMessage()
             );
+        }
+
+        try {
+            $sessions = $filter->getFilteredSessions($user);
+            $results  = $fields->getSelectedFields(
+                $user,
+                $sessions
+            );
+
+            // TODO :: Writing on disk takes a while. Increase max_execution_time in php.ini 
+            //         or use the serverprocessmanager to launch a process.
+            $outputfile = $this->_writeOutputs($results);
 
             $this->_saveQuery(
                 $user,
                 $fields,
-                $filters
+                $filter,
+                $outputfile
             );
 
         } catch (\LorisException $e) {
@@ -141,265 +154,38 @@ class Search extends \NDB_Page
         return new \LORIS\Http\Response\JSON\OK();
     }
 
-    private function _writeOutputs($outputs): void
+    private function _writeOutputs($outputs): \SplFileObject
     {
         $outputfile    = new \SplFileObject("/data/not_backed_up/tmp.txt", "w");
+
         $outputfile->fwrite('{"data":[');
 
         // TODO :: There must be a better way to avoid the last comma...
         $comma = '';
+        set_time_limit(0);
         foreach ($outputs as $index => $row) {
             $outputfile->fwrite($comma . PHP_EOL . $row);
             $comma = ',';
         }
         $outputfile->fwrite(PHP_EOL . ']}');
+        return $outputfile;
     }
-
-    private function _saveQuery($fields, $filters): void
+ 
+    /**
+     * Saves the query in the database.
+     * 
+     * TODO:: Use a list function in couchdb instead of SortedViewProvisioner to
+     *        handle sorting the results by value. This would allow tu use Etags
+     *        in requests sent to couchdb.
+     *
+     * @param \User          $user       The requesting user.
+     * @param QueryFields    $fields     The requested fields in the outputs.
+     * @param QueryFilters   $filters    The selection filters.
+     * @param \SplFileObject $outputfile The in which the results have been writen.
+     */
+    private function _saveQuery(\User $user, QueryFields $fields, QueryFilters $filters, \SplFileObject $outputfile): void
     {
+        // TODO :: add dqt_query, dqt_saved_query, dqt_shared_query tables.
         error_log('Search:: _saveQuery not implemented');
-    }
-
-    private function _queryFields(\User $user, array $fields, \Traversable $filtered): \Traversable
-    {
-        // There should be a way to use the SocketWrapper to write keys...
-        // Instead/Meanwhile :
-        $instruments = array_unique(
-            array_map(function ($f) {return $f['category'] ?? null;}, $fields),
-            SORT_STRING
-        );
-
-        $keys = [];
-        $count = 0;
-        foreach ($filtered as $desired) {
-            $value = json_decode($desired, true);
-            foreach ($instruments as $instrument){
-                $keys[] = [$instrument,$value[0],$value[1]];
-                if (++$count % 50000 === 0) {
-                    $prov = new CouchDBViewProvisioner(
-                        'DQG-2.0',
-                        'instruments',
-                        [
-                            "reduce" => "false",
-                            "keys" => $keys,
-                            "include_docs" => "true"
-                        ]
-                    );
-                    $keys = null;
-                    $prov = $prov->withMapper(new SelectedFieldsResults($fields));
-                    yield from $prov->execute($user);
-                }
-            }
-        }
-
-        if ($keys !== null) {
-            $prov = new CouchDBViewProvisioner(
-                'DQG-2.0',
-                'instruments',
-                [
-                    "reduce" => "false",
-                    "keys" => $keys,
-                    "include_docs" => "true"
-                ]
-            );
-            $keys = null;
-            $prov = $prov->withMapper(new SelectedFieldsResults($fields));
-            yield from $prov->execute($user);
-        }
-    }
-
-    /**
-     *
-     */
-    private function _queryFilters(\User $user, array $filters): \Traversable
-    {
-        switch($filters['type'] ?? null) {
-        case 'group':
-
-            // If the group operator is AND, the output is the intersection of all
-            // it's items results. Otherwise, OR is the union of allit's items
-            // results.
-            switch ($filters['operator']) {
-            case 'AND': 
-                $operation = '_intersect';
-                break;
-            case 'OR':
-                $operation = '_union';
-                break;
-            default:
-                throw new \LorisException('Search::_queryFilters: Invalid group operator');
-            }
-
-            // Reduce the group's filters to a single Traversable of ordered values.
-            return array_reduce($filters['items'], function ($carry, $item) use ($user, $operation) {
-                if (is_null($carry)) {
-                    return $this->_queryFilters($user, $item);
-                }
-                $carry = self::$operation($carry, $this->_queryFilters($user, $item));
-                return $carry;
-            }, null);
-
-        case 'query':
-            $category = $filters['category'] ?? null;
-            $field    = $filters['field'] ?? null;
-            $value    = $filters['value'] ?? null;
-
-            // Produce a \Traversable or ordered value from the query results.
-            // The query parameter will differ according to the operator
-            // Some operators also add filters to the provisioner.
-            $provisioner = new CouchDBSortedViewProvisioner(
-                'DQG-2.0',
-                'search',
-                []
-            );
-
-            //TODO :: remove hardcoded limit in param after dev...
-            //$params = ["reduce" => "false", "limit" => "10"];
-            $params = ["reduce" => "false"];
-
-            switch($filters['operator'] ?? null) {
-            case 'contains':
-                $provisioner = $provisioner
-                    ->withAddedFilter(new ContainFilter($value));
-
-                $params["startkey"] = '["'.$category.'","'.$field.'"]';
-                $params["endkey"]   = '["'.$category.'","'.$field.'",{}]'; 
-                break;
-
-            case 'isNull':
-                $value = null;
-            case 'equals':
-                $params["key"] = '["'.$category.'","'.$field.'","'.$value.'"]';
-                break;
-
-            case 'isNotNull':
-                $value = null;
-            case 'notEqual':
-                $provisioner = $provisioner
-                    ->withAddedFilter(new NotEqualFilter($value));
-
-                $params["startkey"] = '["'.$category.'","'.$field.'"]';
-                $params["endkey"]   = '["'.$category.'","'.$field.'",{}]';
-
-                break;
-
-            case 'lessThanEqual':
-                // Strict lessThan could be implementing using the 'inclusive_end' param.
-                $params["startkey"] = '["'.$category.'","'.$field.'"]';
-                $params["endkey"]   = '["'.$category.'","'.$field.'","'.$value.'"]';
-                $params["inclusive_end"] = "true";
-                break;
-
-            case 'greaterThanEqual':
-                // Strict greaterThan could be implementing using the 'inclusive_end'
-                // And descending order params.
-                $params["startkey"] = '["'.$category.'","'.$field.'","'.$value.'"]';
-                $params["endkey"]   = '["'.$category.'","'.$field.'",{}]';
-                break;
-
-            case 'starstWith':
-                // PHP doesn't have any /u9999 unicode escaping, so
-                // we use mb_convert_encoding to embed a high
-                // unicode character
-                $nextvalue = $value . mb_convert_encoding(
-                    '&#x9999;',
-                    'UTF-8',
-                    'HTML-ENTITIES'
-                );
-
-                $params["startkey"] = '["'.$category.'","'.$field.'","'.$value.'"]';
-                $params["endkey"]   = '["'.$category.'","'.$field.'","'.$nextvalue.'"]';
-                break;
-
-            default:
-                throw new \LorisException('Search::_queryFilters: Operator not supported');
-            }
-
-            $provisioner = $provisioner
-                ->withParams($params);
-
-            return $provisioner->execute($user);
-
-        default:
-            throw new \LorisException('Search::_queryFilters: Invalid or missing filter');
-        }
-    }
-
-    /**
-     * Produce a single ordered Traversable which values are the ones the were present in both 
-     * provided Traversables.
-     *
-     * Both parameters MUST be pre ordered. 
-     *
-     * @param \Traversable $iter1 
-     * @param \Traversable $iter2 
-     *
-     * @return \Traversable
-     */
-    private static function _intersect(\Traversable $iter1, \Traversable $iter2): \Traversable {
-        foreach($iter1 as $value1) {
-            switch($value1 <=> $iter2->current()) {
-                case -1:
-                    // iter1 is smaller than iter2.
-                    // Move to next foreach.
-                    break;
-                case 0:
-                    // Both iter1 and iter2 are equal.
-                    // Move iter2 and yield $value before moving to next foreach.
-                    $iter2->next();
-                    yield $value1;
-                    break;
-                case 1:
-                    // iter1 is greater than iter2.
-                    // Advance iter2 until it is greater or equal to iter1.
-                    while ($iter2->current() < $value1) {
-                        $iter2->next();
-                        if (!$iter2->valid()) {
-                            return;
-                        }
-                    }
-                    if ($value1 == $iter2->current()) {
-                        // Both iter1 and iter2 are equal.
-                        // Yield $value before moving to next foreach.
-                        yield $value1;
-                    }
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Produce a single ordered Traversable which every elements of the provided 
-     * Traversables without duplicates. 
-     *
-     * Both parameters MUST be pre ordered. 
-     *
-     * @param \Traversable $iter1 
-     * @param \Traversable $iter2 
-     *
-     * @return \Traversable
-     */
-    private static function _union(\Traversable $iter1, \Traversable $iter2): \Traversable {
-        foreach($iter1 as $value1) {
-            // Yield each value of iter1.
-            // If iter2 is smaller, yield each value of iter2 until it is greater, equal or empty.
-            // If it is equal, iter1 has already been yield do there is no need to yield iter2.
-            yield $value1;
-            if ($iter2->valid()) {
-                while ($iter2->current() < $value1) {
-                    yield $iter2->current();
-                    $iter2->next();
-                    if (!$iter2->valid()) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        while ($iter2->valid()) {
-            // yield each remaining values of iter2.
-            yield $iter2->current();
-            $iter2->next();
-        }
     }
 }

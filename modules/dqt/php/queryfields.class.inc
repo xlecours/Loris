@@ -41,7 +41,7 @@ class QueryFields
         $instruments = array_keys($this->_fields);
 
         foreach ($sessions as $count => $desired) {
-            $value = json_decode($desired, true);
+            $value = json_decode($desired, true)['value'];
             foreach ($instruments as $instrument){
                 $keys[] = [$instrument,$value[0],$value[1]];
                 if (++$count % 25000 === 0) {

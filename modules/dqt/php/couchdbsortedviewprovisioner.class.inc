@@ -26,25 +26,6 @@ namespace LORIS\dqt;
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link       https://www.github.com/aces/Loris/
  */
-class CouchDBSortedViewProvisioner extends \LORIS\Data\Provisioners\CouchDBViewProvisioner
+class CouchDBSortedViewProvisioner extends \LORIS\Data\Provisioners\CouchDBListViewProvisioner
 {
-    /**
-     * Implements the execute function for the Provisioner interface.
-     *
-     * @param \User $user The user who data is being provisioned on behalf of.
-     *
-     * @return \Traversable of DataInstance objects
-     */
-    public function execute(\User $user) : \Traversable
-    {
-        $rows      = [];
-        $generator = parent::execute($user);
-
-        foreach ($generator as $row) {
-            $rows[] = json_encode(json_decode($row)->value);
-        }
-
-        sort($rows);
-        yield from $rows;
-    }
 }

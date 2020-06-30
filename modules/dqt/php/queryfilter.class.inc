@@ -24,6 +24,7 @@ class QueryFilter implements QueryFilters
     {
         $provisioner = new CouchDBSortedViewProvisioner(
             'DQG-2.0',
+            'sorted',
             'search',
             []
         );

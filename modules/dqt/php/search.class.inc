@@ -79,7 +79,7 @@ class Search extends \NDB_Page
         $fields = [
             ["category" => "demographics", "field" => "DoB"],
             ["category" => "demographics", "field" => "Sex"],
-            ["category" => "ukbb_baseline_characteristics", "field" => "34_year_of_birth"]
+//            ["category" => "ukbb_baseline_characteristics", "field" => "34_year_of_birth"]
         ];
         $filters = [
             "type" => "group",
@@ -99,13 +99,29 @@ class Search extends \NDB_Page
             ]
         ];
 
+        $filters = [
+            "type" => "group",
+            "operator" => "AND",
+            "items" => [
+                ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "equals", "value" => "Female"],
+                [
+                    "type" => "group",
+                    "operator" => "OR",
+                    "items" => [
+//                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-06-07"],
+                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "2016-05-12"],
+                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "2016-04-12"],
+                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "isNull", "value" => ""]
+                    ]
+                ]
+            ]
+        ];
+
 /**
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1936-09-15"];
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"];
         $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"];
-*/
         $filters = ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "notEqual", "value" => "Female"];
-/**
         $filters = [
             "type" => "group",
             "operator" => "OR",

@@ -183,11 +183,7 @@ const config = [
   lorisModule('document_repository', ['docIndex', 'editFormIndex']),
   lorisModule('candidate_parameters', ['CandidateParameters', 'ConsentWidget']),
   lorisModule('configuration', ['SubprojectRelations']),
-  lorisModule('conflict_resolver', [
-    'CandidateConflictsWidget',
-    'conflictResolverIndex',
-    'resolvedConflictsIndex',
-  ]),
+  lorisModule('conflict_resolver', ['conflict_resolver', 'CandidateConflictsWidget']),
   lorisModule('battery_manager', ['batteryManagerIndex']),
   lorisModule('bvl_feedback', ['react.behavioural_feedback_panel']),
   lorisModule('behavioural_qc', ['behavioural_qc_module']),

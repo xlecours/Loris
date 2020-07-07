@@ -14,6 +14,9 @@
  */
 namespace LORIS\conflict_resolver;
 
+use \Psr\Http\Message\ServerRequestInterface;
+use \Psr\Http\Message\ResponseInterface;
+
 /**
  * Class module implements the basic LORIS module functionality
  *
@@ -26,6 +29,41 @@ namespace LORIS\conflict_resolver;
  */
 class Module extends \Module
 {
+    /**
+     * The default handler for a module routes to a page of the first component of
+     * the URL's name, or the same name as the module if serving the root of the
+     * module.
+     *
+     * Modules extend PrefixRouter, so that the parent handler knows that the
+     * css, static, and js routes should be routed through the file system to
+     * retrieve the files before trying to load any specific pages.
+     *
+     * @param ServerRequestInterface $request The incoming PSR7 request
+     *
+     * @return ResponseInterface the outgoing PSR7 response
+     */
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        $path = trim($request->getURI()->getPath(), "/");
+        switch ($path) {
+        case 'unresolved':
+            $handler = new Endpoints\Unresolved();
+            break;
+        case 'resolved':
+            $handler = new Endpoints\Resolved();
+            break;
+        default:
+            return parent::handle($request);
+        }
+
+        $user = $request->getAttribute('user');
+        if (!$handler->hasAccess($user)) {
+            return new \LORIS\Http\Response\JSON\Forbidden();
+        }
+
+        return $handler->process($request, $handler);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -93,6 +131,7 @@ class Module extends \Module
                     'conflict_resolver'
                 )
             ];
+
         case 'candidate':
             $factory = \NDB_Factory::singleton();
             $baseURL = $factory->settings()->getBaseURL();
@@ -137,8 +176,8 @@ class Module extends \Module
                     1,
                 )
             ];
+        default:
+            return [];
         }
-
-        return [];
     }
 }

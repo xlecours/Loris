@@ -33,22 +33,20 @@ class UnresolvedDTO implements \LORIS\Data\DataInstance
      *
      * @return string
      */
-    public function toJSON(): string
+    public function jsonSerialize(): array
     {
-        return json_encode(
-            array(
-                'ConflictID'  => $this->conflictid,
-                'Project'     => $this->project,
-                'Site'        => $this->site,
-                'CandID'      => $this->candid,
-                'PSCID'       => $this->pscid,
-                'Visit Label' => $this->visitlabel,
-                'Instrument'  => $this->instrument,
-                'Question'    => $this->question,
-                'Value 1'     => $this->value1,
-                'Value 2'     => $this->value2,
-            )
-        );
+        return [
+            'ConflictID'  => $this->conflictid,
+            'Project'     => $this->project,
+            'Site'        => $this->site,
+            'CandID'      => $this->candid,
+            'PSCID'       => $this->pscid,
+            'Visit Label' => $this->visitlabel,
+            'Instrument'  => $this->instrument,
+            'Question'    => $this->question,
+            'Value 1'     => $this->value1,
+            'Value 2'     => $this->value2,
+        ];
     }
 
     /**

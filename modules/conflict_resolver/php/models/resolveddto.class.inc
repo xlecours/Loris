@@ -33,10 +33,9 @@ class ResolvedDTO implements \LORIS\Data\DataInstance
      *
      * @return string
      */
-    public function toJSON(): string
+    public function jsonSerialize(): array
     {
-        return json_encode(
-            array(
+        return [
                 'ResolvedID'          => $this->resolvedid,
                 'Project'             => $this->project,
                 'Site'                => $this->site,
@@ -52,8 +51,7 @@ class ResolvedDTO implements \LORIS\Data\DataInstance
                 'User 2'              => $this->user2,
                 'Resolver'            => $this->resolver,
                 'ResolutionTimestamp' => $this->resolutiontimestamp,
-            )
-        );
+        ];
     }
 
     /**

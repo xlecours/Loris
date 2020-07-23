@@ -53,7 +53,7 @@ class UnresolvedProvisioner extends \LORIS\Data\Provisioners\DBObjectProvisioner
              LEFT JOIN psc ON (session.CenterID = psc.CenterID)
              WHERE session.Active="Y" AND candidate.Active ="Y"
             ',
-            array(),
+            [],
             '\LORIS\conflict_resolver\Models\UnresolvedDTO'
         );
     }

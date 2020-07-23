@@ -77,10 +77,10 @@ class Unresolved extends Endpoint implements ETagCalculator
      */
     protected function allowedMethods() : array
     {
-        return array(
+        return [
             'GET',
             'POST',
-        );
+        ];
     }
 
     /**
@@ -94,12 +94,12 @@ class Unresolved extends Endpoint implements ETagCalculator
         $visitlabels = array_values(\Utility::getVisitList());
         $projects    = array_values(\Utility::getProjectList());
 
-        return array(
+        return [
             'site'       => array_combine($sites, $sites),
             'instrument' => \Utility::getAllInstruments(),
             'visitLabel' => array_combine($visitlabels, $visitlabels),
             'project'    => array_combine($projects, $projects),
-        );
+        ];
     }
 
     /**
@@ -145,7 +145,7 @@ class Unresolved extends Endpoint implements ETagCalculator
         $provisioner = (new UnresolvedProvisioner())
             ->filter(
                 new HasAnyPermissionOrUserSiteMatch(
-                    array('access_all_profiles')
+                    ['access_all_profiles']
                 )
             )
             ->filter(new UserProjectMatch());
@@ -155,10 +155,10 @@ class Unresolved extends Endpoint implements ETagCalculator
             ->withDataFrom($provisioner)
             ->toArray($user);
 
-        $body = array(
+        $body = [
             'data'         => $conflicts,
             'fieldOptions' => $this->_getFieldOptions(),
-        );
+        ];
 
         $this->_cache = new \LORIS\Http\Response\JsonResponse($body);
 
@@ -219,10 +219,10 @@ class Unresolved extends Endpoint implements ETagCalculator
              WHERE
                ConflictID = :v_conflictid
             ',
-            array(
+            [
                 'v_conflictid' => $conflictid,
                 'v_value'      => $correctanswer,
-            )
+            ]
         );
 
         if (empty($conflict)) {
@@ -239,8 +239,9 @@ class Unresolved extends Endpoint implements ETagCalculator
             false
         );
 
-        $instrument->_saveValues(array($conflict['FieldName'] => $correctanswer));
+        $instrument->_saveValues([$conflict['FieldName'] => $correctanswer]);
 
+        // TODO: UNCOMMENT THE FOLLOWING LINES BEFORE SUBMITTING PR.
         // Using an output buffer because the score function prints to STDOUT
         ob_start();
         $instrument->score();
@@ -313,11 +314,11 @@ class Unresolved extends Endpoint implements ETagCalculator
         );
 
         $success = $stmt->execute(
-            array(
+            [
                 'v_username'   => $user->getUsername(),
                 'v_newvalue'   => $correctanswer,
                 'v_conflictid' => $conflictid,
-            )
+            ]
         );
 
         if (!$success) {
@@ -325,7 +326,7 @@ class Unresolved extends Endpoint implements ETagCalculator
         }
 
         // Delete from conflicts_unresolved
-        $db->delete('conflicts_unresolved', array('ConflictID' => $conflictid));
+        $db->delete('conflicts_unresolved', ['ConflictID' => $conflictid]);
 
         return new \LORIS\Http\Response();
     }

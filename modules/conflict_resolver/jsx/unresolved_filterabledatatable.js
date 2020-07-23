@@ -34,12 +34,15 @@ class UnresolvedFilterableDataTable extends Component {
   formatColumn(column, cell, rowData, rowHeaders) {
     switch (column) {
       case 'Correct Answer':
-        const values = [
-          {name: '1', value: rowData['Value 1']},
-          {name: '2', value: rowData['Value 2']},
-        ];
+        const options = {
+          1: rowData['Value 1'],
+          2: rowData['Value 2'],
+        };
         return (
-          <FixConflictForm conflictid={rowData['Conflict ID']} values={values} />
+          <FixConflictForm
+            conflictId={rowData['Conflict ID']}
+            options={options}
+          />
         );
     }
     return (
@@ -52,7 +55,8 @@ class UnresolvedFilterableDataTable extends Component {
    * @return {object}
    */
   fetchData() {
-    return fetch(loris.BaseURL.concat('/conflict_resolver/unresolved'), {credentials: 'same-origin'})
+    const url = loris.BaseURL.concat('/conflict_resolver/unresolved');
+    return fetch(url, {credentials: 'same-origin'})
       .then((resp) => resp.json())
       .then((json) => {
         if (json.error) {

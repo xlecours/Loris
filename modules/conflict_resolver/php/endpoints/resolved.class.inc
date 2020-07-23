@@ -85,12 +85,12 @@ class Resolved extends Endpoint implements ETagCalculator
         $visitlabels = array_values(\Utility::getVisitList());
         $projects    = array_values(\Utility::getProjectList());
 
-        return array(
+        return [
             'site'       => array_combine($sites, $sites),
             'instrument' => \Utility::getAllInstruments(),
             'visitLabel' => array_combine($visitlabels, $visitlabels),
             'project'    => array_combine($projects, $projects),
-        );
+        ];
     }
 
     /**
@@ -133,7 +133,7 @@ class Resolved extends Endpoint implements ETagCalculator
         $provisioner = (new ResolvedProvisioner())
             ->filter(
                 new HasAnyPermissionOrUserSiteMatch(
-                    array('access_all_profiles')
+                    ['access_all_profiles']
                 )
             )
             ->filter(new UserProjectMatch());
@@ -143,10 +143,10 @@ class Resolved extends Endpoint implements ETagCalculator
             ->withDataFrom($provisioner)
             ->toArray($user);
 
-        $body = array(
+        $body = [
             'data'         => $conflicts,
             'fieldOptions' => $this->_getFieldOptions(),
-        );
+        ];
 
         $this->_cache = new \LORIS\Http\Response\JsonResponse($body);
 

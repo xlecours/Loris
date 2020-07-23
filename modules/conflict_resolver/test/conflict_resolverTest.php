@@ -89,7 +89,7 @@ class ConflictResolverTestIntegrationTest extends \LorisIntegrationTest
       */
     function testConflictResolverPermission()
     {
-        $this->setupPermissions(array("conflict_resolver"));
+        $this->setupPermissions(["conflict_resolver"]);
         $this->safeGet($this->url . "/conflict_resolver");
         $this->webDriver->wait()->until(
             \WebDriverExpectedCondition::presenceOfElementLocated(
@@ -106,7 +106,7 @@ class ConflictResolverTestIntegrationTest extends \LorisIntegrationTest
      */
     function testConflictResolverWithoutPermission()
     {
-        $this->setupPermissions(array());
+        $this->setupPermissions([]);
         $this->safeGet($this->url . "/conflict_resolver");
         $bodyText = $this->webDriver->findElement(
             \WebDriverBy::id('lorisworkspace')

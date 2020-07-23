@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
  * dropdown is removed to prevent the user from sending a POST request with an empty
  * value.
  *
- * Knowned issue: When sorting the datatable, previouly fixed conflicts are
+ * Known issue: When sorting the datatable, previouly fixed conflicts are
  * considered unresolved; there is no green checkmark beside the dropdown anymore.
  */
 class FixConflictForm extends Component {
@@ -28,7 +28,26 @@ class FixConflictForm extends Component {
   constructor(props) {
     super(props);
 
-    this.fix = this.fix.bind(this);
+    this.state = {
+      success: false,
+      error: false,
+      emptyOption: true,
+    };
+
+    this.resolveConflict = this.resolveConflict.bind(this);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.error) {
+      setTimeout(() => {
+        this.setState({error: false});
+      }, 3000);
+    }
+    if (this.state.success) {
+      setTimeout(() => {
+        this.setState({success: false});
+      }, 3000);
+    }
   }
 
   /**
@@ -41,22 +60,12 @@ class FixConflictForm extends Component {
    * beside the dropdown. On error, a red cross will be displayed as well as a
    * sweetalert (swal) with the error message.
    *
-   * @param {Event} e - The onChange event.
+   * @param {string} name
+   * @param {string} value
    */
-  fix(e) {
-    const conflictid = e.target.name;
-    const correctanswer = e.target.value;
-
-    const feedbackicon = e.target.parentElement.getElementsByTagName('span')[0];
+  resolveConflict(name, value) {
     // Hide any previously displayed icon.
-    feedbackicon.style.display = 'none';
-
-    try {
-      // Remove the empty option from the options to prevent sending an empty value.
-      e.target.querySelector('option[name="0"]').remove();
-    } catch (error) {
-      // TypeError when already removed. Do nothing.
-    }
+    this.setState({success: false, error: false, emptyOption: false});
 
     fetch(loris.BaseURL.concat('/conflict_resolver/unresolved'), {
         method: 'POST',
@@ -64,58 +73,49 @@ class FixConflictForm extends Component {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({conflictid: conflictid, correctanswer: correctanswer}),
+        body: JSON.stringify({conflictid: name, correctanswer: value}),
     })
     .then((resp) => {
       return resp.ok ? {} : resp.json();
     })
     .then((json) => {
-        if (json.error) {
-          throw json.error;
-        }
-        // Set feedback icon to green checkmark
-        setTimeout(() => {
-          feedbackicon.className = 'glyphicon glyphicon-ok-circle';
-          feedbackicon.style.color = 'green';
-          feedbackicon.style.display = 'inline';
-        }, 200);
+      if (json.error) {
+        throw json.error;
+      }
+      this.setState({success: true});
     })
     .catch((error) => {
       swal('Error!', error, 'error');
-      // Set feedback icon to red cross
-      setTimeout(() => {
-        feedbackicon.className = 'glyphicon glyphicon-remove-sign';
-        feedbackicon.style.color = 'red';
-        feedbackicon.style.display = 'inline';
-      }, 200);
+      this.setState({error: true});
     });
-   }
+  }
 
   render() {
-    const options = [
-      <option key='option0' name='0'></option>,
-      <option key='option1' name='1'>{this.props.values[0].value}</option>,
-      <option key='option2' name='2'>{this.props.values[1].value}</option>,
-    ];
+    const {success, error, emptyOption} = this.state;
+    const iconStyle = {
+      opacity: success || error ? 1 : 0,
+      color: success ? 'green' : (error ? 'red' : 'white'),
+      transition: 'opacity 2s, color 2s',
+    };
+    const iconClass = 'glyphicon glyphicon-' + (success ? 'ok' : 'remove')
+      + '-circle';
     return (
       <td>
-        <form>
-            <span />
-            <select style={{width: '85%', marginLeft: '10px'}} name={this.props.conflictid} onChange={this.fix}>
-              {options}
-            </select>
-        </form>
+        <span className={iconClass} style={iconStyle}/>
+        <SelectElement
+          name={this.props.conflictId}
+          onUserInput={this.resolveConflict}
+          options={this.props.options}
+          emptyOption={emptyOption}
+        />
       </td>
     );
   }
 }
 
 FixConflictForm.propTypes = {
-    conflictid: PropTypes.string.isRequired,
-    values: PropTypes.arrayOf(PropTypes.shape({
-     name: PropTypes.string.isRequired,
-     value: PropTypes.string.isRequired,
-   })).isRequired,
+    conflictId: PropTypes.string.isRequired,
+    options: PropTypes.object.isRequired,
 };
 
 export default FixConflictForm;

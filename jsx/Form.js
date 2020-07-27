@@ -501,12 +501,12 @@ class SelectElement extends Component {
     let multiple = this.props.multiple ? 'multiple' : null;
     let required = this.props.required ? 'required' : null;
     let disabled = this.props.disabled ? 'disabled' : null;
+    let elementClass = this.props.elementClass;
     let sortByValue = this.props.sortByValue;
     let options = this.props.options;
     let errorMessage = null;
     let emptyOptionHTML = null;
     let requiredHTML = null;
-    let elementClass = 'row form-group';
 
     // Add required asterisk
     if (required) {
@@ -523,7 +523,7 @@ class SelectElement extends Component {
        || (this.props.required && this.props.value === '')
     ) {
       errorMessage = <span>{this.props.errorMessage}</span>;
-      elementClass = 'row form-group has-error';
+      elementClass = elementClass+' has-error';
     }
 
     let newOptions = {};
@@ -604,6 +604,7 @@ SelectElement.propTypes = {
   multiple: PropTypes.bool,
   disabled: PropTypes.bool,
   required: PropTypes.bool,
+  elementClass: PropTypes.string,
   emptyOption: PropTypes.bool,
   hasError: PropTypes.bool,
   errorMessage: PropTypes.string,
@@ -618,6 +619,7 @@ SelectElement.defaultProps = {
   multiple: false,
   disabled: false,
   required: false,
+  elementClass: 'row form-group',
   sortByValue: true,
   emptyOption: true,
   hasError: false,

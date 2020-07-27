@@ -241,7 +241,6 @@ class Unresolved extends Endpoint implements ETagCalculator
 
         $instrument->_saveValues([$conflict['FieldName'] => $correctanswer]);
 
-        // TODO: UNCOMMENT THE FOLLOWING LINES BEFORE SUBMITTING PR.
         // Using an output buffer because the score function prints to STDOUT
         ob_start();
         $instrument->score();

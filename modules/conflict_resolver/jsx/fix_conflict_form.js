@@ -38,15 +38,10 @@ class FixConflictForm extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.error) {
-      setTimeout(() => {
-        this.setState({error: false});
-      }, 3000);
-    }
     if (this.state.success) {
       setTimeout(() => {
         this.setState({success: false});
-      }, 3000);
+      }, 5000);
     }
   }
 
@@ -68,12 +63,12 @@ class FixConflictForm extends Component {
     this.setState({success: false, error: false, emptyOption: false});
 
     fetch(loris.BaseURL.concat('/conflict_resolver/unresolved'), {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({conflictid: name, correctanswer: value}),
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({conflictid: name, correctanswer: value}),
     })
     .then((resp) => {
       return resp.ok ? {} : resp.json();
@@ -92,21 +87,20 @@ class FixConflictForm extends Component {
 
   render() {
     const {success, error, emptyOption} = this.state;
-    const iconStyle = {
-      opacity: success || error ? 1 : 0,
-      color: success ? 'green' : (error ? 'red' : 'white'),
-      transition: 'opacity 2s, color 2s',
+    const color = {
+      backgroundColor: success ? '#d1ffcf' : '',
+      transition: 'background-color 1s',
     };
-    const iconClass = 'glyphicon glyphicon-' + (success ? 'ok' : 'remove')
-      + '-circle';
     return (
-      <td>
-        <span className={iconClass} style={iconStyle}/>
+      <td style={color}>
         <SelectElement
           name={this.props.conflictId}
           onUserInput={this.resolveConflict}
           options={this.props.options}
           emptyOption={emptyOption}
+          hasError={error}
+          errorMessage={''}
+          elementClass={'row'}
         />
       </td>
     );
@@ -114,8 +108,8 @@ class FixConflictForm extends Component {
 }
 
 FixConflictForm.propTypes = {
-    conflictId: PropTypes.string.isRequired,
-    options: PropTypes.object.isRequired,
+  conflictId: PropTypes.string.isRequired,
+  options: PropTypes.object.isRequired,
 };
 
 export default FixConflictForm;

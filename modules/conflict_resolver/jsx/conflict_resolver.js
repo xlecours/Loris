@@ -38,7 +38,12 @@ class ConflictResolver extends Component {
         break;
     }
     return (
-      <Tabs tabs={tabs} defaultTab={this.state.activeTab} updateURL={false} onTabChange={this.onTabChange}>
+      <Tabs
+        tabs={tabs}
+        defaultTab={this.state.activeTab}
+        updateURL={false}
+        onTabChange={this.onTabChange}
+      >
         <TabPane TabId={this.state.activeTab}>
           {filtertable}
         </TabPane>

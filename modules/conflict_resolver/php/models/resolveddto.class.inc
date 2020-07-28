@@ -31,7 +31,7 @@ class ResolvedDTO implements \LORIS\Data\DataInstance
     /**
      * Implements \LORIS\Data\DataInstance interface for this row.
      *
-     * @return string
+     * @return array
      */
     public function jsonSerialize(): array
     {

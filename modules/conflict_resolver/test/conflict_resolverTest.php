@@ -9,6 +9,8 @@
  * @link     https://github.com/aces/Loris
  */
 namespace LORIS\conflict_resolver;
+use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverExpectedCondition;
 
 /**
  * Automated integration tests for conflict resolver module
@@ -92,8 +94,8 @@ class ConflictResolverTestIntegrationTest extends \LorisIntegrationTest
         $this->setupPermissions(["conflict_resolver"]);
         $this->safeGet($this->url . "/conflict_resolver");
         $this->webDriver->wait()->until(
-            \WebDriverExpectedCondition::presenceOfElementLocated(
-                \WebDriverBy::id('tab-unresolved')
+            WebDriverExpectedCondition::presenceOfElementLocated(
+                WebDriverBy::id('tab-unresolved')
             )
         );
 
@@ -109,7 +111,7 @@ class ConflictResolverTestIntegrationTest extends \LorisIntegrationTest
         $this->setupPermissions([]);
         $this->safeGet($this->url . "/conflict_resolver");
         $bodyText = $this->webDriver->findElement(
-            \WebDriverBy::id('lorisworkspace')
+            WebDriverBy::id('lorisworkspace')
         )->getText();
         $this->assertContains("You do not have access to this page.", $bodyText);
         $this->resetPermissions();
@@ -125,8 +127,8 @@ class ConflictResolverTestIntegrationTest extends \LorisIntegrationTest
         $this->safeGet($this->url . "/conflict_resolver/");
 
         $this->webDriver->wait()->until(
-            \WebDriverExpectedCondition::presenceOfElementLocated(
-                \WebDriverBy::id('tab-unresolved')
+            WebDriverExpectedCondition::presenceOfElementLocated(
+                WebDriverBy::id('tab-unresolved')
             )
         );
 
@@ -195,8 +197,8 @@ class ConflictResolverTestIntegrationTest extends \LorisIntegrationTest
         $this->safeGet($this->url . "/conflict_resolver");
 
         $this->webDriver->wait()->until(
-            \WebDriverExpectedCondition::presenceOfElementLocated(
-                \WebDriverBy::id('tab-resolved')
+            WebDriverExpectedCondition::presenceOfElementLocated(
+                WebDriverBy::id('tab-resolved')
             )
         );
 
@@ -206,8 +208,8 @@ class ConflictResolverTestIntegrationTest extends \LorisIntegrationTest
 
         // Clicking on the tab renders a new tab content.
         $this->webDriver->wait()->until(
-            \WebDriverExpectedCondition::presenceOfElementLocated(
-                \WebDriverBy::id('resolved')
+            WebDriverExpectedCondition::presenceOfElementLocated(
+                WebDriverBy::id('resolved')
             )
         );
 

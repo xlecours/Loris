@@ -217,6 +217,9 @@ class ConflictResolverTestIntegrationTest extends LorisIntegrationTest
       */
     function testSaveUnresolvedToResolved()
     {
+        $this->markTestSkipped(
+            'rewrite later'
+        );
          //set canID 475906 to resolved
         $this->safeGet(
             $this->url .

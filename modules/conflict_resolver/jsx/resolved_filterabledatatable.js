@@ -88,10 +88,7 @@ class ResolvedFilterableDataTable extends Component {
     const options = this.state.data.fieldOptions;
 
     const fields = [
-      {label: 'Resolved ID', show: false, filter: {
-        name: 'ResolvedID',
-        type: 'text',
-      }},
+      {label: 'Resolved ID', show: false},
       {label: 'Project', show: true, filter: {
         name: 'Project',
         type: 'select',

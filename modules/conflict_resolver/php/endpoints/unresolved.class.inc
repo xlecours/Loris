@@ -186,6 +186,10 @@ class Unresolved extends Endpoint implements ETagCalculator
             return new \LORIS\Http\Response\JSON\BadRequest('Missing field(s)');
         }
 
+        if ($correctanswer !== '1' && $correctanswer !== '2') {
+            return new \LORIS\Http\Response\JSON\BadRequest('Invalid value');
+        }
+
         $db = \NDB_Factory::singleton()->database();
 
         // Select CommentID1 if the correct answer is the one from CommentID2
@@ -198,10 +202,12 @@ class Unresolved extends Endpoint implements ETagCalculator
              SELECT
                TableName,
                FieldName,
+               CommentId1 as CID1,
+               CommentId2 as CID2,
                CASE :v_value
-                 WHEN Value1 THEN CommentId2
-                 ELSE CommentId1
-               END as CID
+                 WHEN "1" THEN Value1
+                 ELSE Value2
+               END as CorrectAnswer
              FROM
                conflicts_unresolved
              WHERE
@@ -210,10 +216,12 @@ class Unresolved extends Endpoint implements ETagCalculator
              SELECT
                TableName,
                FieldName,
+               CommentId1 as CID1,
+               CommentId2 as CID2,
                CASE :v_value  
-                 WHEN OldValue1 THEN CommentId2
-                 ELSE CommentId1
-               END as CID
+                 WHEN "1" THEN OldValue1
+                 ELSE OldValue2
+               END as CorrectAnswer
              FROM
                conflicts_resolved
              WHERE
@@ -231,19 +239,31 @@ class Unresolved extends Endpoint implements ETagCalculator
             );
         }
 
-        // Fix instrument data
+        // Fix both instruments data
         $instrument = \NDB_BVL_Instrument::factory(
             $conflict['TableName'],
-            $conflict['CID'],
+            $conflict['CID1'],
             '',
             false
         );
+        $instrument->_saveValues(
+            [$conflict['FieldName'] => $conflict['CorrectAnswer']]
+        );
 
-        $instrument->_saveValues([$conflict['FieldName'] => $correctanswer]);
+        $ddeinstrument = \NDB_BVL_Instrument::factory(
+            $conflict['TableName'],
+            $conflict['CID2'],
+            '',
+            false
+        );
+        $ddeinstrument->_saveValues(
+            [$conflict['FieldName'] => $conflict['CorrectAnswer']]
+        );
 
         // Using an output buffer because the score function prints to STDOUT
         ob_start();
         $instrument->score();
+        $ddeinstrument->score();
         $error = ob_get_contents();
         ob_end_clean();
 

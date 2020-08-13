@@ -29,6 +29,7 @@ class FixConflictForm extends Component {
     super(props);
 
     this.state = {
+      value: null,
       success: false,
       error: false,
       emptyOption: true,
@@ -74,7 +75,7 @@ class FixConflictForm extends Component {
       if (json.error) {
         throw json.error;
       }
-      this.setState({success: true, error: false, emptyOption: false});
+      this.setState({success: true, error: false, emptyOption: false, value});
     })
     .catch((error) => {
       swal('Error!', error, 'error');
@@ -83,7 +84,7 @@ class FixConflictForm extends Component {
   }
 
   render() {
-    const {success, error, emptyOption} = this.state;
+    const {value, success, error, emptyOption} = this.state;
     const color = {
       backgroundColor: success ? '#d1ffcf' : '',
       transition: 'background-color 1s',
@@ -92,6 +93,7 @@ class FixConflictForm extends Component {
       <td style={color}>
         <SelectElement
           name={this.props.conflictId}
+          value={value}
           onUserInput={this.resolveConflict}
           options={this.props.options}
           emptyOption={emptyOption}

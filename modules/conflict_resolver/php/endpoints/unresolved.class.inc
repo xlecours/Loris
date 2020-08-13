@@ -261,11 +261,11 @@ class Unresolved extends Endpoint implements ETagCalculator
         );
 
         // Using an output buffer because the score function prints to STDOUT
-        ob_start();
+        // ob_start();
         $instrument->score();
         $ddeinstrument->score();
-        $error = ob_get_contents();
-        ob_end_clean();
+        // $error = ob_get_contents();
+        // ob_end_clean();
 
         if (!empty($error)) {
             return new \LORIS\Http\Response\JSON\InternalServerError($error);

@@ -164,7 +164,7 @@ class ImagingBrowserRowProvisioner extends \LORIS\Data\Provisioners\DBRowProvisi
         // Initialize the arrays that go into this->columns and
         // $this->headers so that array_merge works even if no
         // $scan_types are set in the configuration module
-        $modalities_subquery = '';
+        $modalities_subquery = '""';
         foreach ($case_desc as $key => $value) {
             $modalities_subquery = "$value as $scan_id_types[$key]_QC_Status";
         }
@@ -188,8 +188,7 @@ class ImagingBrowserRowProvisioner extends \LORIS\Data\Provisioners\DBRowProvisi
               GROUP_CONCAT(DISTINCT OutputType) as Links,
               s.ID as sessionID,
               GROUP_CONCAT(DISTINCT modality.Scan_type) as sequenceType,
-              $PendingNewquery as pending,
-              $modalities_subquery,
+              \"\" as pending,
               s.CenterID as CenterID,
               c.Entity_type as entityType,
               s.ProjectID
@@ -206,7 +205,7 @@ class ImagingBrowserRowProvisioner extends \LORIS\Data\Provisioners\DBRowProvisi
               $left_joins 
             WHERE 
               s.Active = 'Y' AND
-              f.FileType='mnc'
+              f.FileType='nii'
             GROUP BY s.ID
             ORDER BY c.PSCID, s.Visit_label
             ",

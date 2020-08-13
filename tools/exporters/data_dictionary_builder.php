@@ -152,6 +152,10 @@ foreach ($instruments AS $instrument) {
                     $bits[0] = "varchar(255)";
                 } else if ($bits[0]=="select") {
                     $bits[0] = enumizeOptions($bits[3], $table, $bits[1]);
+                    # ukb PATCH some enum are very long. 
+                    if (strlen($bits[0]) > 64000) {
+                        $bits[0]="text";
+                    }
                 } else if ($bits[0]=="textarea") {
                     $bits[0] ="text";
                 } else if ($bits[0]=="text") {
@@ -364,4 +368,3 @@ function enumizeOptions($options, $table, $name)
     $enum =implode(",", $enum);
     return "enum($enum)";
 }
-

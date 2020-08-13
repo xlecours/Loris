@@ -124,9 +124,11 @@ class Images extends Endpoint implements \LORIS\Middleware\ETagCalculator
             $since
         );
 
+	/**
         $provisioner = $provisioner
             ->filter(new \LORIS\Data\Filters\ScansFilter())
             ->filter(new \LORIS\Data\Filters\PhantomsFilter());
+        */
 
         $images = (new \LORIS\Data\Table())
             ->withDataFrom($provisioner)

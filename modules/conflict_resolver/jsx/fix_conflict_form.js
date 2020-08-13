@@ -59,9 +59,6 @@ class FixConflictForm extends Component {
    * @param {string} value
    */
   resolveConflict(name, value) {
-    // Hide any previously displayed icon.
-    this.setState({success: false, error: false, emptyOption: false});
-
     fetch(loris.BaseURL.concat('/conflict_resolver/unresolved'), {
       method: 'POST',
       credentials: 'same-origin',
@@ -77,11 +74,11 @@ class FixConflictForm extends Component {
       if (json.error) {
         throw json.error;
       }
-      this.setState({success: true});
+      this.setState({success: true, error: false, emptyOption: false});
     })
     .catch((error) => {
       swal('Error!', error, 'error');
-      this.setState({error: true});
+      this.setState({error: true, success: false, emptyOption: true});
     });
   }
 
@@ -100,7 +97,7 @@ class FixConflictForm extends Component {
           emptyOption={emptyOption}
           hasError={error}
           errorMessage={''}
-          elementClass={'row'}
+          noMargins={true}
         />
       </td>
     );

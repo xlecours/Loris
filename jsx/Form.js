@@ -501,7 +501,6 @@ class SelectElement extends Component {
     let multiple = this.props.multiple ? 'multiple' : null;
     let required = this.props.required ? 'required' : null;
     let disabled = this.props.disabled ? 'disabled' : null;
-    let elementClass = this.props.elementClass;
     let sortByValue = this.props.sortByValue;
     let options = this.props.options;
     let errorMessage = null;

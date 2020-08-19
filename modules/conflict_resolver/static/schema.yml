@@ -43,7 +43,6 @@ paths:
       summary: Fix a given conflict by providing the correct answer.
       description: user to add to the system
       requestBody:
-        description: Optional description in *Markdown*
         required: true
         content:
           application/json:

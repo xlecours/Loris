@@ -51,7 +51,7 @@ paths:
               $ref: '#/components/schemas/FixConflictRequestBody'
       responses:
         200:
-          description: Conflicx fixed
+          description: Conflict fixed
 
   /conflict_resolver/resolved:
     get:
@@ -257,4 +257,3 @@ components:
       in: header
 security:
   - ApiKeyAuth: []
-

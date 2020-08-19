@@ -21,12 +21,15 @@ requesting a new account and will be displayed in the User Accounts module (PR #
 - In Conflict resolver, changes are now saved automatically, one by one. Once a conflict 
 is resolved a green check will appear beside the input filed.  It is possible to change
  the resolved conflicts to a new value until the page is refreshed. [(PR #6862)](https://github.com/aces/Loris/pull/6862)
+- Addition of autoSelect prop to React SelectElement allows for auto-selection of only available select option (PR #6156)
 - An `AcquisitionDate` field has been added to the `files` table (PR #6892)
 #### Bug Fixes
 - *Add item here*
 ### Modules
 #### Issue Tracker
 - Readability of comments and history was improved. (PR #6138)
+#### Candidate Parameters
+- Consents may now be grouped in UI of consent tab (PR #6042, PR #6044)
 ### Clean Up
 - *Add item here*
 ### Notes For Existing Projects

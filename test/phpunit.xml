@@ -8,6 +8,10 @@
             <directory>./unittests/</directory>
         </testsuite>
 
+        <testsuite name='LorisModulesUnitTests'>
+            <directory>../modules/dqt/unittest/</directory>
+        </testsuite>
+
         <testsuite name='LorisCoreIntegrationTests'>
             <directory>./integrationtests/</directory>
         </testsuite>

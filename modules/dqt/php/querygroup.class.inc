@@ -57,6 +57,9 @@ class QueryGroup implements QueryFilters
      */
     private static function _intersect(\Traversable $iter1, \Traversable $iter2): \Traversable {
         foreach($iter1 as $value1) {
+            if (!$iter2->valid()) {
+                return;
+            }
             switch($value1 <=> $iter2->current()) {
                 case -1:
                     // iter1 is smaller than iter2.
@@ -99,24 +102,38 @@ class QueryGroup implements QueryFilters
      * @return \Traversable
      */
     private static function _union(\Traversable $iter1, \Traversable $iter2): \Traversable {
-        foreach($iter1 as $value1) {
-            // Yield each value of iter1.
-            // If iter2 is smaller, yield each value of iter2 until it is greater, equal or empty.
-            // If it is equal, iter1 has already been yield do there is no need to yield iter2.
-            yield $value1;
-            if ($iter2->valid()) {
-                while ($iter2->current() < $value1) {
-                    yield $iter2->current();
+        while($iter1->valid()) {
+            $value1 = $iter1->current();
+
+            if (!$iter2->valid()) {
+                $iter1->next();
+                yield $value1;
+                continue;
+            }
+
+            $value2 = $iter2->current();
+
+            switch($value1 <=> $value2) {
+                case -1:
+                    // iter1 is smaller than iter2.
+                    $iter1->next();
+                    yield $value1;
+                    break;
+                case 0:
+                    // Both iter1 and iter2 are equal.
+                    $iter1->next();
                     $iter2->next();
-                    if (!$iter2->valid()) {
-                        break;
-                    }
-                }
+                    yield $value1;
+                    break;
+                case 1:
+                    // iter1 is greater than iter2.
+                    $iter2->next();
+                    yield $value2;
+                    break;
             }
         }
 
         while ($iter2->valid()) {
-            // yield each remaining values of iter2.
             yield $iter2->current();
             $iter2->next();
         }

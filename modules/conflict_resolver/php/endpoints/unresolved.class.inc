@@ -335,7 +335,7 @@ class Unresolved extends Endpoint implements ETagCalculator
         $success = $stmt->execute(
             [
                 'v_username'   => $user->getUsername(),
-                'v_newvalue'   => $correctanswer,
+                'v_newvalue'   => $conflict['CorrectAnswer'],
                 'v_conflictid' => $conflictid,
             ]
         );

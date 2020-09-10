@@ -2,7 +2,15 @@ import React, {Component} from 'react';
 import Loader from 'Loader';
 import FilterableDataTable from 'FilterableDataTable';
 
+/**
+ * Filterable Datatable for resolved conflicts.
+ */
 class ResolvedFilterableDataTable extends Component {
+  /**
+   * Constructor
+   *
+   * @param {Object} props The provided props.
+   */
   constructor(props) {
     super(props);
 
@@ -15,6 +23,9 @@ class ResolvedFilterableDataTable extends Component {
     this.formatColumn = this.formatColumn.bind(this);
   }
 
+  /**
+   * Fetch data upon component mount
+   */
   componentDidMount() {
     this.fetchData()
       .then(() => this.setState({isLoaded: true}));
@@ -69,6 +80,11 @@ class ResolvedFilterableDataTable extends Component {
       });
   }
 
+  /**
+   * Renders the filterable datatable for the conflict resolver module
+   *
+   * @return {jsx}
+   */
   render() {
     // If error occurs, return a message.
     if (this.state.error) {

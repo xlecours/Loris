@@ -3,7 +3,15 @@ import Loader from 'Loader';
 import FilterableDataTable from 'FilterableDataTable';
 import FixConflictForm from './fix_conflict_form';
 
+/**
+ * Filterable datatabse fro unresolved conflicts.
+ */
 class UnresolvedFilterableDataTable extends Component {
+  /**
+   * Constructor
+   *
+   * @param {Object} props The properties passed to the component.
+   */
   constructor(props) {
     super(props);
 
@@ -16,6 +24,9 @@ class UnresolvedFilterableDataTable extends Component {
     this.formatColumn = this.formatColumn.bind(this);
   }
 
+  /**
+   * Fetches data upon component mount.
+   */
   componentDidMount() {
     this.fetchData()
       .then(() => this.setState({isLoaded: true}));
@@ -73,6 +84,11 @@ class UnresolvedFilterableDataTable extends Component {
       });
   }
 
+  /**
+   * Renders the filterable datatable for the component.
+   *
+   * @return {jsx}
+   */
   render() {
     // If error occurs, return a message.
     if (this.state.error) {

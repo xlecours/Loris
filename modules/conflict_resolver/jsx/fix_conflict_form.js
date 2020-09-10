@@ -38,6 +38,12 @@ class FixConflictForm extends Component {
     this.resolveConflict = this.resolveConflict.bind(this);
   }
 
+  /**
+   * Returns value of success state to false after 5 seconds.
+   *
+   * @param {Object} prevProps Previous props before update
+   * @param {Object} prevState Previous state before update
+   */
   componentDidUpdate(prevProps, prevState) {
     if (this.state.success) {
       setTimeout(() => {
@@ -83,6 +89,11 @@ class FixConflictForm extends Component {
     });
   }
 
+  /**
+   * Renders select element that enables conflict resolution.
+   *
+   * @return {jsx}
+   */
   render() {
     const {value, success, error, emptyOption} = this.state;
     const color = {

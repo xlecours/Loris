@@ -28,14 +28,8 @@ use \LORIS\Data\Filters\UserProjectMatch;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris
  */
-class Resolved extends Endpoint implements ETagCalculator
+class Resolved extends Endpoint
 {
-    /**
-     * A cache of the endpoint results, so that it doesn't need to be
-     * recalculated for the ETag and handler.
-     */
-    private $_cache;
-
     /**
      * Returns true if the user has permission to access
      * the conflict resolver module
@@ -47,18 +41,6 @@ class Resolved extends Endpoint implements ETagCalculator
     public function hasAccess(\User $user) : bool
     {
         return $user->hasPermission('conflict_resolver');
-    }
-
-    /**
-     * Implements the ETagCalculator interface.
-     *
-     * @param ServerRequestInterface $request The PSR7 incoming request.
-     *
-     * @return string etag summarizing value of this request.
-     */
-    public function ETag(ServerRequestInterface $request) : string
-    {
-        return md5(json_encode((string) $this->_handleGET($request)->getBody()));
     }
 
     /**
@@ -126,10 +108,6 @@ class Resolved extends Endpoint implements ETagCalculator
      */
     private function _handleGET(ServerRequestInterface $request): ResponseInterface
     {
-        if (isset($this->_cache)) {
-            return $this->_cache;
-        }
-
         $provisioner = (new ResolvedProvisioner())
             ->filter(
                 new HasAnyPermissionOrUserSiteMatch(
@@ -148,8 +126,6 @@ class Resolved extends Endpoint implements ETagCalculator
             'fieldOptions' => $this->_getFieldOptions(),
         ];
 
-        $this->_cache = new \LORIS\Http\Response\JsonResponse($body);
-
-        return $this->_cache;
+        return new \LORIS\Http\Response\JsonResponse($body);
     }
 }

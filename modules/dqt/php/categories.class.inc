@@ -27,7 +27,8 @@ class Categories implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         return new \LORIS\Http\Response\JSON\OK([
-            'B' => 2
+            ['name'=>'the name'],
+            ['name'=>'another name']
         ]);
     }
 }

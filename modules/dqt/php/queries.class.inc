@@ -27,7 +27,7 @@ class Queries implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         return new \LORIS\Http\Response\JSON\OK([
-            'A' => 1
+            'queries' => ['mike', 'bob']
         ]);
     }
 }

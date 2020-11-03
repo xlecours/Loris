@@ -14,34 +14,13 @@ class FieldListItem extends Component {
   render() {
     let classList = 'list-group-item row';
     let downloadIcon = '';
-    let criteria;
-    let multiselect;
 
-    if (this.props.selected) {
+    if (this.props.selected != undefined) {
       // If field is selected, add active class and visits
       classList += ' active';
-      multiselect = Object.keys(this.props.Visits).map((visit) => {
-        let checked = false;
-        if (this.props.selectedVisits[visit]) {
-          checked = true;
-        }
-        return (
-          <div key={visit} className='checkbox'>
-            <label>
-              <input
-                type='checkbox'
-                value={visit}
-                checked={checked}
-                onChange={this.visitSelect}
-              />
-              {visit}
-            </label>
-          </div>
-        );
-      });
     }
 
-    if (this.props.downloadable) {
+    if (this.props.downloadable != undefined) {
       // Add download icon if field is downloadable
       downloadIcon = (
         <span className='glyphicon glyphicon-download-alt pull-right'
@@ -49,21 +28,15 @@ class FieldListItem extends Component {
       );
     }
     // Don't display the category in the field selector
-    let displayName = this.props.FieldName;
+    let fieldName = this.props.FieldName;
 
     return (
-      <div className={classList}
-           onClick={() => this.props.onClick(this.props.FieldName)}
-           style={{cursor: 'pointer'}}>
+      <div className={classList} onClick={() => this.props.onClick(fieldName)}>
         <div className='col-xs-8'>
           <h4 className='list-group-item-heading col-xs-12'>
-            {displayName}{criteria}{downloadIcon}
+            {fieldName}{downloadIcon}
           </h4>
           <span className='col-xs-12'>{this.props.Description}</span>
-        </div>
-        <div className='col-xs-4 fieldVisitsRow'
-             onClick={(e) => e.stopPropagation()}>
-          {multiselect}
         </div>
       </div>
     );

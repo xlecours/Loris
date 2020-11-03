@@ -120,7 +120,7 @@ class DQT extends Component {
     }
 
     let categories = this.state.categories;
-
+/*
     categories = [
       {name: 'aosi'},
       {name: 'bmi', selected: true, fields: [
@@ -134,7 +134,7 @@ class DQT extends Component {
       {name: 'radiology_review', numFields: 18},
       {name: 'test_minimal', numFields: 5},
     ];
-
+*/
     return (
       <div>
         <SavedQueries queries={this.state.savedQueries}/>

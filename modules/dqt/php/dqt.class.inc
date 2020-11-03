@@ -23,7 +23,7 @@ namespace LORIS\dqt;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-class Dqt extends \NDB_Form
+class Dqt extends \NDB_Page
 {
     public $skipTemplate = true;
     /**
@@ -71,91 +71,6 @@ class Dqt extends \NDB_Form
                 'Data Query Tool.'
             );
         }
-        $couch = \NDB_Factory::singleton()->couchDB(
-            $couchConfig['dbName'],
-            $couchConfig['hostname'],
-            intval($couchConfig['port']),
-            $couchConfig['admin'],
-            $couchConfig['adminpass']
-        );
-
-        $update = $couch->queryView(
-            "DQG-2.0",
-            "runlog",
-            [
-                "reduce"     => "false",
-                "limit"      => "1",
-                "descending" => "true",
-            ]
-        );
-        $this->tpl_data['updatetime'] = $update[0]['key'];
-
-        $categories = $couch->queryView(
-            "DQG-2.0",
-            "datadictionary",
-            [
-                "reduce"      => "true",
-                "group_level" => "1",
-            ]
-        );
-
-        $cat_tpl = [];
-        foreach ($categories as $row) {
-            if ($row['value']) {
-                $cat_tpl[$row['key'][0]] = $row['value'];
-            } else {
-                $cat_tpl[$row['key'][0]] = -1;
-            }
-        }
-        $this->tpl_data['categories'] = $cat_tpl;
-
-        $usersaved = $couch->queryView(
-            "DQG-2.0",
-            "savedqueries",
-            [
-                "key"    => "\"$username\"",
-                "reduce" => "false",
-            ]
-        );
-
-        $globalsaved = $couch->queryView(
-            "DQG-2.0",
-            "savedqueries",
-            [
-                "key"    => "\"global\"",
-                "reduce" => "false",
-            ]
-        );
-
-        $IDMapCallback = function ($row) {
-            return $row['id'];
-        };
-
-        $usersavedNames   = array_map($IDMapCallback, $usersaved);
-        $globalsavedNames = array_map($IDMapCallback, $globalsaved);
-
-        $this->tpl_data['savedqueries'] = [
-            'user'   => $usersavedNames,
-            'shared' => $globalsavedNames,
-        ];
-        $sessionResults           = $couch->queryView(
-            "DQG-2.0",
-            "sessions",
-            [
-                "reduce" => "true",
-                "group"  => "true",
-            ]
-        );
-        $this->tpl_data['visits'] = \Utility::getVisitList();
-
-        $sessions = array_map(
-            function ($element) {
-                return $element['key'];
-            },
-            $sessionResults
-        );
-
-        $this->tpl_data['sessions'] = $sessions;
     }
 
     /**

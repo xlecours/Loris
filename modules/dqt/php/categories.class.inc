@@ -5,6 +5,7 @@ namespace LORIS\dqt;
 use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Server\RequestHandlerInterface;
 use \Psr\Http\Message\ResponseInterface;
+use \LORIS\dqt\CouchDBViewProvisioner;
 
 class Categories implements RequestHandlerInterface
 {
@@ -26,9 +27,28 @@ class Categories implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
+        $prov = new CouchDBViewProvisioner(
+            'DQG-2.0',
+            'datadictionary',
+            [
+                "reduce" => "false",
+                "include_docs" => "false"
+            ]
+        );
+        $prov = $prov->withMapper(new CategoryMapper());
+
+        $user = $request->getAttribute('user');
+
+        return new \LORIS\Http\Response\JSON\OK(iterator_to_array($prov->execute($user)));
+
         return new \LORIS\Http\Response\JSON\OK([
-            ['name'=>'the name'],
-            ['name'=>'another name']
+            [
+                'name'=>'bmi',
+                'visits' => [],
+                'fields'=> [
+                    ['name'=>'Administration','Type'=>'enum(\'None\', \'Partial\', \'All\')','Description'=>'Administration for bmi']
+                ]
+            ]
         ]);
     }
 }

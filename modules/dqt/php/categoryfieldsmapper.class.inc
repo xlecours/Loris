@@ -12,7 +12,7 @@
 
 namespace LORIS\dqt;
 
-class CategoryMapper
+class CategoryFieldsMapper
 {
     /**
      * Map returns a copy of $resource that has been modified in some way
@@ -30,12 +30,14 @@ class CategoryMapper
     public function map(string $json) : array
     {
         $data = json_decode($json, true);
-        $categoryname = $data['key'][0];
-        $visit   = $data['key'][1];
+        $fieldname    = $data['key'][1];
+        $type         = $data['value']['Type'];
+        $description  = $data['value']['Description'];
 
         return [
-            'name'        => $categoryname,
-            'visit'       => $visit,
+            'name'        => $fieldname,
+            'type'        => $type,
+            'description' => $description
         ];
     }
 }

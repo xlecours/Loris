@@ -53,6 +53,7 @@ class FieldsSelectorTab extends Component {
    * @return {JSX} - React markup for the component
    */
   render() {
+    console.info(this.props);
     const options = this.props.categories.reduce((carry, item) => {
       carry[item.name] = item.name;
       return carry;

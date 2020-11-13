@@ -70,7 +70,6 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
 
             if (preg_match('/^(\{.*}),*/', $line, $matches)) {
                 // This is a data line
-                yield json_decode($matches[1]);
                 if ($this->_filter($matches[1])) {
                     yield $this->_map($matches[1]);
                 }
@@ -85,7 +84,7 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
         return $new;
     }
 
-    public function withAddedFilter($filter): CouchDBViewProvisioner
+    public function withFilter($filter): CouchDBViewProvisioner
     {
         // TODO :: rework this to use the filter interface.
         $new = clone($this);
@@ -102,10 +101,16 @@ class CouchDBViewProvisioner extends \LORIS\Data\ProvisionerInstance
     }
 
     private function _filter($value): bool {
-        return true;
+        if (!isset($this->_filter)) {
+            return true;
+        }
+        return $this->_filter->filter($value);
     }
 
-    private function _map($value): array {
+    private function _map(string $value) {
+        if (!isset($this->_mapper)) {
+            return $value;
+        }
         return $this->_mapper->map($value);
     }
 

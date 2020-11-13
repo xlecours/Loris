@@ -36,39 +36,65 @@ class Queries implements RequestHandlerInterface
 
     private function _handleGET(ServerRequestInterface $request) : ResponseInterface
     {
+/*      
         $query = [
             'fields'  => [
                 ['category' => 'demographics', 'field' => 'DoB', 'visits' => []],
                 ['category' => 'demographics', 'field' => 'Sex', 'visits' => []],
             ],
             'filters' => [
-                ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "equals", "value" => "Female"],
-                [
-                    "type" => "group",
-                    "operator" => "OR",
-                    "items" => [
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "2016-05-12"],
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "2016-04-12"],
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "isNull", "value" => ""]
+                "type" => "group","operator" => "AND","items" => [
+                    ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "equals", "value" => "Female"],
+                    [
+                        "type" => "group",
+                        "operator" => "OR",
+                        "items" => [
+                            ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "2016-05-12"],
+                            ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "2016-04-12"],
+                            ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "isNull", "value" => ""]
+                        ]
                     ]
                 ]
             ]
         ];
+*/
+        $db = $request->getAttribute('loris')->getDatabaseConnection();
+        $userid = $request->getattribute('user')->getId();
+        $rows = $db->pselect(
+            '
+             SELECT *
+             FROM dqt_query
+             WHERE creator_userid = :v_userid OR shared IS TRUE
+            ',
+            ['v_userid' => $userid]
+        );
+        
+        $queries = array_reduce(
+            $rows,
+            function ($carry, $item) {
+                $query = [
+                    'hash' => $item['hash'],
+                    'creationTimestamp' => $item['creation_timestamp'],
+                    'query' => json_decode($item['content'])
+                ];
+                if (empty($item['name'])) {
+                    $carry['history'][] = $query;
+                    return $carry;
+                }
 
-        return new \LORIS\Http\Response\JSON\OK([
-            'history' => [
-                ['creationTimestamp' => 1603988337, 'query' => $query],
-                ['creationTimestamp' => 1603988437, 'query' => $query],
-                ['creationTimestamp' => 1603988537, 'query' => $query]
-            ],
-            'saved' => [
-                ['id' => 1, 'name' => 'Query 1', 'shared' => False, 'creator' => 'admin', 'creationTimestamp' => 1603988337, 'query' => $query],
-                ['id' => 2, 'name' => 'Query 2', 'shared' => False, 'creator' => 'admin', 'creationTimestamp' => 1603988437, 'query' => $query]
-            ],
-            'shared' => [
-                ['id' => 3, 'name' => 'Query 3', 'shared' => True, 'creator' => 'admin', 'creationTimestamp' => 1603988537, 'query' => $query],
-                ['id' => 4, 'name' => 'Query 4', 'shared' => True, 'creator' => 'admin', 'creationTimestamp' => 1603988637, 'query' => $query]
-            ]
-        ]);
+                $query['name'] = $item['name'];
+
+                if ($item['shared']) {
+                    $carry['shared'][] = $item;
+                    return $carry;
+                }
+                
+                $carry['saved'][] = $item;
+                return $carry;
+            },
+            ['history' => [], 'saved' => [], 'shared' => []]
+        );
+
+        return new \LORIS\Http\Response\JSON\OK($queries);
     }
 }

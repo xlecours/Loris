@@ -10,6 +10,13 @@ use \LORIS\dqt\QueryFilterFactory;
 
 class Search implements RequestHandlerInterface
 {
+    public function process(
+        ServerRequestInterface $request,
+        RequestHandlerInterface $handler
+    ) : ResponseInterface {
+        return $handler->handle($request);
+    }
+
     /**
      * Returns true if the user has permission to access
      * the dqt module
@@ -18,9 +25,13 @@ class Search implements RequestHandlerInterface
      *
      * @return bool true if user has permission
      */
-    private function _hasAccess(\User $user) : bool
+    public function _hasAccess(\User $user) : bool
     {
         return $user->hasPermission('dataquery_view');
+    }
+
+    public function loadResources(\User $user, ServerRequestInterface $request): void
+    {
     }
 
     /**
@@ -70,72 +81,13 @@ class Search implements RequestHandlerInterface
     private function _handlePOST(ServerRequestInterface $request): ResponseInterface
     {
         $user = $request->getAttribute('user');
-        $data = json_decode((string) $request->getBody(), true);
+        $data = json_decode((string) $request->getBody(), true, 512,  JSON_OBJECT_AS_ARRAY);
 
         $fields = $data['fields'] ?? [];
         $filters = $data['filters'] ?? [];
 
-        $fields = [
-            ["category" => "demographics", "field" => "DoB"],
-            ["category" => "demographics", "field" => "Sex"],
-//            ["category" => "ukbb_baseline_characteristics", "field" => "34_year_of_birth"]
-        ];
-        $filters = [
-            "type" => "group",
-            "operator" => "AND",
-            "items" => [ 
-                ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "equals", "value" => "Female"],
-                [
-                    "type" => "group",
-                    "operator" => "OR",
-                    "items" => [
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-09-15"],
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-10-15"],
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-11-15"],
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1942-01-15"]
-                    ]
-                ]
-            ]
-        ];
-
-        $filters = [
-            "type" => "group",
-            "operator" => "AND",
-            "items" => [
-                ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "equals", "value" => "Female"],
-                [
-                    "type" => "group",
-                    "operator" => "OR",
-                    "items" => [
-//                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1936-06-07"],
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "2016-05-12"],
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "2016-04-12"],
-                        ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "isNull", "value" => ""]
-                    ]
-                ]
-            ]
-        ];
-
-/**
-        $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1936-09-15"];
-        $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"];
-        $filters = ["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "lessThanEqual", "value" => "1934-03-15"];
-        $filters = ["type" => "filter", "category" => "demographics", "field" => "Sex", "operator" => "notEqual", "value" => "Female"];
-        $filters = [
-            "type" => "group",
-            "operator" => "OR",
-            "items" => [
-                //["type" => "query", "category" => "demographics", "field" => "DoB", "operator" => "notEqual", "value" => null],
-                ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "greaterThanEqual", "value" => "1970-01-15"],
-                ["type" => "filter", "category" => "demographics", "field" => "DoB", "operator" => "equals", "value" => "1968-02-15"],
-            ]
-        ];
-*/
-
-
         try {
-            $filter = QueryFilterFactory::create($filters);
-            $fields  = new QueryFields($fields);
+            $query = QueryFactory::create($user, $fields, $filters);
         } catch (\LorisException $e) {
             return new \LORIS\Http\Response\JSON\BadRequest(
                 $e->getMessage()
@@ -143,22 +95,13 @@ class Search implements RequestHandlerInterface
         }
 
         try {
-            $sessions = $filter->getFilteredSessions($user);
-            $results  = $fields->getSelectedFields(
-                $user,
-                $sessions
-            );
+            // Save the query first to make it available in queries history
+            $db = $request->getAttribute('loris')->getDatabaseConnection();
+            $this->_saveQuery($db, $query);
 
             // TODO :: Writing on disk takes a while. Increase max_execution_time in php.ini 
             //         or use the serverprocessmanager to launch a process.
-            $outputfile = $this->_writeOutputs($results);
-
-            $this->_saveQuery(
-                $user,
-                $fields,
-                $filter,
-                $outputfile
-            );
+            $this->_writeOutputs($query);
 
         } catch (\LorisException $e) {
             return new \LORIS\Http\Response\JSON\InternalServerError(
@@ -166,24 +109,34 @@ class Search implements RequestHandlerInterface
             );
         }
 
-        return new \LORIS\Http\Response\JSON\OK();
+        $hash = $query->hash();
+        $url  = '/dqt/results?hash=' . $hash ;
+        return new \LORIS\Http\Response\JSON\SeeOther(
+            [],
+            [
+                'Location' => $url
+            ]
+        );
     }
 
-    private function _writeOutputs($outputs): \SplFileObject
+    private function _writeOutputs(Query $query): void
     {
-        $outputfile    = new \SplFileObject("/data/not_backed_up/tmp.txt", "w");
+        $hash = $query->hash();
+        $outputfile = new \SplFileObject("/data/not_backed_up/$hash.json", "w");
 
-        $outputfile->fwrite('{"data":[');
-
-        // TODO :: There must be a better way to avoid the last comma...
-        $comma = '';
-        set_time_limit(0);
-        foreach ($outputs as $index => $row) {
-            $outputfile->fwrite($comma . PHP_EOL . $row);
-            $comma = ',';
+        //set_time_limit(0);
+        $outputfile->fwrite('{"rows":[' . PHP_EOL);
+        foreach ($query->execute() as $index => $row) {
+            $outputfile->fwrite($row . ',' . PHP_EOL);
         }
-        $outputfile->fwrite(PHP_EOL . ']}');
-        return $outputfile;
+
+        // Erase last comma and EOL
+        $last_position = $outputfile->ftell();
+        $outputfile->ftruncate($last_position - 2);
+        $outputfile->fseek($last_position - 2);
+        
+        // Complete the array valid synthax
+        $outputfile->fwrite(PHP_EOL . ']}' . PHP_EOL);
     }
  
     /**
@@ -198,9 +151,11 @@ class Search implements RequestHandlerInterface
      * @param QueryFilters   $filters    The selection filters.
      * @param \SplFileObject $outputfile The in which the results have been writen.
      */
-    private function _saveQuery(\User $user, QueryFields $fields, QueryFilters $filters, \SplFileObject $outputfile): void
+    private function _saveQuery(\Database $db, Query $query): void
     {
         // TODO :: add dqt_query, dqt_saved_query, dqt_shared_query tables.
-        error_log('Search:: _saveQuery not implemented');
+        //$db->insertIgnore('dqt_query', $query->hasSQLTableRow());
+        $stmt = $db->prepare('INSERT IGNORE INTO dqt_query (hash, creator_userid, content) VALUES (:hash, :creator_userid, :content)');
+        $stmt->execute($query->hasSQLTableRow());
     }
 }

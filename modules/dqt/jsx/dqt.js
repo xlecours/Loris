@@ -24,12 +24,17 @@ class DQT extends Component {
       loaded: false,
       savedQueries: [],
       categories: [],
+      query: {
+        fields: [],
+        filters: [],
+      },
       data: [],
     };
 
     this.fetchData = this.fetchData.bind(this);
     this.fetchSavedQueries = this.fetchSavedQueries.bind(this);
     this.fetchCategories = this.fetchCategories.bind(this);
+    this.sendQuery = this.sendQuery.bind(this);
   }
 
   /**
@@ -52,8 +57,10 @@ class DQT extends Component {
       this.setState({
           loaded: true,
           savedQueries: responses[0],
+          query: responses[0].history[0].query,
           categories: responses[1],
       });
+      // TODO remove query: responses[0].query after DEV
     });
   }
 
@@ -76,7 +83,6 @@ class DQT extends Component {
         return response;
       })
       .then((response) => response.json())
-      .then((data) => data.queries)
       .catch((error) => {
         this.setState({error: true});
         console.error(error);
@@ -103,6 +109,36 @@ class DQT extends Component {
         return response;
       })
       .then((response) => response.json())
+      .then((data) => data.categories)
+      .catch((error) => {
+        this.setState({error: true});
+        console.error(error);
+      });
+  }
+
+  /**
+   * Send the query to the backend
+   */
+  sendQuery() {
+    fetch(
+      '/dqt/search', {
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify(this.state.query),
+      })
+      .then(function(response) {
+        if (!response.ok) {
+            throw Error(response.statusText);
+        }
+        return response;
+      })
+      .then((response) => response.json())
+      .then((json) => {
+        this.setState({data: json.rows});
+      })
       .catch((error) => {
         this.setState({error: true});
         console.error(error);
@@ -120,27 +156,17 @@ class DQT extends Component {
     }
 
     let categories = this.state.categories;
-/*
-    categories = [
-      {name: 'aosi'},
-      {name: 'bmi', selected: true, fields: [
-        {name: 'A', desc: 'Un A majuscule', type: 'text'},
-      ]},
-      {name: 'demographics', numFields: 28},
-      {name: 'FinalRadiologicalReview', numFields: 17},
-      {name: 'medical_history', numFields: 29},
-      {name: 'mri_data', numFields: 361},
-      {name: 'mri_parameter_form', numFields: 45},
-      {name: 'radiology_review', numFields: 18},
-      {name: 'test_minimal', numFields: 5},
-    ];
-*/
+
     return (
       <div>
         <SavedQueries queries={this.state.savedQueries}/>
         <FieldsSelectorTab categories={categories}/>
         <AddFiltersTab categories={categories}/>
-        <QueryResultTab data={this.state.data}/>
+        <QueryResultTab
+          sendQuery={this.sendQuery}
+          fields={this.state.query.fields}
+          data={this.state.data}
+        />
       </div>
     );
   }

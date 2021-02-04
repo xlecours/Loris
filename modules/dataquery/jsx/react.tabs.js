@@ -9,6 +9,7 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+import swal from 'sweetalert2';
 
 /*
  *  The following componet is used to indicate to users that their data is currently
@@ -171,6 +172,7 @@ class ViewDataTabPane extends Component {
     this.getOrCreateProgressElement = this.getOrCreateProgressElement.bind(this);
     this.getOrCreateDownloadLink = this.getOrCreateDownloadLink.bind(this);
     this.downloadData = this.downloadData.bind(this);
+    this.exportToNeuroHub = this.exportToNeuroHub.bind(this);
   }
 
   runQuery() {
@@ -317,6 +319,107 @@ class ViewDataTabPane extends Component {
     }
   }
 
+  exportToNeuroHub() {
+    // mimick downloadCSV but send csv file to /data/genetics/NeuroHub instead of browser
+    let csvworker = new Worker(loris.BaseURL + '/js/workers/savecsv.js');
+    const tableData = this.props.Data;
+    csvworker.addEventListener('message', function(e) {
+      if (e.data.cmd === 'SaveCSV' && tableData != undefined) {
+        const postObject = new FormData();
+        const dataDate = new Date().toISOString();
+        const filename = 'data-' + dataDate + '.csv';
+        postObject.append('file', e.data.message, filename);
+        swal.fire({
+          title: 'Proceed with export?',
+          html: 'Please provide your NeuroHub API token.<br><br>' +
+            'You can generate a new token in the `My account` page of NeuroHub' +
+            'using the `Generate new API token` button in the ' +
+            '<a target="_blank" href="https://portal.cbrain.mcgill.ca/">CBRAIN`s user interface</a>.<br>' +
+            'A CBRAIN file list will be created in your default dataprovider.',
+          width: '60%',
+          input: 'text',
+          inputValidator: (value) => {
+            if (!value) {
+              return 'NeuroHub token is required.'
+            }
+          },
+          inputPlaceholder: "NeuroHub API token",
+          showCancelButton: true,
+          confirmButtonText: 'Yes, export',
+          showLoaderOnConfirm: true,
+          preConfirm: (token) => {
+            postObject.append('token', token);
+            return fetch(`${loris.BaseURL}/dataquery/Export`, {
+              method: 'POST',
+              cache: 'no-cache',
+              credentials: 'same-origin',
+              body: postObject,
+            })
+            .then((resp) => {
+              if (!resp.ok) {
+                throw new Error(resp.statusText)
+              }
+              return resp.json();
+            })
+            .catch(error => {
+              swal.showValidationMessage(
+                `Request failed: ${error}`
+              )
+            })
+          },
+          allowOutsideClick: false,
+        }).then((result) => {
+          console.log(result);
+          swal.fire({
+            title: 'Export Successful!',
+            html: '<a href="' + result.value.images_location +
+              '" target="_blank">Images</a><br>' +
+              '<a href="' + result.value.data_location +
+              '" target="_blank">Data</a>'
+          });
+        });
+      }
+    });
+    // Modify table data for readable csv
+    const correctReactLinks = (csvData) => {
+      const newCsvData = csvData.map((data, dataIndex) => {
+        const newData = data.map((value, valueIndex) => {
+          let result = [value];
+          if (value == null) {
+            result = [''];
+          } else {
+            if (value.type === 'a') {
+              result = [value.props.href];
+            } else if (value.type === 'span') {
+              if (Array.isArray(value.props.children)) {
+                const children = value.props.children.map((child, childIndex) => {
+                  let childresult = child;
+                  if (child.props && child.props.href) {
+                    childresult = child.props.href;
+                  }
+                  return childresult;
+                });
+                result = [children.join('')];
+              } else {
+                result = [value.props.children.props.href];
+              }
+            }
+          }
+          return result;
+        });
+        return newData;
+      });
+      return newCsvData;
+    };
+    const csvExport = correctReactLinks([...tableData]);
+    // create CSV from data
+    csvworker.postMessage({
+      cmd: 'SaveFile',
+      data: csvExport,
+      headers: this.props.RowHeaders,
+      identifiers: this.props.RowInfo,
+    });
+  }
   render() {
     let downloadData;
     let buttons = (
@@ -324,6 +427,7 @@ class ViewDataTabPane extends Component {
         <div className='commands col-xs-12 form-group'>
           <button className='btn btn-primary' onClick={this.runQuery}>Run Query</button>
           <button className='btn btn-primary' onClick={this.downloadData}>Download Data as ZIP</button>
+          <button className='btn btn-primary' onClick={this.exportToNeuroHub}>Export Results To NeuroHub</button>
         </div>
         <div id='progress' className='col-xs-12'></div>
         <div id='downloadlinks' className='col-xs-12'>
